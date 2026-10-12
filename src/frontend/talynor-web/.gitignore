@@ -1,0 +1,2 @@
+# Frontend build outputs (the root already ignores node_modules)
+dist/

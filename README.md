@@ -2,7 +2,9 @@
 
 Talynor is a visual learning and personal knowledge platform where users build interconnected knowledge maps, organize learning content, and track their studies.
 
-**Current status:** foundation and planning. This repository contains project documentation and operating rules for future coding agents. No application, solution, database, or infrastructure has been created.
+**Current status:** Phase 1 — SPIKE-001, an initial interactive knowledge graph frontend using local mocks. No backend, .NET solution, database, or infrastructure has been created.
+
+See [the frontend spike](src/frontend/talynor-web/README.md) for local commands, interactions, limitations, and React learning notes.
 
 ## Documentation
 

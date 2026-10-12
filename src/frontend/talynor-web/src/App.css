@@ -1,0 +1,61 @@
+.app-shell { max-width: 1600px; margin: 0 auto; padding: 28px; }
+.app-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 24px; }
+.brand { margin-bottom: 8px; color: #2563eb; font-weight: 800; font-size: 20px; }
+h1 { margin-bottom: 8px; font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.03em; }
+.intro { margin-bottom: 0; color: #475569; }
+.demo-label { border: 1px solid #cbd5e1; border-radius: 24px; padding: 8px 12px; font-size: 12px; white-space: nowrap; color: #475569; }
+.map-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; font-size: 14px; }
+.back-button { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; margin-right: 12px; background: white; color: #1e40af; min-height: 44px; }
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+.graph-section, .details-panel { background: white; border: 1px solid #dbe3ee; border-radius: 16px; overflow: hidden; }
+.map-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 20px 0; }
+.map-heading h2 { margin: 0; font-size: 20px; }
+.map-heading > span { font-size: 12px; color: #64748b; white-space: nowrap; }
+.map-help { color: #64748b; font-size: 14px; line-height: 1.6; margin: 10px 20px 18px; }
+.graph-canvas { height: min(65vh, 680px); min-height: 440px; background: #f8fafc; border-block: 1px solid #e2e8f0; }
+.interaction-help { padding: 14px 20px; margin: 0; color: #64748b; font-size: 12px; line-height: 1.6; }
+.knowledge-node { width: 200px; border: 2px solid #cbd5e1; border-radius: 12px; background: white; padding: 16px; box-shadow: 0 3px 10px #1725540a; color: #172554; }
+.knowledge-node.is-selected { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 4px #2563eb20; }
+.node-caption { display: block; color: #64748b; font-size: 11px; margin-bottom: 8px; }
+.knowledge-node strong { display: block; font-size: 16px; }
+.node-progress { display: flex; justify-content: space-between; gap: 12px; color: #475569; font-size: 12px; margin-top: 14px; }
+.submap-label { display: block; margin-top: 12px; font-size: 11px; color: #1d4ed8; }
+.react-flow__handle { width: 8px; height: 8px; background: #94a3b8; border-color: white; }
+.react-flow__edge-path { stroke: #94a3b8; stroke-width: 2; }
+.react-flow__node:focus-visible { outline: 3px solid #2563eb; outline-offset: 4px; border-radius: 12px; }
+.react-flow__controls-button { width: 44px; height: 44px; }
+.react-flow__minimap { border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
+.details-panel { padding: 24px; }
+.section-caption { text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; color: #64748b; margin-bottom: 12px; }
+.details-panel h2 { font-size: 22px; margin-bottom: 12px; }
+.details-description { color: #475569; line-height: 1.7; font-size: 14px; margin-bottom: 24px; }
+.progress-heading { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; }
+progress { width: 100%; height: 10px; border: none; border-radius: 8px; background: #e2e8f0; accent-color: #2563eb; overflow: hidden; }
+progress::-webkit-progress-bar { background: #e2e8f0; }
+progress::-webkit-progress-value { background: #2563eb; }
+progress::-moz-progress-bar { background: #2563eb; }
+.study-time { padding-top: 20px; margin: 20px 0 0; border-top: 1px solid #e2e8f0; }
+.study-time dt { color: #64748b; font-size: 13px; }
+.study-time dd { font-size: 22px; font-weight: 700; margin: 6px 0 0; }
+.mock-note { color: #64748b; font-size: 11px; margin: 16px 0 0; }
+.primary-button { background: #2563eb; color: white; border: none; border-radius: 8px; width: 100%; min-height: 44px; padding: 12px; margin-top: 24px; font-weight: 600; }
+.primary-button:hover { background: #1d4ed8; }
+
+@media (max-width: 1000px) {
+  .workspace { grid-template-columns: minmax(0, 1fr); }
+  .details-panel { max-width: none; }
+  .graph-canvas { height: 55vh; }
+}
+
+@media (max-width: 600px) {
+  .app-shell { padding: 16px; }
+  .app-header { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .map-heading { padding: 16px 16px 0; }
+  .map-heading h2 { font-size: 18px; }
+  .map-help { margin-inline: 16px; }
+  .graph-canvas { height: 440px; min-height: 380px; }
+  .react-flow__minimap { display: none; }
+  .interaction-help { padding-inline: 16px; }
+  .details-panel { padding: 20px; }
+  .back-button { width: 100%; margin-right: 0; }
+}

@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Talynor is currently in foundation and planning; no application structure or infrastructure exists. Future implementation must be authorized through a scoped task and follow these boundaries.
+This document records the approved high-level direction. Talynor is currently in Phase 1: an initial frontend spike with local mocks. No backend or infrastructure exists. Implementation must be authorized through a scoped task and follow these boundaries.
 
 ## Approved direction
 
@@ -37,7 +37,7 @@ A graph-shaped domain does not require a graph database. The initial direction u
 
 The interactive graph experience is a primary technical risk. A dedicated frontend spike precedes the application skeleton to validate nodes, edges, zoom, pan, selection, drill-down, submaps, and navigation between knowledge levels.
 
-The spike should provide evidence about responsiveness, usability, and performance. No graph visualization library or production interaction design has been selected.
+The spike should provide evidence about responsiveness, usability, and performance. SPIKE-001 uses Vite and XYFlow / React Flow with React and TypeScript. This is a spike choice; the production graph visualization library and interaction design remain undecided.
 
 ## Database strategy
 
@@ -70,4 +70,4 @@ The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, El
 
 ## Open design questions
 
-Authentication provider, module and project layout, graph library, final relationship taxonomy, concrete data model, API contracts, frontend test tooling, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.
+Authentication provider, module and project layout, production graph visualization library, final relationship taxonomy, concrete data model, API contracts, frontend test tooling, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.

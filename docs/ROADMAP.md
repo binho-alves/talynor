@@ -1,6 +1,6 @@
 # Preliminary roadmap
 
-This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. Only Phase 0 documentation is authorized by the current foundation request.
+This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. The original foundation request authorized Phase 0 documentation; SPIKE-001 authorizes the initial Phase 1 frontend with local mocks.
 
 ## Phase 0 - Foundation
 

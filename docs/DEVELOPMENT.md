@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: foundation and planning.
+- Current stage: Phase 1 — SPIKE-001, an initial frontend spike with local mocks.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -13,7 +13,7 @@ The owner name and local path do not authorize creating a remote repository, ini
 
 Keep tasks small and reviewable. Read [AGENTS.md](../AGENTS.md) and the relevant project documents before implementation. Resolve scope and architectural conflicts before making dependent changes.
 
-The current foundation task creates only README.md, AGENTS.md, and the six documents in docs/. It does not authorize application code, a .NET solution, a React application, package installation, Docker infrastructure, database configuration, migrations, or CI.
+The original foundation task created only README.md, AGENTS.md, and the six documents in docs/. It did not authorize application code, a .NET solution, a React application, package installation, Docker infrastructure, database configuration, migrations, or CI. SPIKE-001 separately authorizes the initial frontend and its necessary dependencies; see [the spike README](../src/frontend/talynor-web/README.md).
 
 Later roadmap phases describe intended work, not standing implementation authorization.
 
@@ -37,4 +37,4 @@ If the folder is not a Git repository, report that fact and skip Git status and 
 
 Use verification appropriate to the authorized scope. Do not install packages, generate an application, configure a database, or create CI just to validate foundation documents. Clearly distinguish successful checks from checks that were not run.
 
-For this foundation task, inspect all eight documents for consistency, validate local documentation links and the requested file tree, and run Git status only if the folder is already a Git repository. Report the result and stop for review without committing or pushing.
+For the original foundation task, inspect all eight documents for consistency, validate local documentation links and the requested file tree, and run Git status only if the folder is already a Git repository. For SPIKE-001, build and lint the frontend, review the graph interactions, and perform the Git checks above. Report the result and stop for review without committing or pushing.

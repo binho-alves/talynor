@@ -17,7 +17,7 @@ This index records decisions already approved in the project foundation request.
 
 **Decision:** use React with TypeScript for a responsive SPA and standalone reusable UI components.
 
-**Implications:** validate the graph experience through the dedicated frontend spike. A visualization library, state management approach, and frontend testing tools have not been selected.
+**Implications:** validate the graph experience through the dedicated frontend spike. A production visualization library, state management approach, and frontend testing tools have not been selected. XYFlow is being evaluated in SPIKE-001 only.
 
 ## ADR-002 - .NET 10 backend
 
@@ -61,4 +61,4 @@ This index records decisions already approved in the project foundation request.
 
 ## Decision discipline
 
-Future records must distinguish proposals from accepted decisions. Do not present unreviewed options as commitments. Authentication provider, graph visualization library, relationship taxonomy, frontend testing tools, and deployment topology remain undecided.
+Future records must distinguish proposals from accepted decisions. Do not present unreviewed options as commitments. Authentication provider, production graph visualization library, relationship taxonomy, frontend testing tools, and deployment topology remain undecided.
