@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 1 — SPIKE-001, an initial frontend spike with local mocks.
+- Current stage: Phase 1 — SPIKE-001 completed and approved; Phase 2 — Solution and Application Skeleton has not started and requires a scoped implementation task.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 

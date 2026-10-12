@@ -1,5 +1,7 @@
 # Talynor Web — SPIKE-001
 
+**Status:** completed and approved. XYFlow / React Flow is adopted as Talynor's initial graph visualization library; see [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization). The limitations below remain applicable, and the package manager decision remains open.
+
 Initial React + TypeScript frontend spike using Vite and @xyflow/react.
 All knowledge, progress, and study time come from local TypeScript mocks.
 No backend, API, database, authentication, or production graph semantics are implemented.
@@ -64,8 +66,13 @@ XYFlow supplies custom React nodes, typed node/edge data, zoom, pan, selection,
 dragging, controls, and a minimap. Drill-down is local map navigation implemented
 by App, rather than a database hierarchy or automatic domain feature.
 
-The choice is for this spike only. Production suitability, larger graph performance,
-touch behavior on real devices, and accessibility need further validation.
+The spike informed the approved initial adoption of XYFlow / React Flow.
+The library remains isolated to frontend visualization; domain and application
+logic, API contracts, and persistence must not depend on its specific Node/Edge
+types. Larger graph performance, touch behavior on real devices, and full
+accessibility need further validation. Concrete limitations may justify
+reevaluating adoption. No artificial node-count limit, automatic layout solution,
+or final relationship semantics or persistence model is defined by this decision.
 XYFlow has internal state dependencies; the application does not import or configure
 Redux, Zustand, or another global state library.
 

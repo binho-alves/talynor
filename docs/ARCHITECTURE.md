@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Talynor is currently in Phase 1: an initial frontend spike with local mocks. No backend or infrastructure exists. Implementation must be authorized through a scoped task and follow these boundaries.
+This document records the approved high-level direction. Foundation and Phase 1 — SPIKE-001 are completed and approved. Phase 2 has not started. The frontend spike uses local mocks; no backend or infrastructure exists. Implementation must be authorized through a scoped task and follow these boundaries.
 
 ## Approved direction
 
@@ -10,6 +10,7 @@ This document records the approved high-level direction. Talynor is currently in
 | --- | --- |
 | Frontend | React and TypeScript, delivered as a responsive single-page application. |
 | User interface | Standalone reusable UI components and interactive graph visualization. |
+| Graph visualization | XYFlow / React Flow as the initial frontend visualization library. |
 | Backend | .NET 10, ASP.NET Core, and C#. |
 | Application architecture | Modular monolith. |
 | API boundary | REST APIs documented with OpenAPI. |
@@ -37,7 +38,9 @@ A graph-shaped domain does not require a graph database. The initial direction u
 
 The interactive graph experience is a primary technical risk. A dedicated frontend spike precedes the application skeleton to validate nodes, edges, zoom, pan, selection, drill-down, submaps, and navigation between knowledge levels.
 
-The spike should provide evidence about responsiveness, usability, and performance. SPIKE-001 uses Vite and XYFlow / React Flow with React and TypeScript. This is a spike choice; the production graph visualization library and interaction design remain undecided.
+SPIKE-001 validated custom nodes, edges, selection, dragging, zoom, pan, minimap, drill-down, TypeScript, basic responsiveness, and basic accessibility; build and lint passed. XYFlow / React Flow is now adopted as the initial graph visualization library, as recorded in [ADR-007](DECISIONS.md#adr-007---initial-xyflow-graph-visualization). Larger graph performance, touch behavior on real devices, and full accessibility remain to be validated. Adoption can be reevaluated if concrete limitations emerge; no artificial node-count limit is defined.
+
+XYFlow belongs exclusively to the frontend visualization layer. Domain and application logic, API contracts, and persistence must not depend on XYFlow-specific types or expose its Node/Edge structures. The spike's view types do not define domain entities or storage models. Final interaction design and automatic layout remain open; adoption does not finalize relationship semantics or persistence.
 
 ## Database strategy
 
@@ -70,4 +73,4 @@ The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, El
 
 ## Open design questions
 
-Authentication provider, module and project layout, production graph visualization library, final relationship taxonomy, concrete data model, API contracts, frontend test tooling, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.
+Authentication provider, module and project layout, automatic layout, final interaction design, final relationship taxonomy and persistence representation, concrete data model, API contracts, frontend test tooling, package manager, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.

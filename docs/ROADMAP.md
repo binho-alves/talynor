@@ -1,6 +1,6 @@
 # Preliminary roadmap
 
-This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. The original foundation request authorized Phase 0 documentation; SPIKE-001 authorizes the initial Phase 1 frontend with local mocks.
+This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. Phase 0 foundation is complete and Phase 1 — SPIKE-001 is completed and approved. Phase 2 has not started; closing the spike does not authorize implementing it.
 
 ## Phase 0 - Foundation
 
@@ -11,6 +11,8 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 **Non-goals:** application code, .NET solution, React application, package installation, Docker, database configuration, migrations, CI, Git initialization, commits, or pushes.
 
 ## Phase 1 - Interactive Knowledge Graph UI Spike
+
+**Status:** completed and approved. The local-mock prototype validated the scoped interactions, TypeScript, basic responsiveness, and basic accessibility; build and lint passed. XYFlow / React Flow was explicitly adopted as the initial visualization library in [ADR-007](DECISIONS.md#adr-007---initial-xyflow-graph-visualization). Remaining limitations are documented in [the spike README](../src/frontend/talynor-web/README.md).
 
 **Goal:** validate the visual graph experience before committing to the application skeleton and detailed domain implementation.
 
