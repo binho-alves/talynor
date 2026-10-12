@@ -11,6 +11,7 @@ This index records approved decisions from the project foundation and subsequent
 | [ADR-005](#adr-005---knowledge-graph-without-an-initial-graph-database) | Knowledge graph domain without a graph database initially | Accepted |
 | [ADR-006](#adr-006---no-premature-distributed-infrastructure) | No premature distributed infrastructure | Accepted |
 | [ADR-007](#adr-007---initial-xyflow-graph-visualization) | Initial XYFlow / React Flow graph visualization | Accepted |
+| [ADR-008](#adr-008---incremental-local-identity-and-persistence) | Local Identity, future cookies, and incremental EF Core/SQLite persistence | Accepted |
 
 ## ADR-001 - React frontend
 
@@ -26,7 +27,7 @@ This index records approved decisions from the project foundation and subsequent
 
 **Decision:** use .NET 10, ASP.NET Core, and C#, with EF Core and REST APIs documented using OpenAPI.
 
-**Implications:** the authorized Phase 2 task created `Talynor.slnx` with Api, Application, Domain, Infrastructure, UnitTests, and IntegrationTests projects, `global.json`, and `Directory.Build.props`. Phase 2 is completed and approved. VS-001 explicitly authorizes a read-only demonstration endpoint, Application read models and reader interface, an Infrastructure in-memory implementation, and explicit mapping to independent HTTP contracts. Domain remains without artificial models; persistence and authentication are not implemented. Product module boundaries and further implementation patterns remain open.
+**Implications:** the authorized Phase 2 task created `Talynor.slnx` with Api, Application, Domain, Infrastructure, UnitTests, and IntegrationTests projects, `global.json`, and `Directory.Build.props`. Phase 2 is completed and approved. VS-001 explicitly authorizes a read-only demonstration endpoint, Application read models and reader interface, an Infrastructure in-memory implementation, and explicit mapping to independent HTTP contracts. Domain remains without artificial models. Phase 3.1 implements only Identity persistence under ADR-008; HTTP authentication remains unimplemented. Product module boundaries and further implementation patterns remain open.
 
 ## ADR-003 - Modular monolith first
 
@@ -80,6 +81,20 @@ This index records approved decisions from the project foundation and subsequent
 
 **Still open:** automatic layout, final interaction design, relationship semantics and persistence, and the official package manager. pnpm was used because it was available for the spike; npm, pnpm, or another option may be chosen later. This decision neither starts Phase 2 nor authorizes additional dependencies or infrastructure.
 
+## ADR-008 - Incremental local Identity and persistence
+
+**Context:** VS-001 is completed and published, with anonymous, read-only demonstration maps. Phase 3 needs durable account storage before identity/session HTTP workflows and personal-workspace ownership. The scoped Phase 3.1 task explicitly approves the strategy but authorizes only its persistence foundation.
+
+**Decided:** use local ASP.NET Core Identity as the initial account system, EF Core with SQLite initially, and browser cookies rather than JWT for a future session slice. A future single personal workspace per user is approved; no second User/ApplicationUser entity is introduced without a concrete need. PostgreSQL remains the production target under ADR-004; infrastructure requires a later explicit request. No graph database is introduced.
+
+**Implemented now (3.1):** Infrastructure owns `TalynorDbContext`, based on `IdentityUserContext<IdentityUser>` without roles; SQLite provider and configurable local connection string; explicit `InitialIdentity` migration; design-time factory; local versioned `dotnet-ef`; tests of migrated schema, repeat application, cross-context persistence through the role-free Identity store, and API startup without database creation. Identity/EF types remain outside Domain and Application. No automatic startup migration, `EnsureCreated`, seed, or default credentials exist.
+
+**Future, not implemented:** identity/session HTTP endpoints and cookies in 3.2; workspace storage and ownership in 3.3. Their approval is not permission to implement them in this task. CSRF, authorization, current user, verification/recovery, and frontend account workflows are not implemented by the persistence model.
+
+**Consequences:** account storage can be verified independently of login and frontend behavior. The existing project-reference directions remain unchanged. The schema includes Identity's user, claim, login, and token support tables but no roles, workspace, or knowledge-content tables. The framework schema is not permission to expose additional account features. Knowledge Maps remain in-memory and the demonstration endpoint stays anonymous.
+
+**Risks and boundaries:** Identity's account schema introduces framework coupling in Infrastructure. SQLite and PostgreSQL have different provider/migration behavior; a future transition needs explicit review and validation. Local databases contain sensitive data and must remain untracked. This slice establishes no protection for private HTTP data and is not a production-ready account system. Cookie settings and account security behavior require the later scoped implementation.
+
 ## Decision discipline
 
-Future records must distinguish proposals from accepted decisions. Do not present unreviewed options as commitments. Authentication provider, automatic layout, final interaction design, relationship taxonomy and persistence, frontend testing tools, package manager, and deployment topology remain undecided. Initial XYFlow / React Flow adoption is accepted under ADR-007.
+Future records must distinguish proposals from accepted decisions. Do not present unreviewed options as commitments. Initial XYFlow / React Flow adoption is accepted under ADR-007; local Identity, future cookies, and incremental persistence/workspace direction are accepted under ADR-008. Detailed session/account workflows, automatic layout, final interaction design, knowledge relationship taxonomy and persistence, frontend testing tools, package manager, and deployment topology remain open.

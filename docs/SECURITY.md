@@ -1,6 +1,6 @@
 # Secure-development principles
 
-Talynor has an approved frontend spike and backend skeleton. VS-001 exposes only fixed demonstration maps through a read-only endpoint and is pending review. No private/user data, persistence, authentication, or ownership is implemented. This endpoint does not establish an access policy for future real knowledge data. These principles guide further implementation; they do not claim that full security controls have already been implemented.
+Talynor has an approved frontend spike and backend skeleton, and the completed/published VS-001 exposes only fixed demonstration maps through an anonymous read-only endpoint. Phase 3.1 implements role-free Identity persistence with EF Core/SQLite and explicit migrations, pending review. No HTTP authentication, session, authorization, workspace, or ownership is implemented; no accounts are seeded. Persistence does not protect HTTP endpoints. The demonstration endpoint does not establish an access policy for future private knowledge data. These principles do not claim that full security controls have already been implemented.
 
 ## Secrets and configuration
 
@@ -11,7 +11,7 @@ Talynor has an approved frontend spike and backend skeleton. VS-001 exposes only
 
 ## Authentication and authorization
 
-- Design secure authentication before production. The final authentication provider and mechanism are not selected.
+- Local ASP.NET Core Identity and future browser cookies are approved under [ADR-008](DECISIONS.md#adr-008---incremental-local-identity-and-persistence). Phase 3.1 stores only the account model; login, cookies, CSRF defenses, and authorization are not configured. Design and validate these controls in their explicitly scoped slices before handling private HTTP data.
 - Review identity design when account workflows are scoped, including relevant credential, session, and account recovery behavior.
 - Make authorization explicit for every protected operation, including workspace, node, content, study activity, and assessment access.
 - Validate ownership and permissions on the backend. Client-side interface visibility is not sufficient authorization.
@@ -37,6 +37,8 @@ Talynor has an approved frontend spike and backend skeleton. VS-001 exposes only
 
 ## Database and migrations
 
+- The configurable SQLite file and its journal/WAL/SHM files are local sensitive data, never source artifacts. The Development default uses `talynor.local.sqlite` under the API content root, covered by the existing ignore rules. No credential is included in this connection string.
+- Apply the Identity migration explicitly; build and application startup must not create/migrate the database or seed accounts. Persistence tests use disposable SQLite databases and remove their files. Do not log user secrets or sensitive data when later account workflows are introduced.
 - Review migrations and their data implications before execution.
 - Apply migrations only to the intended environment with explicit, controlled procedures.
 - Make database provider changes explicit and validate the resulting behavior.

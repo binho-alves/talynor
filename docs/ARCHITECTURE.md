@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation, SPIKE-001, and Phase 2 are completed and approved. VS-001 is implemented and pending review: the separate React frontend reads two demonstration maps from the API. No persistence or authentication is implemented. Phase 3 — Identity and Workspace has not started. Further implementation requires a scoped task.
+This document records the approved high-level direction. Foundation, SPIKE-001, Phase 2, and the published VS-001 are completed and approved. Phase 3 has started with 3.1 — Persistence Foundation, implemented and pending review. EF Core/SQLite now supplies role-free Identity persistence; HTTP authentication, sessions, and workspace are not implemented. The separate React frontend still reads two in-memory demonstration maps from the API. Further slices require scoped tasks.
 
 ## Approved direction
 
@@ -17,6 +17,7 @@ This document records the approved high-level direction. Foundation, SPIKE-001, 
 | Persistence technology | EF Core. |
 | Early development database | SQLite for development and prototyping. |
 | Production database target | PostgreSQL. |
+| Initial account strategy | Local ASP.NET Core Identity; browser cookie sessions are approved for a future slice, not configured yet. |
 
 ## High-level responsibilities
 
@@ -36,7 +37,17 @@ The authorized Phase 2 skeleton uses `Talynor.slnx`, with Api, Application, Doma
 
 `GetKnowledgeMap` delegates to `IKnowledgeMapReader` in Application. `InMemoryKnowledgeMapReader` in Infrastructure supplies fixed demonstration content; its externally visible collections are read-only. Domain intentionally remains without artificial models. The reader is registered as a singleton and the use case as scoped. Cancellation propagates through the controller and use case to the reader.
 
-The frontend uses native fetch, basic runtime JSON validation, and an explicit `knowledgeMapAdapter`. Coordinates remain local by mapId/nodeId; unknown layout entries fail explicitly. Dragged positions and selection survive navigation as local visual state; content is fetched again on navigation without a response cache or mock fallback. No automatic layout, persistence, authentication, authorization, or backend CORS policy is introduced. Vite proxies relative `/api` requests only during local development.
+The frontend uses native fetch, basic runtime JSON validation, and an explicit `knowledgeMapAdapter`. Coordinates remain local by mapId/nodeId; unknown layout entries fail explicitly. Dragged positions and selection survive navigation as local visual state; content is fetched again on navigation without a response cache or mock fallback. VS-001 introduces no automatic layout, persistence, authentication, authorization, or backend CORS policy. Vite proxies relative `/api` requests only during local development. Phase 3.1 does not change this flow or persist knowledge maps; the demonstration endpoint remains anonymous.
+
+## Phase 3.1 - Identity persistence foundation
+
+[ADR-008](DECISIONS.md#adr-008---incremental-local-identity-and-persistence) records the approved local Identity, future cookie-session, and personal-workspace direction. Only persistence is implemented in this slice.
+
+`TalynorDbContext` lives in Infrastructure and derives from `IdentityUserContext<IdentityUser>` without roles or an empty custom user class. Its schema contains users, user claims, user logins, and user tokens; these framework tables do not authorize external login or token HTTP endpoints. No workspace, knowledge-map, node, or edge table is included. Domain and Application remain independent of Identity and EF Core, and project-reference directions are unchanged. No explicit ASP.NET Core shared-framework reference was needed in Infrastructure for this persistence-only model.
+
+The API registers only the DbContext with SQLite. The Development connection string is configurable; relative runtime database paths resolve against the API content root. Registration does not open a connection, create a file, apply migrations, or seed users. Health and demonstration reads do not depend on the database. Other environments must configure the connection string before using persistence.
+
+Infrastructure owns the explicit `InitialIdentity` migration and a design-time factory. The factory requires `ConnectionStrings__Talynor` rather than guessing a database, and does not start the API. EF commands use the versioned local tool manifest. See [Development](DEVELOPMENT.md#phase-31---identity-persistence) for database selection and lifecycle commands. No automatic startup migration or `EnsureCreated` is used.
 
 ## Knowledge graph
 
@@ -83,4 +94,4 @@ The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, El
 
 ## Open design questions
 
-Authentication provider, product module boundaries, automatic layout, final interaction design, final relationship taxonomy and persistence representation, concrete data model, business API contracts, frontend test tooling, package manager, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.
+Local ASP.NET Core Identity, future browser cookies, and a future single personal workspace per user are approved under ADR-008. Session security settings, account recovery and verification workflows, and detailed workspace behavior still require scoped design and implementation. Product module boundaries, automatic layout, final interaction design, relationship taxonomy and knowledge persistence representation, further business API contracts, frontend test tooling, package manager, deployment topology, and production migration procedures remain open. Local Identity migrations are now explicit as documented above; PostgreSQL infrastructure remains unauthorized.

@@ -32,7 +32,7 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 
 ## VS-001 - Read-only Knowledge Graph Vertical Slice
 
-**Status:** implemented, pending review. This explicitly authorized validation slice runs between Phase 2 and Phase 3 without replacing or renumbering phases.
+**Status:** completed, approved, and published. This explicitly authorized validation slice runs between Phase 2 and Phase 3 without replacing or renumbering phases.
 
 **Goal:** load the two existing demonstration maps through Talynor's HTTP API and adapt them into XYFlow while preserving the spike interactions.
 
@@ -42,15 +42,17 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 
 ## Phase 3 - Identity and Workspace
 
-**Status:** not started. VS-001 does not implement identity or workspace capabilities.
+**Status:** started; not completed. The current authorized slice is **3.1 — Persistence Foundation**, implemented and pending review: role-free Identity persistence through EF Core/SQLite, local EF tooling, an explicit migration, and persistence tests. No HTTP authentication or workspace exists yet. VS-001 remains a separate completed demonstration slice.
 
 **Goal:** establish account and knowledge workspace workflows with explicit access boundaries.
 
-Workspace and Atlas remain provisional product terms. Their exact relationship is not yet decided; they are not defined as separate domain entities.
+One future personal workspace per user is approved, without implementing it in 3.1. Atlas remains provisional and its relationship to Workspace is not finalized; this does not define Atlas as a separate entity.
 
 **Expected outputs:** reviewed authentication and authorization design; account and workspace capabilities; defined ownership rules and relevant access-control validation.
 
-**Non-goals:** selecting an authentication provider in advance of design, social networking, public marketplace, or real-time collaboration.
+**Approved incremental direction:** local ASP.NET Core Identity and future browser cookies, recorded in [ADR-008](DECISIONS.md#adr-008---incremental-local-identity-and-persistence). Phase 3.2 introduces scoped identity/session HTTP behavior; Phase 3.3 introduces the personal workspace. Approval of this direction does not authorize implementing those slices in 3.1.
+
+**Current slice non-goals:** login/register/logout, current user, cookies/JWT, antiforgery, authorization, workspace, frontend authentication, or knowledge-map persistence. Social networking, public marketplace, and real-time collaboration remain outside this phase.
 
 ## Phase 4 - Knowledge Graph
 
