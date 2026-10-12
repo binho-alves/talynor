@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 1 — SPIKE-001 completed and approved; Phase 2 — Solution and Application Skeleton has not started and requires a scoped implementation task.
+- Current stage: Phase 1 — SPIKE-001 completed and approved; Phase 2 — Solution and Application Skeleton started, with the .NET 10 skeleton created and pending review. Phase 2 is not yet complete.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -16,6 +16,18 @@ Keep tasks small and reviewable. Read [AGENTS.md](../AGENTS.md) and the relevant
 The original foundation task created only README.md, AGENTS.md, and the six documents in docs/. It did not authorize application code, a .NET solution, a React application, package installation, Docker infrastructure, database configuration, migrations, or CI. SPIKE-001 separately authorizes the initial frontend and its necessary dependencies; see [the spike README](../src/frontend/talynor-web/README.md).
 
 Later roadmap phases describe intended work, not standing implementation authorization.
+
+The authorized Phase 2 skeleton uses `Talynor.slnx`, SDK selection in `global.json`, and shared nullable/implicit-usings/warnings settings in `Directory.Build.props`. The API provides `/health`, Development-only OpenAPI, and structured JSON console logging. Persistence and authentication are not implemented. The React frontend remains separate and unchanged; the official frontend package manager remains open.
+
+Backend verification from the repository root:
+
+```powershell
+dotnet restore Talynor.slnx
+dotnet build Talynor.slnx --no-restore
+dotnet test Talynor.slnx --no-build
+```
+
+Run the local API with `dotnet run --project src/backend/Talynor.Api --launch-profile https`. Integration tests use an in-process host; UnitTests has no real tests until approved domain/application behavior exists.
 
 ## Intended workflow
 

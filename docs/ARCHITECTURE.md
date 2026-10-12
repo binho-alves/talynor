@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation and Phase 1 — SPIKE-001 are completed and approved. Phase 2 has not started. The frontend spike uses local mocks; no backend or infrastructure exists. Implementation must be authorized through a scoped task and follow these boundaries.
+This document records the approved high-level direction. Foundation and Phase 1 — SPIKE-001 are completed and approved. Phase 2 has started: the .NET 10 skeleton is created and awaits review; the phase is not yet complete. The separate frontend spike continues to use local mocks. No persistence or authentication is implemented. Further implementation must be authorized through a scoped task and follow these boundaries.
 
 ## Approved direction
 
@@ -26,7 +26,9 @@ This document records the approved high-level direction. Foundation and Phase 1 
 - **Infrastructure:** supplies technical integrations and environment-dependent capabilities required by the application.
 - **Persistence:** stores and retrieves application data using EF Core and the explicitly selected database provider.
 
-These are conceptual responsibilities, not a prescribed project count or folder structure. Module boundaries, dependency enforcement, API endpoints, and concrete implementation patterns remain undecided. Dependencies must be intentional and consistent with the separation of responsibilities.
+The authorized Phase 2 skeleton uses `Talynor.slnx`, with Api, Application, Domain, and Infrastructure projects under `src/backend`, and UnitTests and IntegrationTests under `tests`. Application references Domain; Infrastructure references Application; Api references Application and Infrastructure for host composition. UnitTests references Domain and Application; IntegrationTests references Api. Infrastructure has no direct Domain reference. This initial responsibility split does not finalize product module boundaries or broader implementation patterns.
+
+`global.json` selects SDK 10.0.401 with `latestPatch` roll-forward and prerelease SDKs disabled. `Directory.Build.props` enables nullable reference types and implicit usings without treating all warnings as errors. The API enables controllers, JSON console logging, `/health` without external dependencies, and OpenAPI only in Development. No business endpoints, EF Core configuration, database, migrations, authentication, or CORS are introduced. The React frontend remains separate under `src/frontend/talynor-web`.
 
 ## Knowledge graph
 
@@ -73,4 +75,4 @@ The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, El
 
 ## Open design questions
 
-Authentication provider, module and project layout, automatic layout, final interaction design, final relationship taxonomy and persistence representation, concrete data model, API contracts, frontend test tooling, package manager, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.
+Authentication provider, product module boundaries, automatic layout, final interaction design, final relationship taxonomy and persistence representation, concrete data model, business API contracts, frontend test tooling, package manager, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.

@@ -1,6 +1,6 @@
 # Secure-development principles
 
-Talynor is in foundation and planning. These principles guide future design and implementation; they do not claim that security controls have already been implemented.
+Talynor has an initial frontend spike and a Phase 2 backend skeleton pending review. Persistence and authentication are not implemented. These principles guide further design and implementation; they do not claim that the full security controls have already been implemented.
 
 ## Secrets and configuration
 

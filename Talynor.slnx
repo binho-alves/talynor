@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/backend/">
+    <Project Path="src/backend/Talynor.Api/Talynor.Api.csproj" />
+    <Project Path="src/backend/Talynor.Application/Talynor.Application.csproj" />
+    <Project Path="src/backend/Talynor.Domain/Talynor.Domain.csproj" />
+    <Project Path="src/backend/Talynor.Infrastructure/Talynor.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Talynor.IntegrationTests/Talynor.IntegrationTests.csproj" />
+    <Project Path="tests/Talynor.UnitTests/Talynor.UnitTests.csproj" />
+  </Folder>
+</Solution>

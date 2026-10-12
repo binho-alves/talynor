@@ -2,7 +2,7 @@
 
 Talynor is a visual learning and personal knowledge platform where users build interconnected knowledge maps, organize learning content, and track their studies.
 
-**Current status:** foundation complete; Phase 1 — SPIKE-001 completed and approved. XYFlow / React Flow is adopted as the initial graph visualization library. The next step is Phase 2 — Solution and Application Skeleton, which has not started and requires a scoped implementation task. No backend, .NET solution, database, or infrastructure has been created.
+**Current status:** foundation complete; Phase 1 — SPIKE-001 completed and approved. XYFlow / React Flow is adopted as the initial graph visualization library. Phase 2 — Solution and Application Skeleton has started: the .NET 10 skeleton and `Talynor.slnx` have been created and await review. `global.json` selects the SDK and `Directory.Build.props` centralizes build settings. No persistence or authentication is implemented. The React frontend remains separate and unchanged.
 
 See [the frontend spike](src/frontend/talynor-web/README.md) for local commands, interactions, limitations, and React learning notes.
 

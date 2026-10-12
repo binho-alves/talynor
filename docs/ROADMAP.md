@@ -1,6 +1,6 @@
 # Preliminary roadmap
 
-This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. Phase 0 foundation is complete and Phase 1 — SPIKE-001 is completed and approved. Phase 2 has not started; closing the spike does not authorize implementing it.
+This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. Phase 0 foundation is complete and Phase 1 — SPIKE-001 is completed and approved. Phase 2 has started under an explicitly authorized skeleton task and awaits review; it is not yet complete.
 
 ## Phase 0 - Foundation
 
@@ -21,6 +21,8 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 **Non-goals:** production backend, persistence, authentication, final relationship taxonomy, or completion of the MVP. Prototype choices are not automatically production decisions.
 
 ## Phase 2 - Solution and Application Skeleton
+
+**Status:** started; .NET 10 skeleton and `Talynor.slnx` created, pending review. SDK selection and shared build settings are recorded in `global.json` and `Directory.Build.props`. The separate React frontend is unchanged. Persistence and authentication are not implemented.
 
 **Goal:** establish the smallest application foundation consistent with the approved architecture and reviewed spike findings.
 

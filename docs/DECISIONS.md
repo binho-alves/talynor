@@ -26,7 +26,7 @@ This index records approved decisions from the project foundation and subsequent
 
 **Decision:** use .NET 10, ASP.NET Core, and C#, with EF Core and REST APIs documented using OpenAPI.
 
-**Implications:** create the solution only during an authorized application skeleton task. Project structure and concrete implementation patterns remain open.
+**Implications:** create the solution only during an authorized application skeleton task. The authorized Phase 2 task created `Talynor.slnx` with Api, Application, Domain, Infrastructure, UnitTests, and IntegrationTests projects, `global.json`, and `Directory.Build.props`. The skeleton awaits review; persistence and authentication are not implemented. Product module boundaries and further implementation patterns remain open.
 
 ## ADR-003 - Modular monolith first
 
@@ -62,7 +62,7 @@ This index records approved decisions from the project foundation and subsequent
 
 ## ADR-007 - Initial XYFlow graph visualization
 
-**Context:** Talynor needs interactive knowledge maps with custom concepts, connections, and navigation between levels of detail. SPIKE-001 evaluated XYFlow / React Flow using React, TypeScript, and local mocks before the application skeleton. The spike is completed and approved; Phase 2 has not started.
+**Context:** Talynor needs interactive knowledge maps with custom concepts, connections, and navigation between levels of detail. SPIKE-001 evaluated XYFlow / React Flow using React, TypeScript, and local mocks before the application skeleton. At adoption, the spike was completed and approved and Phase 2 had not started.
 
 **Decision:** adopt XYFlow / React Flow as Talynor's initial graph visualization library. This is an accepted visualization-layer decision and may be reevaluated if concrete limitations emerge.
 
