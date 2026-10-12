@@ -1,0 +1,73 @@
+# Architecture
+
+## Status and scope
+
+This document records the approved high-level direction. Talynor is currently in foundation and planning; no application structure or infrastructure exists. Future implementation must be authorized through a scoped task and follow these boundaries.
+
+## Approved direction
+
+| Area | Direction |
+| --- | --- |
+| Frontend | React and TypeScript, delivered as a responsive single-page application. |
+| User interface | Standalone reusable UI components and interactive graph visualization. |
+| Backend | .NET 10, ASP.NET Core, and C#. |
+| Application architecture | Modular monolith. |
+| API boundary | REST APIs documented with OpenAPI. |
+| Persistence technology | EF Core. |
+| Early development database | SQLite for development and prototyping. |
+| Production database target | PostgreSQL. |
+
+## High-level responsibilities
+
+- **Frontend:** presents knowledge maps and learning workflows, handles visual interaction and navigation, and communicates with the API.
+- **API:** exposes REST operations and translates requests and responses at the application boundary. Business logic must remain outside controllers.
+- **Application/domain:** implements use cases and business rules, including the knowledge graph and learning concepts.
+- **Infrastructure:** supplies technical integrations and environment-dependent capabilities required by the application.
+- **Persistence:** stores and retrieves application data using EF Core and the explicitly selected database provider.
+
+These are conceptual responsibilities, not a prescribed project count or folder structure. Module boundaries, dependency enforcement, API endpoints, and concrete implementation patterns remain undecided. Dependencies must be intentional and consistent with the separation of responsibilities.
+
+## Knowledge graph
+
+Knowledge nodes and their relationships are domain concepts. A node may lead to another map, and relationships must eventually represent connections beyond a tree or folder hierarchy.
+
+A graph-shaped domain does not require a graph database. The initial direction uses relational persistence. Relationship types, directionality, cycle rules, map membership, and storage representation have not been finalized. Examples such as contains, prerequisite, related to, and depends on do not establish a final relationship taxonomy.
+
+## Visual experience and early validation
+
+The interactive graph experience is a primary technical risk. A dedicated frontend spike precedes the application skeleton to validate nodes, edges, zoom, pan, selection, drill-down, submaps, and navigation between knowledge levels.
+
+The spike should provide evidence about responsiveness, usability, and performance. No graph visualization library or production interaction design has been selected.
+
+## Database strategy
+
+SQLite supports the early development and prototyping stages. PostgreSQL is the production target.
+
+Persistence should avoid unnecessary provider-specific behavior. This does not assume that the providers are interchangeable: provider changes must be explicit, reviewed, and validated, including their data and migration implications.
+
+Migrations must be controlled. Do not provision PostgreSQL, configure a database, or create migrations during the foundation task.
+
+Introducing PostgreSQL infrastructure requires an explicit request; advancing to another roadmap phase does not by itself authorize it.
+
+## Testing and operations direction
+
+- Use xUnit for backend unit and integration testing.
+- Use Testcontainers when justified by the test's purpose.
+- Define frontend automated testing later.
+- Use structured logging and health checks.
+- Introduce OpenTelemetry when justified.
+- Use environment-based configuration and keep secrets outside source control.
+- Enable C# nullable reference types when the application skeleton is created.
+- Introduce GitHub CI later in the roadmap.
+
+These directions do not authorize tooling installation or operational configuration in the current phase.
+
+## Architecture principles and exclusions
+
+Start with a modular monolith and prefer simplicity over infrastructure complexity. Keep architecture explicit and business logic out of controllers. Do not introduce a distributed architecture prematurely.
+
+The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, Elasticsearch, and graph databases. Background workers require later justification and approval. AI, marketplace, and social networking features are outside the initial product scope.
+
+## Open design questions
+
+Authentication provider, module and project layout, graph library, final relationship taxonomy, concrete data model, API contracts, frontend test tooling, deployment topology, and migration procedures remain undecided. Resolve them when their roadmap phases are scoped; do not silently treat them as approved decisions.
