@@ -26,7 +26,7 @@ This index records approved decisions from the project foundation and subsequent
 
 **Decision:** use .NET 10, ASP.NET Core, and C#, with EF Core and REST APIs documented using OpenAPI.
 
-**Implications:** create the solution only during an authorized application skeleton task. The authorized Phase 2 task created `Talynor.slnx` with Api, Application, Domain, Infrastructure, UnitTests, and IntegrationTests projects, `global.json`, and `Directory.Build.props`. The skeleton awaits review; persistence and authentication are not implemented. Product module boundaries and further implementation patterns remain open.
+**Implications:** the authorized Phase 2 task created `Talynor.slnx` with Api, Application, Domain, Infrastructure, UnitTests, and IntegrationTests projects, `global.json`, and `Directory.Build.props`. Phase 2 is completed and approved. VS-001 explicitly authorizes a read-only demonstration endpoint, Application read models and reader interface, an Infrastructure in-memory implementation, and explicit mapping to independent HTTP contracts. Domain remains without artificial models; persistence and authentication are not implemented. Product module boundaries and further implementation patterns remain open.
 
 ## ADR-003 - Modular monolith first
 
@@ -71,6 +71,8 @@ This index records approved decisions from the project foundation and subsequent
 **Positive consequences:** reuse the validated interactions and custom React components; maintain typed visual data and callbacks; support incremental learning and implementation without an additional UI framework or application-level global state library. Drill-down remains application-controlled navigation, not a library-defined domain hierarchy.
 
 **Isolation rule:** XYFlow is confined to the frontend visualization layer. Domain and application logic must not depend on XYFlow-specific types. API contracts and persistence must not expose or store XYFlow-specific Node/Edge structures as their domain or contract models. The spike's view types are presentation data, not domain entities; adopting the library does not decide relationship semantics or storage representation.
+
+**VS-001 follow-through:** the explicitly authorized validation slice uses an independent HTTP contract, native fetch with cancellation, and a frontend adapter into XYFlow. Demonstration coordinates remain exclusively in the frontend. A configurable Vite development proxy supplies relative `/api` URLs without introducing backend CORS. No additional package manager, state library, automatic layout, persistence, or relationship semantics are selected.
 
 **Risks and lock-in:** visual components, handles, event handling, Node/Edge view types, viewport behavior, and library CSS create integration costs. A future replacement would require adapting the visual layer and interactions; isolation reduces but does not eliminate that cost. Larger or denser graphs, richer nodes, and frequent updates may increase rendering cost. Real touchscreen behavior and full keyboard/screen-reader usability need further validation; narrow-screen overview text currently requires zoom. Dependency compatibility and ongoing maintenance remain considerations.
 

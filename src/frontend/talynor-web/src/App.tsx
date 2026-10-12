@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   applyNodeChanges,
   Background,
@@ -10,24 +10,62 @@ import {
 import '@xyflow/react/dist/style.css'
 import { KnowledgeNodeCard } from './components/KnowledgeNodeCard'
 import { NodeDetails } from './components/NodeDetails'
-import { knowledgeMaps } from './data/knowledgeMaps'
-import type { KnowledgeNode, MapId } from './types/knowledge'
+import { loadKnowledgeMap } from './api/knowledgeMaps'
+import { adaptKnowledgeMap } from './adapters/knowledgeMapAdapter'
+import type { KnowledgeMap, KnowledgeNode, MapId } from './types/knowledge'
 import './App.css'
 
 // Stable references prevent React Flow from recreating the custom node types.
 const nodeTypes = { knowledge: KnowledgeNodeCard }
 const fitViewOptions = { padding: 0.18 }
 
+type LoadState = { mapId: string; requestId: number } & (
+  | { status: 'loading' | 'not-found' }
+  | { status: 'error'; message: string }
+  | { status: 'ready'; map: KnowledgeMap }
+)
+
 function App() {
   const [activeMapId, setActiveMapId] = useState<MapId>('software')
-  // Local UI state only. Copy mocks so dragging never modifies source data.
-  const [nodesByMap, setNodesByMap] = useState(() => ({
-    software: structuredClone(knowledgeMaps.software.nodes),
-    csharp: structuredClone(knowledgeMaps.csharp.nodes),
-  }))
+  const [requestId, setRequestId] = useState(0)
+  const [loadState, setLoadState] = useState<LoadState>({ mapId: 'software', requestId: 0, status: 'loading' })
+  const [nodesByMap, setNodesByMap] = useState<Record<string, KnowledgeNode[]>>({})
 
-  const activeMap = knowledgeMaps[activeMapId]
-  const nodes = nodesByMap[activeMapId]
+  useEffect(() => {
+    const controller = new AbortController()
+    let current = true
+
+    async function load() {
+      try {
+        const response = await loadKnowledgeMap(activeMapId, controller.signal)
+        if (!current) return
+        if (!response) {
+          setLoadState({ mapId: activeMapId, requestId, status: 'not-found' })
+          return
+        }
+        const map = adaptKnowledgeMap(response)
+        setNodesByMap((previous) => ({
+          ...previous,
+          [activeMapId]: map.nodes.map((node) => {
+            const old = previous[activeMapId]?.find((item) => item.id === node.id)
+            return old ? { ...node, position: old.position, selected: old.selected } : node
+          }),
+        }))
+        setLoadState({ mapId: activeMapId, requestId, status: 'ready', map })
+      } catch (error) {
+        if (!current || controller.signal.aborted) return
+        setLoadState({ mapId: activeMapId, requestId, status: 'error',
+          message: error instanceof Error ? error.message : 'Não foi possível carregar o mapa. Tente novamente.' })
+      }
+    }
+    void load()
+    return () => { current = false; controller.abort() }
+  }, [activeMapId, requestId])
+
+  const state: LoadState = loadState.mapId === activeMapId && loadState.requestId === requestId
+    ? loadState : { mapId: activeMapId, requestId, status: 'loading' }
+  const activeMap = state.status === 'ready' ? state.map : undefined
+  const nodes = nodesByMap[activeMapId] ?? []
   // Derive selection instead of duplicating it in another state variable.
   const selectedNode = nodes.find((node) => node.selected)
 
@@ -35,14 +73,21 @@ function App() {
     (changes: NodeChange<KnowledgeNode>[]) => {
       setNodesByMap((previous) => ({
         ...previous,
-        [activeMapId]: applyNodeChanges(changes, previous[activeMapId]),
+        [activeMapId]: applyNodeChanges(changes, previous[activeMapId] ?? []),
       }))
     },
     [activeMapId],
   )
 
+  function navigateToMap(mapId: MapId) {
+    if (mapId === activeMapId) return
+    setActiveMapId(mapId)
+    // Every visit gets a new identity, including a quick return to the same map.
+    setRequestId((value) => value + 1)
+  }
+
   function openSubmap(node: KnowledgeNode) {
-    if (node.data.submapId) setActiveMapId(node.data.submapId)
+    if (node.data.childMapId) navigateToMap(node.data.childMapId)
   }
 
   return (
@@ -58,16 +103,24 @@ function App() {
 
       <main>
         <nav className="map-navigation" aria-label="Navegação entre mapas">
-          {activeMapId === 'csharp' && (
-            <button className="back-button" onClick={() => setActiveMapId('software')}>
+          {activeMapId !== 'software' && (
+            <button className="back-button" onClick={() => navigateToMap('software')}>
               ← Voltar ao mapa anterior
             </button>
           )}
           <span>Software Development</span>
-          {activeMapId === 'csharp' && <span aria-current="page"> / C#</span>}
+          {activeMapId !== 'software' && <span aria-current="page"> / {activeMap?.title ?? 'Submapa'}</span>}
         </nav>
 
-        <div className="workspace">
+        <div role="status" aria-live="polite" className="map-status">
+          {state.status === 'loading' && <p>Carregando mapa…</p>}
+          {state.status === 'not-found' && <p>Mapa não encontrado</p>}
+          {state.status === 'error' && <p>{state.message}</p>}
+          {(state.status === 'error' || state.status === 'not-found') && (
+            <button className="back-button" onClick={() => setRequestId((value) => value + 1)}>Tentar novamente</button>
+          )}
+        </div>
+        {activeMap && <div className="workspace">
           <section className="graph-section" aria-labelledby="map-title">
             <div className="map-heading">
               <h2 id="map-title">{activeMap.title}</h2>
@@ -128,7 +181,7 @@ function App() {
           </section>
 
           <NodeDetails node={selectedNode} onOpenSubmap={openSubmap} />
-        </div>
+        </div>}
       </main>
     </div>
   )

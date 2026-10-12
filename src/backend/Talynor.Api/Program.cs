@@ -1,3 +1,6 @@
+using Talynor.Application.KnowledgeMaps;
+using Talynor.Infrastructure.KnowledgeMaps;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
@@ -6,6 +9,8 @@ builder.Logging.AddJsonConsole();
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
+builder.Services.AddSingleton<IKnowledgeMapReader, InMemoryKnowledgeMapReader>();
+builder.Services.AddScoped<GetKnowledgeMap>();
 
 var app = builder.Build();
 

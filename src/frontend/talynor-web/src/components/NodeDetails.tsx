@@ -27,7 +27,7 @@ export function NodeDetails({ node, onOpenSubmap }: NodeDetailsProps) {
             <dd>{hours > 0 ? hours + 'h ' : ''}{minutes}min</dd>
           </dl>
           <p className="mock-note">Progresso e tempo são dados mockados.</p>
-          {node.data.submapId && (
+          {node.data.childMapId && (
             <button className="primary-button" onClick={() => onOpenSubmap(node)}>
               Explorar {node.data.title} →
             </button>

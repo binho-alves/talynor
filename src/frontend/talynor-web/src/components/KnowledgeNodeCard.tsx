@@ -11,7 +11,7 @@ export function KnowledgeNodeCard({ data, selected }: NodeProps<KnowledgeNode>) 
         <span>Progresso</span>
         <span>{data.progress}%</span>
       </div>
-      {data.submapId && <span className="submap-label">Submapa disponível →</span>}
+      {data.childMapId && <span className="submap-label">Submapa disponível →</span>}
       <Handle type="source" position={Position.Right} />
     </div>
   )

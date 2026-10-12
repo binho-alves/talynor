@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 1 — SPIKE-001 completed and approved; Phase 2 — Solution and Application Skeleton started, with the .NET 10 skeleton created and pending review. Phase 2 is not yet complete.
+- Current stage: Phases 1 and 2 completed and approved. VS-001 — Read-only Knowledge Graph Vertical Slice implemented, pending review between Phase 2 and Phase 3. Phase 3 remains Identity and Workspace and has not started.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -17,7 +17,7 @@ The original foundation task created only README.md, AGENTS.md, and the six docu
 
 Later roadmap phases describe intended work, not standing implementation authorization.
 
-The authorized Phase 2 skeleton uses `Talynor.slnx`, SDK selection in `global.json`, and shared nullable/implicit-usings/warnings settings in `Directory.Build.props`. The API provides `/health`, Development-only OpenAPI, and structured JSON console logging. Persistence and authentication are not implemented. The React frontend remains separate and unchanged; the official frontend package manager remains open.
+The authorized Phase 2 skeleton uses `Talynor.slnx`, SDK selection in `global.json`, and shared nullable/implicit-usings/warnings settings in `Directory.Build.props`. The API provides `/health`, Development-only OpenAPI, and structured JSON console logging. VS-001 adds demonstration-only map reads without persistence or authentication. The React frontend remains separate; the official frontend package manager remains open.
 
 Backend verification from the repository root:
 
@@ -27,7 +27,20 @@ dotnet build Talynor.slnx --no-restore
 dotnet test Talynor.slnx --no-build
 ```
 
-Run the local API with `dotnet run --project src/backend/Talynor.Api --launch-profile https`. Integration tests use an in-process host; UnitTests has no real tests until approved domain/application behavior exists.
+Run the local API with `dotnet run --project src/backend/Talynor.Api --launch-profile https`. Integration tests use an in-process host; unit tests validate the read use case through a small fake reader.
+
+In another PowerShell terminal, from `src/frontend/talynor-web`:
+
+```powershell
+$env:TALYNOR_API_PROXY_TARGET = 'https://localhost:7117'
+pnpm dev
+```
+
+The example target matches the current HTTPS launch profile; update local configuration if its port changes. Vite proxies `/api` to this target, while React uses relative URLs. Build/lint do not require the target. The proxy is not a production hosting or `vite preview` configuration. No backend CORS is needed for this development setup.
+
+TLS verification is enabled by default. If Node reports a certificate trust error for the local development certificate, diagnose it first. In the validated Node 24 Windows environment, `$env:NODE_OPTIONS = '--use-system-ca'` let the proxy trust the existing development certificate without disabling verification. Set it before starting Vite when needed. If trust still cannot be established, the explicitly permitted local-only fallback is `$env:TALYNOR_API_PROXY_INSECURE = 'true'`; configuration rejects this exception for non-loopback or non-HTTPS targets. It affects only the Vite development proxy, not application/production TLS. Never store secrets in these variables or tracked files.
+
+VS-001 frontend verification uses `pnpm build`, `pnpm lint`, and browser checks for navigation, request errors, retry, cancellation, and responsive layout. pnpm remains the available tool, not the official package manager decision.
 
 ## Intended workflow
 

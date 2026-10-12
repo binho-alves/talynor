@@ -1,6 +1,6 @@
 # Secure-development principles
 
-Talynor has an initial frontend spike and a Phase 2 backend skeleton pending review. Persistence and authentication are not implemented. These principles guide further design and implementation; they do not claim that the full security controls have already been implemented.
+Talynor has an approved frontend spike and backend skeleton. VS-001 exposes only fixed demonstration maps through a read-only endpoint and is pending review. No private/user data, persistence, authentication, or ownership is implemented. This endpoint does not establish an access policy for future real knowledge data. These principles guide further implementation; they do not claim that full security controls have already been implemented.
 
 ## Secrets and configuration
 

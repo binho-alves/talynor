@@ -1,6 +1,6 @@
 # Preliminary roadmap
 
-This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. Phase 0 foundation is complete and Phase 1 — SPIKE-001 is completed and approved. Phase 2 has started under an explicitly authorized skeleton task and awaits review; it is not yet complete.
+This roadmap defines phase-level goals and outputs, not detailed implementation tickets or delivery dates. Each phase requires a scoped task before implementation. Phases 0, 1, and 2 are completed and approved. VS-001 is a separately authorized validation slice between Phase 2 and Phase 3; it does not replace Identity and Workspace or renumber any phase.
 
 ## Phase 0 - Foundation
 
@@ -22,7 +22,7 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 
 ## Phase 2 - Solution and Application Skeleton
 
-**Status:** started; .NET 10 skeleton and `Talynor.slnx` created, pending review. SDK selection and shared build settings are recorded in `global.json` and `Directory.Build.props`. The separate React frontend is unchanged. Persistence and authentication are not implemented.
+**Status:** completed and approved after review, commit, and publication. The .NET 10 skeleton uses `Talynor.slnx`, `global.json`, and `Directory.Build.props`. Persistence and authentication are not implemented.
 
 **Goal:** establish the smallest application foundation consistent with the approved architecture and reviewed spike findings.
 
@@ -30,7 +30,19 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 
 **Non-goals:** full learning features, distributed infrastructure, Docker or PostgreSQL infrastructure without an explicit request, and CI setup at this phase.
 
+## VS-001 - Read-only Knowledge Graph Vertical Slice
+
+**Status:** implemented, pending review. This explicitly authorized validation slice runs between Phase 2 and Phase 3 without replacing or renumbering phases.
+
+**Goal:** load the two existing demonstration maps through Talynor's HTTP API and adapt them into XYFlow while preserving the spike interactions.
+
+**Scope:** read-only map endpoint, Application read models and reader interface, Infrastructure in-memory source, independent API contracts, native fetch with cancellation and loading/error/404 states, frontend-only positions, and Vite development proxy. Progress and study time remain demonstrations.
+
+**Non-goals:** writing/CRUD, persistence, EF Core, migrations, identity, ownership, real learning workflows, advanced layout, response caching, distributed infrastructure, or additional application frameworks.
+
 ## Phase 3 - Identity and Workspace
+
+**Status:** not started. VS-001 does not implement identity or workspace capabilities.
 
 **Goal:** establish account and knowledge workspace workflows with explicit access boundaries.
 

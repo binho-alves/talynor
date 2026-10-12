@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation and Phase 1 — SPIKE-001 are completed and approved. Phase 2 has started: the .NET 10 skeleton is created and awaits review; the phase is not yet complete. The separate frontend spike continues to use local mocks. No persistence or authentication is implemented. Further implementation must be authorized through a scoped task and follow these boundaries.
+This document records the approved high-level direction. Foundation, SPIKE-001, and Phase 2 are completed and approved. VS-001 is implemented and pending review: the separate React frontend reads two demonstration maps from the API. No persistence or authentication is implemented. Phase 3 — Identity and Workspace has not started. Further implementation requires a scoped task.
 
 ## Approved direction
 
@@ -28,7 +28,15 @@ This document records the approved high-level direction. Foundation and Phase 1 
 
 The authorized Phase 2 skeleton uses `Talynor.slnx`, with Api, Application, Domain, and Infrastructure projects under `src/backend`, and UnitTests and IntegrationTests under `tests`. Application references Domain; Infrastructure references Application; Api references Application and Infrastructure for host composition. UnitTests references Domain and Application; IntegrationTests references Api. Infrastructure has no direct Domain reference. This initial responsibility split does not finalize product module boundaries or broader implementation patterns.
 
-`global.json` selects SDK 10.0.401 with `latestPatch` roll-forward and prerelease SDKs disabled. `Directory.Build.props` enables nullable reference types and implicit usings without treating all warnings as errors. The API enables controllers, JSON console logging, `/health` without external dependencies, and OpenAPI only in Development. No business endpoints, EF Core configuration, database, migrations, authentication, or CORS are introduced. The React frontend remains separate under `src/frontend/talynor-web`.
+`global.json` selects SDK 10.0.401 with `latestPatch` roll-forward and prerelease SDKs disabled. `Directory.Build.props` enables nullable reference types and implicit usings without treating all warnings as errors. The API enables controllers, JSON console logging, `/health` without external dependencies, and OpenAPI only in Development. The React frontend remains separate under `src/frontend/talynor-web`.
+
+## VS-001 read-only validation slice
+
+`GET /api/knowledge-maps/{mapId}` returns `software` or `csharp` (200), or 404 for an unknown ID. The API explicitly maps Application read projections to its own HTTP contracts: map id/title/description/nodes/edges, node id/title/description/progress/studyMinutes/childMapId, and edge id/sourceNodeId/targetNodeId. No coordinates, visual styles, relationship taxonomy, or XYFlow types are exposed.
+
+`GetKnowledgeMap` delegates to `IKnowledgeMapReader` in Application. `InMemoryKnowledgeMapReader` in Infrastructure supplies fixed demonstration content; its externally visible collections are read-only. Domain intentionally remains without artificial models. The reader is registered as a singleton and the use case as scoped. Cancellation propagates through the controller and use case to the reader.
+
+The frontend uses native fetch, basic runtime JSON validation, and an explicit `knowledgeMapAdapter`. Coordinates remain local by mapId/nodeId; unknown layout entries fail explicitly. Dragged positions and selection survive navigation as local visual state; content is fetched again on navigation without a response cache or mock fallback. No automatic layout, persistence, authentication, authorization, or backend CORS policy is introduced. Vite proxies relative `/api` requests only during local development.
 
 ## Knowledge graph
 
