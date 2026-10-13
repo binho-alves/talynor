@@ -47,6 +47,7 @@ public class SessionFoundationTests
         Assert.Equal("/", cookie.Path.ToString());
         Assert.False(cookie.Domain.HasValue);
         Assert.DoesNotContain(cookies, value => value.Name == "__Host-Talynor.Auth");
+        Assert.DoesNotContain(cookies, value => value.Name == IdentityConstants.TwoFactorRememberMeScheme);
 
         using var scope = factory.Services.CreateScope();
         var context = new DefaultHttpContext { RequestServices = scope.ServiceProvider };
@@ -58,7 +59,7 @@ public class SessionFoundationTests
     }
 
     [Fact]
-    public async Task Application_cookie_and_authorization_are_configured_for_API_without_extra_schemes()
+    public async Task Application_cookie_remains_default_with_only_the_technical_remember_me_scheme()
     {
         using var factory = CreateFactory();
         using var scope = factory.Services.CreateScope();
@@ -78,9 +79,11 @@ public class SessionFoundationTests
         Assert.Equal(validator, options.Events.OnValidatePrincipal);
 
         var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>();
-        Assert.Equal(IdentityConstants.ApplicationScheme, Assert.Single(await schemes.GetAllSchemesAsync()).Name);
+        Assert.Equal(new[] { IdentityConstants.ApplicationScheme, IdentityConstants.TwoFactorRememberMeScheme },
+            (await schemes.GetAllSchemesAsync()).Select(scheme => scheme.Name).OrderBy(name => name).ToArray());
         Assert.Equal(IdentityConstants.ApplicationScheme, (await schemes.GetDefaultAuthenticateSchemeAsync())!.Name);
         Assert.Equal(IdentityConstants.ApplicationScheme, (await schemes.GetDefaultChallengeSchemeAsync())!.Name);
+        Assert.Equal(IdentityConstants.ApplicationScheme, (await schemes.GetDefaultForbidSchemeAsync())!.Name);
         Assert.Equal(IdentityConstants.ApplicationScheme, (await schemes.GetDefaultSignInSchemeAsync())!.Name);
         Assert.Null(services.GetRequiredService<IOptions<AuthorizationOptions>>().Value.FallbackPolicy);
         Assert.Equal("X-CSRF-TOKEN", services.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.HeaderName);

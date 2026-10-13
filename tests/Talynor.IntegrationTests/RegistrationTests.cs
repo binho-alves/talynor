@@ -35,7 +35,8 @@ public class RegistrationTests
         Assert.Null(response.Headers.Location);
         Assert.True(response.Headers.CacheControl?.NoStore);
         Assert.False(response.Headers.TryGetValues("Set-Cookie", out var cookies) &&
-            cookies.Any(cookie => cookie.StartsWith("__Host-Talynor.Auth=", StringComparison.Ordinal)));
+            cookies.Any(cookie => cookie.StartsWith("__Host-Talynor.Auth=", StringComparison.Ordinal) ||
+                cookie.StartsWith(IdentityConstants.TwoFactorRememberMeScheme + "=", StringComparison.Ordinal)));
 
         using var scope = factory.Services.CreateScope();
         var user = await scope.ServiceProvider.GetRequiredService<TalynorDbContext>().Users.SingleAsync();

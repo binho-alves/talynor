@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation, SPIKE-001, Phase 2, the published VS-001, Phase 3.1, and the published Phase 3.2A are completed and approved. Phase 3.2B.1 — Account Registration is implemented and pending review. Identity persistence has cookie/authorization and antiforgery infrastructure plus account registration without auto-login. Login, logout, `/me`, current user, and workspace workflows are not implemented. The separate React frontend still reads two in-memory demonstration maps from the API. Further slices require scoped tasks.
+This document records the approved high-level direction. Foundation, SPIKE-001, Phase 2, the published VS-001, Phase 3.1, and the published Phase 3.2A are completed and approved. Phase 3.2B.1 — Account Registration is completed, approved, and published. Phase 3.2B.2A — Security Stamp Compatibility is the current slice, implemented and pending final review and publication. Identity persistence has cookie/authorization and antiforgery infrastructure plus account registration without auto-login. Login, logout, `/me`, current user, and workspace workflows are not implemented. The separate React frontend still reads two in-memory demonstration maps from the API. Further slices require scoped tasks.
 
 ## Approved direction
 
@@ -17,7 +17,7 @@ This document records the approved high-level direction. Foundation, SPIKE-001, 
 | Persistence technology | EF Core. |
 | Early development database | SQLite for development and prototyping. |
 | Production database target | PostgreSQL. |
-| Initial account strategy | Local ASP.NET Core Identity; cookie infrastructure in 3.2A, registration in 3.2B.1, session workflows reserved for 3.2B.2. |
+| Initial account strategy | Local ASP.NET Core Identity; cookie infrastructure in 3.2A, registration in 3.2B.1, session workflows reserved for 3.2B.2B. |
 
 ## High-level responsibilities
 
@@ -51,11 +51,11 @@ Infrastructure owns the explicit `InitialIdentity` migration and a design-time f
 
 ## Phase 3.2A - Session HTTP foundation and CSRF bootstrap
 
-In 3.2A, the API composed `AddIdentityCore<IdentityUser>()`, the existing EF stores, and `AddSignInManager()` without roles, UI, account endpoints, extra token providers, or schema changes; Domain and Application were untouched by that slice. `AddApplicationCookie()` still registers only `Identity.Application` and preserves `SecurityStampValidator`; redirect callbacks return 401/403 instead of HTML navigation. No external or two-factor cookie schemes are registered. 3.2B.1 adds registration and Application account abstractions below.
+In 3.2A, the API composed `AddIdentityCore<IdentityUser>()`, the existing EF stores, and `AddSignInManager()` without roles, UI, account endpoints, extra token providers, or schema changes; Domain and Application were untouched by that slice. `AddApplicationCookie()` registers `Identity.Application` and preserves `SecurityStampValidator`; redirect callbacks return 401/403 instead of HTML navigation. 3.2B.2A adds only the technical auxiliary scheme described below; External and TwoFactorUserId remain absent. 3.2B.1 adds registration and Application account abstractions below.
 
-The application cookie is `__Host-Talynor.Auth`, HttpOnly, Secure Always, SameSite Lax, Path `/`, with no Domain. Tickets have an eight-hour lifetime without sliding expiration. No login currently issues this cookie; non-persistent sign-in is reserved for 3.2B.2. Authorization services and middleware are registered without a global fallback policy. Health, demonstration maps, and CSRF bootstrap remain anonymous; OpenAPI remains Development-only. 3.2A introduced no CORS or rate limiter; registration-only rate limiting and explicit routing placement are described below.
+The application cookie is `__Host-Talynor.Auth`, HttpOnly, Secure Always, SameSite Lax, Path `/`, with no Domain. Tickets have an eight-hour lifetime without sliding expiration. No login currently issues this cookie; non-persistent sign-in is reserved for 3.2B.2B. Authorization services and middleware are registered without a global fallback policy. Health, demonstration maps, and CSRF bootstrap remain anonymous; OpenAPI remains Development-only. 3.2A introduced no CORS or rate limiter; registration-only rate limiting and explicit routing placement are described below.
 
-3.2A introduced `GET /api/auth/csrf`, calling native `IAntiforgery.GetAndStoreTokens` and returning `{ "token": "..." }` with `Cache-Control: no-store`. The separate `__Host-Talynor.Csrf` cookie is HttpOnly, Secure Always, SameSite Strict, Path `/`, without Domain; the request header is `X-CSRF-TOKEN`. The cookie token is never included in JSON. MVC uses `AddControllersWithViews` to register native antiforgery filters, without views, Razor Pages, or Identity UI. `[AutoValidateAntiforgeryToken]` skips GET and protects register in 3.2B.1. Token refresh across authentication changes belongs to 3.2B.2; frontend consumption belongs to 3.4.
+3.2A introduced `GET /api/auth/csrf`, calling native `IAntiforgery.GetAndStoreTokens` and returning `{ "token": "..." }` with `Cache-Control: no-store`. The separate `__Host-Talynor.Csrf` cookie is HttpOnly, Secure Always, SameSite Strict, Path `/`, without Domain; the request header is `X-CSRF-TOKEN`. The cookie token is never included in JSON. MVC uses `AddControllersWithViews` to register native antiforgery filters, without views, Razor Pages, or Identity UI. `[AutoValidateAntiforgeryToken]` skips GET and protects register in 3.2B.1. Token refresh across authentication changes belongs to 3.2B.2B; frontend consumption belongs to 3.4.
 
 Production code keeps the default local Data Protection setup without a custom key ring. Startup and CSRF bootstrap do not create/migrate SQLite or seed users. Tests check native token-pair validity, host cookie/scheme configuration, 401/403 callbacks, unchanged runtime EF model, and the existing anonymous endpoints.
 
@@ -69,7 +69,13 @@ Success is 201 without body, Location, auto-login, or auth cookie. Duplicate reg
 
 The only limiter is the native registration policy: five requests per ten-minute fixed window per remote IP, no queue. IPv4-mapped IPv6 is normalized; absent IP uses a shared restricted partition. Forwarded headers are not trusted. Pipeline order is HTTPS redirection, routing, authentication, authorization, rate limiting, and controllers. An admitted request consumes quota before MVC validates CSRF/input. Rejection is 429 `rate_limited`, with Retry-After when available. The action's native request-size limit is 8 KiB on servers supporting that feature; TestServer is not a real Kestrel/body-limit verification.
 
-The account/password policy and local-use limitations are recorded in ADR-008 and SECURITY.md. No login, logout, me, current-user abstraction, login limiter, custom lockout, frontend change, or SecurityStampValidator change is included. The potential rejection-path incompatibility with an absent TwoFactorRememberMe scheme must first be reproduced against the actual configuration in 3.2B.2 before any customization.
+The account/password policy and local-use limitations are recorded in ADR-008 and SECURITY.md. No login, logout, me, current-user abstraction, login limiter, custom lockout, frontend change, or SecurityStampValidator change is included in registration. The separately reproduced rejection-path incompatibility is addressed below.
+
+## Phase 3.2B.2A - Security Stamp compatibility
+
+Identity 10.0.12's native validator explicitly signs out `Identity.TwoFactorRememberMe` after rejecting an invalid stamp. With that handler absent, a real cookie/SQLite/SignInManager test reproduced an InvalidOperationException after the default 30-minute validation interval. The approved correction uses only the official `AddTwoFactorRememberMeCookie()` helper alongside `AddApplicationCookie()`. `Identity.Application` remains the sole application authentication scheme and the default for authenticate, challenge, forbid, and sign-in; `Identity.TwoFactorRememberMe` is a technical auxiliary sign-out handler. No External or TwoFactorUserId scheme is registered.
+
+The native `SecurityStampValidator<IdentityUser>`, its callback, 30-minute interval, and all application-cookie options remain unchanged. No Talynor flow issues the auxiliary cookie, and MFA is not implemented. Native auxiliary-cookie defaults are retained; they do not replace the application-cookie policy. Regression tests use real cookies, UserManager stamp updates, and a test-only TimeProvider: a valid stamp remains authenticated and is renewed by the native validator; an invalid stamp after the interval returns 401 without exception, deletes cookies, and rejects replay of the original ticket. Both diagnostic routes exist only in the test factory and return 404 in the normal API host. No schema, dependency, frontend, or session endpoint change is introduced.
 
 ## Knowledge graph
 

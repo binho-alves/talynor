@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration is implemented and pending review. Login/logout/me/current user remain reserved for 3.2B.2, Workspace/ownership for 3.3, and frontend authentication for 3.4.
+- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration is completed, approved, and published. Phase 3.2B.2A — Security Stamp Compatibility is the current slice, implemented and pending final review and publication. Login/logout/me/current user remain reserved for 3.2B.2B, Workspace/ownership for 3.3, and frontend authentication for 3.4.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -168,7 +168,7 @@ Run the root restore/build/test commands and the unchanged frontend build/lint c
 
 New unit tests exercise RegisterUser through a creation-only fake. HTTP integration tests use native CSRF and cookies, a unique temporary SQLite file per factory, explicit fixture migrations, Pooling=false, and cleanup after disposing the host. They cover policy/limits, success without authentication, generic duplicates, existing-session rejection, safe errors, real concurrent unique-index failure, negative operational-fault injection, and IP quota behavior. The concurrency interceptor synchronizes two pending inserts with bounded waits and no sleeps; busy/PK/other-unique failures are not treated as duplicates. IP overrides exist only in the test host. TestServer does not validate real TLS, browser SameSite, or actual enforcement of the native 8 KiB server request-size limit.
 
-Security Stamp remains unchanged. Before session implementation in 3.2B.2, reproduce the potential missing-TwoFactorRememberMe rejection path against the real setup rather than introducing a speculative validator or MFA scheme.
+3.2B.2A fixes the reproduced missing-TwoFactorRememberMe rejection path using only the native auxiliary cookie helper, without changing the native SecurityStampValidator or implementing MFA/session endpoints. Run `dotnet test tests/Talynor.IntegrationTests/Talynor.IntegrationTests.csproj --no-restore --filter FullyQualifiedName~SecurityStampDiagnosticTests` first, then the full backend and frontend checks above. The regression uses a real SignInManager/cookie, temporary migrated SQLite, and a test-only TimeProvider advancing beyond the unchanged 30-minute interval. It covers valid-stamp renewal, invalid-stamp 401/cookie deletion, and original-ticket replay rejection. Both diagnostic routes return 404 outside the customized factory; no production login route is added. No Talynor flow issues the technical cookie.
 
 ## Intended workflow
 

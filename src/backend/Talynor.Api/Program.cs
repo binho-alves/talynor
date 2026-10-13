@@ -56,8 +56,10 @@ builder.Services.AddIdentityCore<IdentityUser>(options =>
     .AddEntityFrameworkStores<TalynorDbContext>()
     .AddSignInManager();
 
-builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme)
-    .AddApplicationCookie();
+var identityAuthentication = builder.Services.AddAuthentication(IdentityConstants.ApplicationScheme);
+identityAuthentication.AddApplicationCookie();
+// Native stamp rejection signs out this auxiliary scheme; no Talynor flow issues its cookie.
+identityAuthentication.AddTwoFactorRememberMeCookie();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.Name = "__Host-Talynor.Auth";
