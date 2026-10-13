@@ -1,9 +1,9 @@
-# Talynor Web — SPIKE-001 and VS-001
+# Talynor Web — SPIKE-001, VS-001 and Authenticated Frontend
 
-**Status:** SPIKE-001 completed and approved; VS-001 implemented and pending review. XYFlow / React Flow is adopted as Talynor's initial graph visualization library; see [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization). The limitations below remain applicable, and the package manager decision remains open.
+**Status:** SPIKE-001 and VS-001 completed, approved, and published. Phase 3.3 is published; Phase 3.4 — Authenticated Frontend is implemented and pending review. XYFlow / React Flow is adopted as Talynor's initial graph visualization library; see [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization). The limitations below remain applicable, and the package manager decision remains open.
 
 Initial React + TypeScript frontend spike using Vite and @xyflow/react.
-VS-001 loads knowledge content and connections from `GET /api/knowledge-maps/{mapId}` for `software` and `csharp`. Progress and study time remain demonstration values supplied by the in-memory backend. No database, authentication, or production graph semantics are implemented. The original spike validation below is historical.
+VS-001 loads knowledge content and connections from `GET /api/knowledge-maps/{mapId}` for `software` and `csharp`. Progress and study time remain demonstration values supplied by the in-memory backend. Phase 3.4 adds cookie-based login/session/workspace bootstrap and logout; the graph is still a public API demo without knowledge persistence or production graph semantics. The original spike validation below is historical.
 
 ## Run locally
 
@@ -19,12 +19,14 @@ In another terminal, from this frontend directory with the existing dependencies
 
 ~~~powershell
 $env:TALYNOR_API_PROXY_TARGET = 'https://localhost:7117'
+$env:TALYNOR_HTTPS_CERT = '<absolute path outside the repository to trusted localhost certificate PEM>'
+$env:TALYNOR_HTTPS_KEY = '<absolute path outside the repository to matching private key PEM>'
 pnpm dev
 pnpm build
 pnpm lint
 ~~~
 
-The target is configurable and the example matches the API HTTPS launch profile. React fetches relative `/api` URLs through the Vite development proxy, without backend CORS. The target is required for the dev server, not build/lint; it is not a production or preview routing solution. TLS validation remains enabled by default. If the proxy reports a localhost certificate trust error, identify it first. On the validated Node 24 Windows environment, setting `$env:NODE_OPTIONS = '--use-system-ca'` before starting Vite resolved trust using the existing system certificate store. If trust still cannot be established, the permitted development-only fallback is `$env:TALYNOR_API_PROXY_INSECURE = 'true'`. Configuration restricts this exception to HTTPS loopback targets. It does not change application or production TLS, and contains no secret.
+The HTTPS target matches the API launch profile. React fetches relative `/api` URLs through the Vite development proxy, without backend CORS. Browser-to-Vite HTTPS uses an existing trusted localhost PEM certificate/key supplied outside this repository; open the HTTPS address Vite prints. Configuration requires these paths for dev, not build/lint, and does not generate/trust/export certificates. Never commit private keys or bypass browser trust errors. Node 24 can use `$env:NODE_OPTIONS = '--use-system-ca'` before Vite when needed to trust the API through the Windows store. TLS verification remains enabled; the historical TALYNOR_API_PROXY_INSECURE fallback is now rejected for authenticated flows. Production/preview routing is not configured. See [the 3.4 procedure](../../../docs/DEVELOPMENT.md#phase-34---authenticated-frontend) for database/account prerequisites and manual checks.
 
 Created with Node.js 24 and pnpm 11. The lockfile records installed versions.
 pnpm was used in SPIKE-001 because it was available in the environment; it has
@@ -34,6 +36,8 @@ the exact dependency versions used in this execution.
 No automatic test suite is configured yet.
 
 ## Explore
+
+First log in using an existing disposable account registered through the HTTPS backend procedure; there is no frontend registration screen or default account. Bootstrap loads me then workspace. Login/logout use private in-memory CSRF and the browser-managed HttpOnly cookie. Loading/error/retry gates precede graph rendering; refresh rediscovers the session. Logout discards session and graph state. No auth/password/CSRF data is persisted in browser storage, and no cross-tab synchronization is implemented.
 
 1. Select a concept to see its description, mock progress, and mock study time.
 2. Drag nodes or the background; use the zoom and fit controls.
@@ -52,12 +56,14 @@ Connections are illustrative, without defining prerequisites or a relationship t
 2. src/types/knowledgeMapResponse.ts and src/api/knowledgeMaps.ts define the independent HTTP contract, native fetch, and basic runtime validation.
 3. src/components/KnowledgeNodeCard.tsx renders a typed custom node.
 4. src/components/NodeDetails.tsx renders information received through props.
-5. src/App.tsx owns map navigation and node state, and wires React Flow to them.
+5. src/components/KnowledgeGraph.tsx owns the active map, nodes/edges, selection, positions by map, drill-down/back, and map loading/retry, and wires React Flow to them. App uses session state and actions from src/session/useSession.ts to choose login/loading/error views or the authenticated shell. src/session/sessionClient.ts coordinates explicit auth/workspace HTTP sequences without graph state or a global singleton.
 6. src/App.css and src/index.css provide responsive layout without a UI framework.
 
 VS-001 adds `src/data/knowledgeMapPositions.ts` for local demonstration coordinates and `src/adapters/knowledgeMapAdapter.ts` for explicit HTTP DTO → XYFlow adaptation. Missing positions fail explicitly; the API never supplies visual coordinates, handles, or styles. Local content mocks have been removed.
 
 Each map visit and retry requests content again. Visual models, including their content in `data`, remain temporarily in memory during the session; after a new HTTP response arrives, previous positions and selection are reapplied to the new visual nodes. This is not a persistent cache or reuse of HTTP responses instead of fetching. Loading is announced, 404 is distinct, errors offer retry, and there is no silent mock fallback. Every navigation and retry gets a new request identity, so even a quick return shows loading until its new response arrives. Effect cleanup aborts obsolete requests and ignores stale results, including StrictMode development cycles. Runtime validation checks required fields, numeric ranges, unique IDs, and valid edge references; TypeScript alone does not validate incoming JSON.
+
+Phase 3.4 adds src/api/http.ts, authApi.ts, workspaceApi.ts and src/types/session.ts for status-preserving fetch and manual session JSON validation, plus LoginView for labeled, responsive form inputs. There is no Context/Provider, router, additional state/form library or frontend test framework. [React learning notes](../../../docs/DEVELOPMENT.md#react-learning-notes-for-session-integration) explain the custom hook, effect cleanup, refs and approximate Angular comparisons. Map failures stay separate from session errors; me/workspace 401 returns to login, while network/500 produces recoverable errors. No backend/schema/dependency change is needed.
 
 ## React concepts and approximate Angular equivalents
 
@@ -65,19 +71,19 @@ Each map visit and retry requests content again. Visual models, including their 
 | --- | --- | --- |
 | Function components and JSX | App, cards, and details split the UI into readable pieces. | Components and their templates. |
 | Typed props and callbacks | Details receives the selected node and a navigation callback; no global state is needed. | Inputs and outputs/event bindings. Callback props are functions, not EventEmitter objects. |
-| useState | App owns the active map and node arrays. Updates request a render. | Component-local signals or fields bound to a template. |
+| useState | KnowledgeGraph owns the active map and node arrays. Updates request a render. | Component-local signals or fields bound to a template. |
 | Derived state | Selection is found in the active node array rather than duplicated. | A computed signal or derived template value. |
 | Immutable functional updates | Node changes use previous state and replace the affected array. | Signal update returning a new object. |
 | useCallback | Stabilizes the node-change handler while the active map is unchanged. | No direct equivalent; component methods typically retain identity. |
 | Conditional rendering | Back button, empty details, and submap action depend on state. | @if in a template. |
-| key | Remounts React Flow to fit the new map; App retains node positions. | View identity via track is related, but not an exact lifecycle equivalent. |
+| key | Remounts React Flow to fit the new map; KnowledgeGraph retains node positions. | View identity via track is related, but not an exact lifecycle equivalent. |
 | StrictMode | The Vite entry point enables development checks for impure behavior. | No direct equivalent; Angular development checks share some intent. |
 
 ## XYFlow assessment
 
 XYFlow supplies custom React nodes, typed node/edge data, zoom, pan, selection,
 dragging, controls, and a minimap. Drill-down is local map navigation implemented
-by App, rather than a database hierarchy or automatic domain feature.
+by KnowledgeGraph, rather than a database hierarchy or automatic domain feature.
 
 The spike informed the approved initial adoption of XYFlow / React Flow.
 The library remains isolated to frontend visualization; domain and application

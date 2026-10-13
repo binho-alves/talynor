@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration and Phase 3.2B.2A — Security Stamp Compatibility are completed, approved, and published. Phase 3.2B.2B — Session Flow is completed, approved, and published, completing Phase 3.2. Phase 3.3 — Personal Workspace and Ownership is implemented and pending review; frontend authentication remains future 3.4.
+- Current stage: Phases 1 and 2, VS-001, Phase 3.1, Phase 3.2 — Identity and Session Backend, and Phase 3.3 — Personal Workspace and Ownership are completed, approved, and published. Phase 3.4 — Authenticated Frontend is implemented and pending review. Phase 3.5 validation/closure remains future work.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -30,6 +30,8 @@ dotnet test Talynor.slnx --no-build
 Run the local API with `dotnet run --project src/backend/Talynor.Api --launch-profile https`. Integration tests use an in-process host; unit tests validate the read use case through a small fake reader.
 
 In another PowerShell terminal, from `src/frontend/talynor-web`:
+
+For the current authenticated frontend, first configure the trusted frontend certificate/key described in the [3.4 procedure](#phase-34---authenticated-frontend). The proxy target alone does not provide browser HTTPS.
 
 ```powershell
 $env:TALYNOR_API_PROXY_TARGET = 'https://localhost:7117'
@@ -116,7 +118,7 @@ Run the backend restore/build/test commands above and frontend build/lint for VS
 
 ## Phase 3.2A - Session HTTP foundation and CSRF bootstrap
 
-3.2A registered Identity services/stores, only the application-cookie scheme, authorization without a fallback policy, and native antiforgery with anonymous `GET /api/auth/csrf`. 3.2B.1 adds register, account creation policy, and registration rate limiting; B.2A adds the technical auxiliary handler, and B.2B adds login/logout/me and current user as described below. Frontend consumption is not implemented. Application startup and CSRF bootstrap still do not initialize/migrate the database.
+3.2A registered Identity services/stores, only the application-cookie scheme, authorization without a fallback policy, and native antiforgery with anonymous `GET /api/auth/csrf`. 3.2B.1 adds register, account creation policy, and registration rate limiting; B.2A adds the technical auxiliary handler, and B.2B adds login/logout/me and current user as described below. That slice did not implement frontend consumption; the current client is described in 3.4 below. Application startup and CSRF bootstrap still do not initialize/migrate the database.
 
 Use the existing API `https` launch profile (`https://localhost:7117`). Inspect certificate trust manually when needed; these commands are not application side effects and were not run by this slice:
 
@@ -136,7 +138,7 @@ $talynorCsrf = Invoke-RestMethod -Uri 'https://localhost:7117/api/auth/csrf' -We
 Remove-Variable talynorCsrf, talynorCsrfSession
 ```
 
-The response is `{ "token": "..." }` with no-store and an HttpOnly/Secure/SameSite Strict antiforgery cookie. This does not create an authenticated session. Future account requests will use `X-CSRF-TOKEN`; the future frontend will retain the request token in memory and fetch a new one after authentication changes. Do not assume that fetching a new token makes all prior tokens one-time or immediately revoked.
+The response is `{ "token": "..." }` with no-store and an HttpOnly/Secure/SameSite Strict antiforgery cookie. This does not create an authenticated session. Account requests use `X-CSRF-TOKEN`; the 3.4 frontend retains the request token only in memory and fetches a new one after authentication changes. Do not assume that fetching a new token makes all prior tokens one-time or immediately revoked.
 
 Data Protection uses host defaults in application code; no key ring, key database, or custom certificate is configured. Key persistence and protection depend on the host profile, and deployment will need an explicit review. New integration tests use an ephemeral provider only for isolation. They verify bootstrap/token-pair validity, cookie/scheme/401/403 configuration, and the unchanged runtime EF model. Existing tests verify anonymous demo/health/OpenAPI behavior and startup/bootstrap without database creation. No artificial POST or unit test is added; account-POST rejection belongs to 3.2B. WebApplicationFactory's HTTPS address does not validate a real certificate or browser cookie enforcement.
 
@@ -148,7 +150,7 @@ dotnet tool run dotnet-ef migrations has-pending-model-changes --project src/bac
 Remove-Item Env:ConnectionStrings__Talynor -ErrorAction SilentlyContinue
 ```
 
-The current Vite proxy and React remain unchanged. `NODE_OPTIONS=--use-system-ca` helps Node trust the HTTPS API; it does not enable HTTPS on the frontend dev server. Real browser authentication integration is reserved for 3.4. Do not weaken Secure/TLS settings to accommodate it.
+That backend slice left Vite and React unchanged; 3.4 extends them below. `NODE_OPTIONS=--use-system-ca` helps Node trust the HTTPS API; it does not enable HTTPS on the frontend dev server. Browser authentication integration is implemented in 3.4, with real HTTPS verification still required. Do not weaken Secure/TLS settings to accommodate it.
 
 ## Phase 3.2B.1 - Account registration
 
@@ -189,7 +191,7 @@ Run tool restore, solution restore/build/tests, unchanged frontend build/lint, a
 
 ## Phase 3.3 - Personal Workspace and Ownership
 
-Implemented and pending review. Phase 3.2 is completed and published. The new AddPersonalWorkspace migration adds only PersonalWorkspaces and its UNIQUE owner index. Review it, explicitly select the disposable local SQLite path using the existing database-selection procedure, then run `dotnet tool run dotnet-ef database update --project src/backend/Talynor.Infrastructure`. This explicit operation applies both existing Identity and new workspace migrations as needed. It was not run against the Development database by this implementation; startup never migrates/initializes/seeds it. Account deletion does not cascade to workspaces; cleanup/lifecycle remain future work.
+Completed, approved, and published. Phase 3.2 is completed and published. The AddPersonalWorkspace migration adds only PersonalWorkspaces and its UNIQUE owner index. Review it, explicitly select the disposable local SQLite path using the existing database-selection procedure, then run `dotnet tool run dotnet-ef database update --project src/backend/Talynor.Infrastructure`. This explicit operation applies both existing Identity and workspace migrations as needed. It was not run against the Development database by this implementation; startup never migrates/initializes/seeds it. Account deletion does not cascade to workspaces; cleanup/lifecycle remain future work.
 
 Manual verification uses the trusted HTTPS API and the same in-memory cookie jar from the Session Flow procedure:
 
@@ -200,7 +202,50 @@ Manual verification uses the trusted HTTPS API and the same in-memory cookie jar
 
 Run tool/solution restore, solution build/tests, frontend build/lint, and the existing safe pending-model command with `Data Source=:memory:`. PersonalWorkspaceUseCaseTests cover authentication, account existence, owner derivation, idempotent lookup, controlled creation time, and error propagation. PersonalWorkspaceTests cover real register/login, lazy initialization, exact response shape, sequential reuse, two-user isolation, synchronized simultaneous HTTP access, removed accounts, native stamp/provider failures, and Development OpenAPI. PersonalWorkspacePersistenceTests cover cross-context roundtrip, the actual UNIQUE constraint/recovery, and non-owner provider failures. RegistrationTestFactory is reused without another host factory; databases are temporary/migrated explicitly with Pooling=false, ephemeral Data Protection, and cleanup.
 
-Knowledge Maps and frontend remain unchanged; no production deployment/browser-security claim is made. SQLite-specific conflict recognition must be adapted when a future PostgreSQL transition is explicitly authorized. No new dependency or frontend package manager decision is made.
+Phase 3.3 left Knowledge Maps and frontend unchanged; 3.4 adds frontend sessions without changing the demo map API. No production deployment/browser-security claim is made. SQLite-specific conflict recognition must be adapted when a future PostgreSQL transition is explicitly authorized. No new dependency or frontend package manager decision is made.
+
+## Phase 3.4 - Authenticated Frontend
+
+Implemented and pending review; 3.3 is published and 3.5 has not started. No backend, EF model, migration, or dependency is changed by 3.4. Historical slice procedures above describe what each slice introduced; current browser integration follows this section.
+
+Use an explicitly selected/migrated disposable database and an account registered through the existing trusted HTTPS API procedure. There is no seed or frontend registration screen. Start the API from the root with its existing https profile. For the frontend, provide a trusted localhost PEM certificate and matching private key **outside the repository**. Certificate provisioning/export/trust is an explicit local prerequisite; Vite does not generate or trust certificates, and private keys must never be committed or logged.
+
+From `src/frontend/talynor-web`, replacing the path placeholders with existing trusted files:
+
+```powershell
+$env:TALYNOR_API_PROXY_TARGET = 'https://localhost:7117'
+$env:TALYNOR_HTTPS_CERT = '<absolute path outside the repository to trusted localhost certificate PEM>'
+$env:TALYNOR_HTTPS_KEY = '<absolute path outside the repository to matching private key PEM>'
+# When supported by Node and needed to trust the API certificate through the Windows store:
+$env:NODE_OPTIONS = '--use-system-ca'
+pnpm dev
+```
+
+Open the **https://localhost** address printed by Vite. Both browser-to-Vite and Vite-to-API require trusted TLS; never bypass a browser certificate warning or set TALYNOR_API_PROXY_INSECURE. Configuration now rejects that historical anonymous-spike flag and plain HTTP API targets. Certificate/key variables contain paths, not secret material, and are required only for the dev server; build/lint need neither. The proxy still routes only relative `/api`, without backend CORS. Production/preview routing is not configured.
+
+Manual verification when these prerequisites are available:
+
+1. Open anonymously: loading precedes login; me 401 must not request workspace. Network/500 must show session error/retry, not a false logout.
+2. Submit invalid credentials using the labeled form/Enter: generic invalid-credentials feedback, no account/lockout details; 429 asks the user to wait. Credentials must not appear in console output, URLs, storage, or screenshots.
+3. Submit valid disposable credentials: anonymous CSRF, login 204, renewed CSRF, me, then workspace. The header email comes from me, not the form. Workspace IDs are not displayed or client-selected.
+4. Verify demo software/C# maps, selection/details, drag, zoom/pan/minimap, drill-down/back and preserved positions between map visits. Map errors/retry must leave the session intact.
+5. Refresh: bootstrap me/workspace restores the authenticated shell from the HttpOnly cookie. Anonymous refresh shows login. Browser storage contains no auth/password/CSRF data; CSRF is never rendered.
+6. Logout: authenticated CSRF and logout 204 return to login; me is then 401. New anonymous CSRF is obtained on next login. Logout 401 also ends local state; other failures show recoverable feedback without claiming success. Invalid logout CSRF gets at most one renewal/retry; invalid login CSRF renews once and needs another user submission.
+7. Check desktop/tablet/mobile layout, keyboard focus/Enter, labels, error/status announcements. Another tab may remain visually authenticated until its next protected request/reload; no cross-tab sync or session polling is implemented.
+
+Run `pnpm run build` and `pnpm run lint`, the root backend build/test commands, and the safe in-memory pending-model command above. No frontend test framework or test script is configured/installed; extracted HTTP/session functions permit dependency-free one-off validation with simulated fetch. Those checks do not prove real browser cookie, SameSite, TLS, or React rendering behavior. Record actual manual verification separately; absence of trusted certificates is a verification limitation, not permission to weaken TLS.
+
+### React learning notes for session integration
+
+| Concept | Where and why | Approximate Angular analogy |
+| --- | --- | --- |
+| Custom hook | `useSession` composes session state, effects and event actions without mixing graph state. | Reusable composition of component logic; a service can serve a related role, but hooks do not create shared singleton state. |
+| State and discriminated union | Bootstrapping, anonymous, authenticated, and error branches prevent an authenticated flash or incomplete user/workspace render. | Component-local signals and conditional templates. |
+| useEffect and cleanup | Starts read-only bootstrap after mount and cancels obsolete requests on cleanup, including StrictMode's development checks. | Lifecycle/reactive effects with teardown; not a direct ngOnInit equivalent. |
+| useRef | Holds the active AbortController/request identity without causing renders; stops duplicate submissions and stale results. | A component-local mutable field, not reactive template state. |
+| Props and callbacks | LoginView owns transient form state and calls the hook through App; KnowledgeGraph owns its own visual state. | Inputs/output event bindings, with function callbacks instead of EventEmitter. |
+
+Context/Provider was evaluated and is not needed for this shallow tree. If later justified, Context/Provider can share values through the React tree, loosely analogous to service/state injection at a chosen Angular component scope; that is not a perfect equivalence. No Context, router, or state library is introduced now.
 
 ## Intended workflow
 

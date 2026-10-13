@@ -42,7 +42,7 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 
 ## Phase 3 - Identity and Workspace
 
-**Status:** started; not completed. Phase 3.1 and all Phase 3.2 Identity and Session Backend slices are completed, approved, and published. **3.3 — Personal Workspace and Ownership** is implemented and pending review. Frontend authentication is not implemented. VS-001 remains a separate completed demonstration slice.
+**Status:** started; not completed. Phase 3.1, all Phase 3.2 Identity and Session Backend slices, and Phase 3.3 — Personal Workspace and Ownership are completed, approved, and published. **3.4 — Authenticated Frontend** is implemented and pending review. VS-001 remains a separate completed demonstration slice.
 
 **Phase 3 incremental slices:**
 
@@ -50,8 +50,8 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 - **3.2B.1 — Account Registration:** register without auto-login, email=username, password policy, account adapter, native CSRF, registration-only rate limiting, concurrent uniqueness and validation tests. Completed, approved, and published.
 - **3.2B.2A — Security Stamp Compatibility:** completed, approved, and published. Registers only the native technical TwoFactorRememberMe handler to fix the reproduced Identity 10.0.12 rejection exception, preserving the native validator and Application defaults; regression requires HTTP 401. That slice introduced no functional MFA or session endpoint.
 - **3.2B.2B — Session Flow:** login/logout/me, current-user abstraction, session adapter, native login lockout/rate limiting, and cookie/CSRF/session tests. Completed, approved, and published. The native Security Stamp regressions and fixed original eight-hour ticket deadline are preserved.
-- **3.3 — Personal Workspace and Ownership:** implemented and pending review. One workspace per authenticated user, lazy/idempotent creation, EF Core/SQLite persistence with unique owner index, and `GET /api/workspace`. Knowledge Maps remain anonymous/global demos. Frontend authentication remains reserved for 3.4.
-- **3.4 — Authenticated Frontend:** remains reserved for browser integration and authentication UI; not started.
+- **3.3 — Personal Workspace and Ownership:** completed, approved, and published. One workspace per authenticated user, lazy/idempotent creation, EF Core/SQLite persistence with unique owner index, and `GET /api/workspace`. Knowledge Maps remain anonymous/global demos.
+- **3.4 — Authenticated Frontend:** implemented and pending review. Session bootstrap (me then workspace), login/logout UI, real cookie/CSRF integration, session error/retry handling, and the preserved demo graph. Trusted HTTPS is required; real browser validation depends on local certificate/database prerequisites.
 - **3.5 — Validation / Phase Closure:** future validation and closure of Phase 3; not started and requires a separate scoped task.
 
 **Goal:** establish account and knowledge workspace workflows with explicit access boundaries.
@@ -62,7 +62,7 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 **Approved incremental direction:** local ASP.NET Core Identity and future browser cookies, recorded in [ADR-008](DECISIONS.md#adr-008---incremental-local-identity-and-persistence). Phase 3.2 introduces scoped identity/session HTTP behavior; Phase 3.3 introduces the personal workspace. Approval of this direction does not authorize implementing those slices in 3.1.
 
-**Current slice (3.3) non-goals:** workspace CRUD, sharing, teams, roles, map ownership/persistence/CRUD, frontend authentication, Security Stamp customization, JWT, functional MFA, email verification/reset, global session revocation, or a session table. Phase 3.4 — Authenticated Frontend remains future work. Social networking, public marketplace, and real-time collaboration remain outside this phase.
+**Current slice (3.4) non-goals:** frontend registration, workspace CRUD/switching, sharing, teams, roles, map ownership/persistence/CRUD, Security Stamp customization, JWT, functional MFA, email verification/reset, remember-me, cross-tab synchronization, global session revocation, or a session table. Phase 3.5 validation/closure remains future work. Social networking, public marketplace, and real-time collaboration remain outside this phase.
 
 ## Phase 4 - Knowledge Graph
 

@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation, Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2 — Identity and Session Backend are completed, approved, and published. Phase 3.3 — Personal Workspace and Ownership is implemented and pending review. Further slices require scoped tasks. The separate React frontend and the anonymous, global in-memory demonstration maps remain unchanged.
+This document records the approved high-level direction. Foundation, Phases 1 and 2, VS-001, Phase 3.1, Phase 3.2 — Identity and Session Backend, and Phase 3.3 — Personal Workspace and Ownership are completed, approved, and published. Phase 3.4 — Authenticated Frontend is implemented and pending review. Further slices require scoped tasks. The separate React frontend now consumes session/workspace endpoints; Knowledge Maps remain anonymous, global in-memory demos.
 
 ## Approved direction
 
@@ -95,7 +95,7 @@ Multiple browsers may hold independent sessions; a new login does not invalidate
 
 ## Phase 3.3 - Personal Workspace and Ownership
 
-Implemented and pending review under [ADR-009](DECISIONS.md#adr-009---personal-workspace-and-ownership). `PersonalWorkspace` is the first Domain entity, containing only an application-generated Guid ID, immutable owner user ID string, and UTC creation timestamp. It has no dependency on Identity or EF. Atlas remains provisional; this technical workspace does not define a separate Atlas entity or finalize their product relationship.
+Completed, approved, and published under [ADR-009](DECISIONS.md#adr-009---personal-workspace-and-ownership). `PersonalWorkspace` is the first Domain entity, containing only an application-generated Guid ID, immutable owner user ID string, and UTC creation timestamp. It has no dependency on Identity or EF. Atlas remains provisional; this technical workspace does not define a separate Atlas entity or finalize their product relationship.
 
 `GetOrCreatePersonalWorkspace` in Application resolves ownership exclusively from `ICurrentUser`, verifies the current account still exists through the existing account port, and returns its own projection. It receives `TimeProvider` for creation time, reads by owner, and creates only when absent. `IPersonalWorkspaceStore` exposes owner lookup and add-or-return-existing behavior; no generic repository or HTTP/Identity/EF types are introduced in Application. Register and login do not create a workspace.
 
@@ -103,7 +103,19 @@ The scoped Infrastructure store uses EF Core/SQLite. `PersonalWorkspaces` has an
 
 `GET /api/workspace` requires Authorize, accepts no owner or workspace identifier, lazily resolves/creates the authenticated user's workspace, and returns 200 with only id/createdAtUtc and no-store. Anonymous/invalid/deleted-account sessions return sanitized 401; absent accounts cause local sign-out. Operational failures, including native stamp validation before the controller, remain sanitized 500. The existing restricted exception handler now includes only this additional endpoint. This approved GET can initialize an empty personal workspace; it has no client-controlled mutation payload or content CRUD. Login/logout CSRF and cookie protections are unchanged.
 
-OwnerUserId is a logical Identity reference with no navigation/FK/cascade. Account removal is not a workspace cleanup mechanism: orphan records can remain, and deletion lifecycle requires future design. The current account check prevents an already-removed account from accessing its workspace; it is not an atomic account-deletion lifecycle transaction. Knowledge Maps remain global, anonymous, demo, and in-memory. Frontend authentication remains future 3.4. Migrations stay explicit; startup never migrates, initializes, or seeds a database.
+OwnerUserId is a logical Identity reference with no navigation/FK/cascade. Account removal is not a workspace cleanup mechanism: orphan records can remain, and deletion lifecycle requires future design. The current account check prevents an already-removed account from accessing its workspace; it is not an atomic account-deletion lifecycle transaction. Knowledge Maps remain global, anonymous, demo, and in-memory. Frontend authentication is described below. Migrations stay explicit; startup never migrates, initializes, or seeds a database.
+
+## Phase 3.4 - Authenticated Frontend
+
+Implemented and pending review under [ADR-010](DECISIONS.md#adr-010---authenticated-frontend-session-flow). App uses a small `useSession` custom hook and conditional rendering; no Context/Provider, router, form framework, or application state library is needed. `sessionClient` coordinates the HTTP sequence independently of React; `authApi`, `workspaceApi`, and a small native-fetch helper retain status/error categories and validate external JSON. Known ProblemDetails codes are mapped to local messages; raw server titles/details are not rendered.
+
+Bootstrap calls `/api/auth/me`, then `/api/workspace` only after a valid user response. Only id/email and workspace id/createdAtUtc are retained in state. A 401 on either protected read leads to anonymous login; network/500/protocol failures lead to an error/retry gate, not an inferred logout. Anonymous CSRF is fetched when submitting login. Login uses X-CSRF-TOKEN and on 204 refreshes CSRF before reading me/workspace. A 409 rechecks me without switching accounts. Invalid login CSRF gets one renewal and requires a new user submission; credentials are never automatically replayed.
+
+The browser owns the HttpOnly auth cookie. Fetch uses relative `/api`, credentials same-origin, and no-store; no auth token or CSRF is persisted in browser storage. CSRF remains private to a per-hook session client, is never rendered/logged, and is renewed before unsafe actions and after login. Logout may renew/retry once after csrf_invalid; 204/401 clears local session and old CSRF, with new anonymous CSRF deferred until next login. Other logout failures preserve the shell with recoverable feedback. AbortController and request identity protect retry/unmount/StrictMode against stale state updates; there is no cross-tab synchronization or polling.
+
+`KnowledgeGraph` contains the existing map navigation, selection, dragged positions, loading/retry, adapter, and XYFlow behavior. It mounts only after session/workspace bootstrap and unmounts on logout/expiration, aborting pending map requests and resetting visual state. Map errors remain separate and never end the session. The session gate is UX protection, not authorization of demo content: the map API remains anonymous and is not linked to personal workspace persistence.
+
+Vite retains the development same-origin proxy, now requires an HTTPS API target and trusted external certificate/key paths for browser-to-Vite HTTPS, and rejects the historical insecure proxy flag. It does not generate/trust certificates or alter the backend. Production same-origin routing/TLS, frontend test tooling, package manager, real-device interaction, and full accessibility remain separately scoped.
 
 ## Knowledge graph
 

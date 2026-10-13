@@ -1,6 +1,6 @@
 # Secure-development principles
 
-Talynor's foundation, Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2 — Identity and Session Backend are completed, approved, and published. Phase 3.3 Personal Workspace and Ownership is implemented and pending review. Registration remains without auto-login; frontend authentication is not implemented and no accounts are seeded. Knowledge Maps remain anonymous, global, in-memory demonstrations. These principles do not claim production readiness.
+Talynor's foundation, Phases 1 and 2, VS-001, Phase 3.1, Phase 3.2 — Identity and Session Backend, and Phase 3.3 Personal Workspace and Ownership are completed, approved, and published. Phase 3.4 Authenticated Frontend is implemented and pending review. Registration remains without auto-login and no accounts are seeded. Knowledge Maps remain anonymous, global, in-memory demonstrations. These principles do not claim production readiness.
 
 ## Secrets and configuration
 
@@ -51,9 +51,21 @@ Talynor's foundation, Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2 — Ident
 
 ## Local Data Protection and HTTPS
 
+The historical backend-only slices did not consume browser sessions; the current 3.4 client rules below apply in addition to their unchanged server protections.
+
 Use ASP.NET Core Data Protection defaults for the current local single-instance host, without a custom key ring. On Windows with an available user profile, keys normally persist under `%LOCALAPPDATA%\ASP.NET\DataProtection-Keys` and are protected with DPAPI. This is host-dependent, not a deploy guarantee. Keep keys outside Git and logs; losing them can invalidate cookies/tokens. Future deployment must review persistent key storage, protection, and application isolation before relying on sessions.
 
 Secure cookies remain required even in Development. Use the existing HTTPS API profile and trusted development certificate; do not weaken cookie attributes or TLS validation. A Vite HTTPS proxy target does not make the browser-to-Vite connection HTTPS. Real browser/session integration requires later validation; in-process HTTPS-address tests do not verify actual TLS or browser SameSite enforcement. 3.2A does not install/trust certificates or modify the frontend.
+
+## Phase 3.4 frontend session security
+
+- Authentication remains browser-managed through __Host-Talynor.Auth, HttpOnly/Secure. There is no JWT, bearer/refresh token, JavaScript-created cookie, remember-me, or auth data in localStorage/sessionStorage/IndexedDB. User/workspace projections exist only in React memory; backend ownership remains authoritative.
+- CSRF request tokens stay private to a per-hook client closure, in memory, never rendered/logged/persisted. Native fetch uses relative same-origin URLs, credentials same-origin, no-store and no automatic redirect following. Login/logout attach X-CSRF-TOKEN; me/workspace do not. Tokens are renewed before unsafe actions and after successful login, discarded on identity changes, and fetched for the anonymous identity when needed for next login. Login csrf_invalid gets one renewal without automatic password replay; logout permits at most one renewal/retry. This is not global token revocation.
+- Password exists only as transient form/request memory, is cleared after attempts and unmount, and is never normalized, logged, persisted, sent in a URL, or placed in telemetry. Clearing React references is not secure erasure of managed memory. Email in the authenticated header comes only from me. Credential failure is generic; no lockout/account existence/counter is revealed.
+- Bootstrap uses me then workspace. Protected-read 401 clears user/workspace and returns to login; network/500/invalid JSON does not imply an ended session. Post-login bootstrap failure shows an explicit session error/retry. Logout 204/401 clears local state and graph; operational failure preserves the shell with recoverable feedback. A network failure during POST can be ambiguous; retry/reload must rediscover the backend session rather than assume success or sign out automatically.
+- Runtime validation rejects malformed user/CSRF/workspace responses. Public error rendering uses only known local messages/status categories, never raw ProblemDetails detail/title, submitted values, or server diagnostics. Map errors are separate and never imply logout; demo map endpoints remain public despite the frontend session gate.
+- No cross-tab synchronization or polling is added. Each tab bootstraps from the backend; logout/expiry elsewhere is discovered on its next relevant protected request or reload. Conditional frontend UI is not an access-control guarantee.
+- Vite requires an HTTPS API target with TLS verification and trusted external certificate/key files for browser HTTPS. The insecure anonymous-spike proxy flag is rejected. No certificate is generated/trusted by the application, no key is committed, and no Secure/SameSite/server setting is weakened. Production hosting, real-browser enforcement and full accessibility remain validation/deployment work.
 
 ## Input and content validation
 
