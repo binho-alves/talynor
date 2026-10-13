@@ -49,6 +49,9 @@ public class RegisterUserTests
 
     private sealed class FakeAccounts(RegisterUserResult result) : IIdentityAccountService
     {
+        public Task<AccountSummary?> GetByIdAsync(string id, CancellationToken cancellationToken) =>
+            throw new NotSupportedException("Registration does not read accounts.");
+
         public string? Email { get; private set; }
         public string? Password { get; private set; }
         public CancellationToken Token { get; private set; }

@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration is completed, approved, and published. Phase 3.2B.2A — Security Stamp Compatibility is the current slice, implemented and pending final review and publication. Login/logout/me/current user remain reserved for 3.2B.2B, Workspace/ownership for 3.3, and frontend authentication for 3.4.
+- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration and Phase 3.2B.2A — Security Stamp Compatibility are completed, approved, and published. Phase 3.2B.2B — Session Flow is implemented and pending review. Workspace/ownership remains future 3.3; frontend authentication remains future 3.4.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -116,7 +116,7 @@ Run the backend restore/build/test commands above and frontend build/lint for VS
 
 ## Phase 3.2A - Session HTTP foundation and CSRF bootstrap
 
-3.2A registered Identity services/stores, only the application-cookie scheme, authorization without a fallback policy, and native antiforgery with anonymous `GET /api/auth/csrf`. 3.2B.1 now adds only register, account creation policy, and registration rate limiting as described below. Login/logout/me, current user, and frontend consumption are not implemented. Application startup and CSRF bootstrap still do not initialize/migrate the database.
+3.2A registered Identity services/stores, only the application-cookie scheme, authorization without a fallback policy, and native antiforgery with anonymous `GET /api/auth/csrf`. 3.2B.1 adds register, account creation policy, and registration rate limiting; B.2A adds the technical auxiliary handler, and B.2B adds login/logout/me and current user as described below. Frontend consumption is not implemented. Application startup and CSRF bootstrap still do not initialize/migrate the database.
 
 Use the existing API `https` launch profile (`https://localhost:7117`). Inspect certificate trust manually when needed; these commands are not application side effects and were not run by this slice:
 
@@ -160,7 +160,7 @@ Manual verification sequence, without printing secrets or embedding credentials 
 2. Obtain a disposable email and password through interactive input (masked for password). Build the JSON request in memory; do not put literal credentials in a script, shell command, transcript, tracked file, or request log. Any conversion required for JSON briefly materializes the password in memory; clear references promptly and do not claim managed memory is securely erased.
 3. POST `{ "email": "...", "password": "..." }` to `/api/auth/register` using the same cookie jar and header X-CSRF-TOKEN from bootstrap. Inspect only status and sanitized error categories, not tokens, payloads, password/hash values, or complete headers.
 4. Expect 201 with an empty body, no Location, and no auth cookie. The account is unconfirmed and the client remains anonymous. Registration does not require a new CSRF token because identity is unchanged.
-5. Equivalent duplicate email returns generic 400 registration_failed; invalid fields/policy return 400 validation_failed. Native CSRF failures return 400 csrf_invalid. A synthetic already-authenticated test session returns 409 already_authenticated; no login endpoint exists to create one manually yet.
+5. Equivalent duplicate email returns generic 400 registration_failed; invalid fields/policy return 400 validation_failed. Native CSRF failures return 400 csrf_invalid. An already-authenticated session returns 409 already_authenticated; B.2B provides the login workflow described below.
 6. Five registration requests per ten minutes per remote IP are admitted; an admitted request consumes quota even if CSRF/input rejects it. The sixth returns 429 rate_limited. Do not bypass quota through untrusted forwarded headers; bootstrap/health/maps do not consume it.
 7. Dispose the cookie jar and remove all token/password/request references after verification. Do not lower Secure cookies or TLS verification to accommodate a client.
 
@@ -168,7 +168,24 @@ Run the root restore/build/test commands and the unchanged frontend build/lint c
 
 New unit tests exercise RegisterUser through a creation-only fake. HTTP integration tests use native CSRF and cookies, a unique temporary SQLite file per factory, explicit fixture migrations, Pooling=false, and cleanup after disposing the host. They cover policy/limits, success without authentication, generic duplicates, existing-session rejection, safe errors, real concurrent unique-index failure, negative operational-fault injection, and IP quota behavior. The concurrency interceptor synchronizes two pending inserts with bounded waits and no sleeps; busy/PK/other-unique failures are not treated as duplicates. IP overrides exist only in the test host. TestServer does not validate real TLS, browser SameSite, or actual enforcement of the native 8 KiB server request-size limit.
 
-3.2B.2A fixes the reproduced missing-TwoFactorRememberMe rejection path using only the native auxiliary cookie helper, without changing the native SecurityStampValidator or implementing MFA/session endpoints. Run `dotnet test tests/Talynor.IntegrationTests/Talynor.IntegrationTests.csproj --no-restore --filter FullyQualifiedName~SecurityStampDiagnosticTests` first, then the full backend and frontend checks above. The regression uses a real SignInManager/cookie, temporary migrated SQLite, and a test-only TimeProvider advancing beyond the unchanged 30-minute interval. It covers valid-stamp renewal, invalid-stamp 401/cookie deletion, and original-ticket replay rejection. Both diagnostic routes return 404 outside the customized factory; no production login route is added. No Talynor flow issues the technical cookie.
+The published 3.2B.2A fixes the reproduced missing-TwoFactorRememberMe rejection path using only the native auxiliary cookie helper, without changing the native SecurityStampValidator or implementing MFA/session endpoints in that slice. Run `dotnet test tests/Talynor.IntegrationTests/Talynor.IntegrationTests.csproj --no-restore --filter FullyQualifiedName~SecurityStampDiagnosticTests` first, then the full backend and frontend checks above. The regression uses a real SignInManager/cookie, temporary migrated SQLite, and a test-only TimeProvider advancing beyond the unchanged 30-minute interval. It covers valid-stamp renewal, invalid-stamp 401/cookie deletion, and original-ticket replay rejection. Both diagnostic routes return 404 outside the customized factory. No Talynor flow issues the technical cookie.
+
+## Phase 3.2B.2B - Session Flow
+
+Implemented and pending review. Use the existing trusted HTTPS API profile and an explicitly migrated disposable local database; no database is created/migrated at startup. Test infrastructure uses only isolated temporary SQLite files with Pooling=false and cleanup after host disposal. RegistrationTestFactory is reused with a small optional service-configuration hook for the controlled session clock; no production header trust or time override is added.
+
+Manual sequence with the same in-memory cookie jar throughout:
+
+1. GET `/api/auth/csrf`, keeping its token only in memory.
+2. Obtain disposable email/password through interactive input, masking password as in the registration procedure. Build `{ "email": "...", "password": "..." }` only in memory, then POST `/api/auth/login` with `X-CSRF-TOKEN`. Expect empty 204 and the HttpOnly/Secure session cookie; do not print the payload, token, cookie, ticket, or full headers. Clear credential references promptly without claiming managed memory is securely erased.
+3. GET `/api/auth/csrf` again after authentication. The anonymous token must not be assumed valid for an authenticated unsafe action.
+4. GET `/api/auth/me` without a CSRF header: expect 200 with only current id/email and no-store. Inspect only status and needed synthetic account fields, never internal claims/hash/stamp.
+5. POST `/api/auth/logout` with the refreshed token: expect empty 204 and local cookie deletion. GET me now returns sanitized 401 without redirect. Another browser's session remains independent.
+6. GET `/api/auth/csrf` again for the anonymous identity before another login. Do not assume refresh globally revokes previous tokens or makes them one-time. Dispose the jar and clear token/request references when finished.
+
+Login failures (missing account, wrong password, locked out, or not allowed) are uniform 401 invalid_credentials; an existing session is 409 already_authenticated. Input is 400 validation_failed, native CSRF failures 400 csrf_invalid, login quota 429 rate_limited, and operational failures sanitized 500 unexpected_error. All responses are no-store. Login quota is ten requests/minute per remote IP; invalid CSRF requests also consume it. Native lockout uses five failures/five minutes; tests control LockoutEnd rather than sleeping. Registration retains its own five-request/ten-minute quota.
+
+Run tool restore, solution restore/build/tests, unchanged frontend build/lint, and the safe in-memory pending-model command above. SessionUseCaseTests cover Application decisions and failure propagation; CurrentUserTests cover fail-closed IDs; SessionFlowTests cover real registration/login, cookie properties, login validation, CSRF transitions, lockout, independent IP quotas, account reads/removal/provider failure, multiple browsers/local logout, and real-login stamp rejection/expiry with a controlled clock. Published B.2A regressions remain unchanged. No new package, migration, frontend code, or Development seed is added. TestServer does not establish real browser SameSite/TLS, Kestrel body-size enforcement, or deployment readiness.
 
 ## Intended workflow
 

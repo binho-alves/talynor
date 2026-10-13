@@ -13,6 +13,93 @@ namespace Talynor.Api.Controllers;
 [AutoValidateAntiforgeryToken]
 public sealed class AuthController(IAntiforgery antiforgery) : ControllerBase
 {
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [EnableRateLimiting("login")]
+    [RequestSizeLimit(8 * 1024)]
+    [RegistrationProblemDetails] // Reuses the existing endpoint-only CSRF/input sanitization.
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Login(LoginRequest request, [FromServices] LoginUser login,
+        [FromServices] ILogger<AuthController> logger, CancellationToken cancellationToken)
+    {
+        // Also rejects an authenticated but ambiguous principal, rather than switching accounts.
+        if (User.Identities.Any(identity => identity.IsAuthenticated))
+            return RegistrationProblem(StatusCodes.Status409Conflict, "already_authenticated",
+                "Encerre a sessão atual antes de autenticar outra conta.");
+        try
+        {
+            return await login.ExecuteAsync(request.Email!, request.Password!, cancellationToken) switch
+            {
+                LoginUserResult.Success => NoContent(),
+                LoginUserResult.AlreadyAuthenticated => RegistrationProblem(StatusCodes.Status409Conflict,
+                    "already_authenticated", "Encerre a sessão atual antes de autenticar outra conta."),
+                LoginUserResult.InvalidCredentials => RegistrationProblem(StatusCodes.Status401Unauthorized,
+                    "invalid_credentials", "Email ou senha inválidos."),
+                _ => throw new InvalidOperationException("Unexpected login result.")
+            };
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            logger.LogError("Session login failed due to an unexpected operational error.");
+            return RegistrationProblem(StatusCodes.Status500InternalServerError, "unexpected_error",
+                "Não foi possível concluir a operação.");
+        }
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    [RegistrationProblemDetails]
+    [ProducesResponseType<CurrentUserResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Me([FromServices] GetCurrentUser current,
+        [FromServices] ISessionService sessions, [FromServices] ILogger<AuthController> logger,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var account = await current.ExecuteAsync(cancellationToken);
+            if (account is not null) return Ok(new CurrentUserResponse(account.Id, account.Email));
+            await sessions.LogoutAsync(cancellationToken);
+            return RegistrationProblem(StatusCodes.Status401Unauthorized, "authentication_required",
+                "Autenticação necessária.");
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            logger.LogError("Current account lookup failed due to an unexpected operational error.");
+            return RegistrationProblem(StatusCodes.Status500InternalServerError, "unexpected_error",
+                "Não foi possível concluir a operação.");
+        }
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    [RegistrationProblemDetails]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> Logout([FromServices] ISessionService sessions,
+        [FromServices] ILogger<AuthController> logger, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await sessions.LogoutAsync(cancellationToken);
+            return NoContent();
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            logger.LogError("Session logout failed due to an unexpected operational error.");
+            return RegistrationProblem(StatusCodes.Status500InternalServerError, "unexpected_error",
+                "Não foi possível concluir a operação.");
+        }
+    }
+
     [HttpPost("register")]
     [AllowAnonymous]
     [EnableRateLimiting("registration")]

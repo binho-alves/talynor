@@ -7,6 +7,19 @@ namespace Talynor.Infrastructure.Accounts;
 
 public sealed class IdentityAccountService(UserManager<IdentityUser> users) : IIdentityAccountService
 {
+    public async Task<AccountSummary?> GetByIdAsync(string id, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var user = await users.FindByIdAsync(id);
+        if (user is null) return null;
+        var email = await users.GetEmailAsync(user);
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new InvalidOperationException("Account has no email.");
+        }
+        return new(user.Id, email);
+    }
+
     public async Task<RegisterUserResult> CreateAsync(
         string email, string password, CancellationToken cancellationToken)
     {

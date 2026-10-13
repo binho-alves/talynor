@@ -15,7 +15,8 @@ using Talynor.Infrastructure.Persistence;
 
 namespace Talynor.IntegrationTests;
 
-internal sealed class RegistrationTestFactory(SaveChangesInterceptor? interceptor = null)
+internal sealed class RegistrationTestFactory(SaveChangesInterceptor? interceptor = null,
+    Action<IServiceCollection>? configureServices = null)
     : WebApplicationFactory<Program>
 {
     private readonly string databasePath = Path.Combine(Path.GetTempPath(), $"talynor-register-{Guid.NewGuid():N}.sqlite");
@@ -38,6 +39,7 @@ internal sealed class RegistrationTestFactory(SaveChangesInterceptor? intercepto
             {
                 services.AddDbContext<TalynorDbContext>(options => options.AddInterceptors(interceptor));
             }
+            configureServices?.Invoke(services);
         });
     }
 

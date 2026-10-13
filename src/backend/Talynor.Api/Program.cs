@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Threading.RateLimiting;
 using Talynor.Application.Accounts;
+using Talynor.Api.Accounts;
 using Talynor.Infrastructure.Accounts;
 using Talynor.Application.KnowledgeMaps;
 using Talynor.Infrastructure.KnowledgeMaps;
@@ -22,6 +23,11 @@ builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IKnowledgeMapReader, InMemoryKnowledgeMapReader>();
 builder.Services.AddScoped<GetKnowledgeMap>();
 builder.Services.AddScoped<RegisterUser>();
+builder.Services.AddScoped<LoginUser>();
+builder.Services.AddScoped<GetCurrentUser>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
+builder.Services.AddScoped<ISessionService, IdentitySessionService>();
 builder.Services.AddScoped<IIdentityAccountService, IdentityAccountService>();
 builder.Services.AddDbContext<TalynorDbContext>(options =>
 {
@@ -52,6 +58,12 @@ builder.Services.AddIdentityCore<IdentityUser>(options =>
         options.Password.RequireDigit = false;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequiredUniqueChars = 1;
+        options.SignIn.RequireConfirmedEmail = false;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedPhoneNumber = false;
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     })
     .AddEntityFrameworkStores<TalynorDbContext>()
     .AddSignInManager();
@@ -73,12 +85,22 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.Events.OnRedirectToLogin = context =>
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        return Task.CompletedTask;
+        context.Response.Headers.CacheControl = "no-store";
+        return context.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status401Unauthorized, Title = "Autenticação necessária.",
+            Extensions = { ["code"] = "authentication_required" }
+        }, options: (System.Text.Json.JsonSerializerOptions?)null, contentType: "application/problem+json");
     };
     options.Events.OnRedirectToAccessDenied = context =>
     {
         context.Response.StatusCode = StatusCodes.Status403Forbidden;
-        return Task.CompletedTask;
+        context.Response.Headers.CacheControl = "no-store";
+        return context.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status403Forbidden, Title = "Acesso não permitido.",
+            Extensions = { ["code"] = "access_denied" }
+        }, options: (System.Text.Json.JsonSerializerOptions?)null, contentType: "application/problem+json");
     };
 });
 builder.Services.AddAuthorization();
@@ -93,6 +115,16 @@ builder.Services.AddAntiforgery(options =>
 });
 builder.Services.AddRateLimiter(options =>
 {
+    options.AddPolicy("login", context =>
+    {
+        var address = context.Connection.RemoteIpAddress;
+        if (address?.IsIPv4MappedToIPv6 == true) address = address.MapToIPv4();
+        return RateLimitPartition.GetFixedWindowLimiter(address?.ToString() ?? "missing-ip", _ => new()
+        {
+            PermitLimit = 10, Window = TimeSpan.FromMinutes(1), QueueLimit = 0,
+            AutoReplenishment = true
+        });
+    });
     options.AddPolicy("registration", context =>
     {
         var address = context.Connection.RemoteIpAddress;
@@ -133,6 +165,46 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Register before authentication so this callback runs after the native cookie callback.
+// Failed login must not emit a renewed application cookie; stamp rejection deletions remain intact.
+app.Use(async (context, next) =>
+{
+    if (string.Equals(context.Request.Path.Value?.TrimEnd('/'), "/api/auth/login", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.OnStarting(() =>
+        {
+            if (context.Response.StatusCode != StatusCodes.Status204NoContent)
+            {
+                var retained = context.Response.Headers.SetCookie.Where(value =>
+                    value is null || !value.StartsWith("__Host-Talynor.Auth=", StringComparison.Ordinal) ||
+                    Microsoft.Net.Http.Headers.SetCookieHeaderValue.Parse(value).Value.ToString().Length == 0).ToArray();
+                context.Response.Headers.SetCookie = retained;
+            }
+            return Task.CompletedTask;
+        });
+    }
+    await next(context);
+});
+// Native cookie validation can fail before a controller (for example, a database outage).
+// Sanitize only this slice's session endpoints; do not replace the stamp validator.
+app.UseWhen(context =>
+{
+    var path = context.Request.Path.Value?.TrimEnd('/');
+    return string.Equals(path, "/api/auth/login", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(path, "/api/auth/me", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(path, "/api/auth/logout", StringComparison.OrdinalIgnoreCase);
+}, branch =>
+    branch.UseExceptionHandler(handler => handler.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.Headers.CacheControl = "no-store";
+        await context.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status500InternalServerError, Title = "Não foi possível concluir a operação.",
+            Extensions = { ["code"] = "unexpected_error" }
+        }, options: (System.Text.Json.JsonSerializerOptions?)null, contentType: "application/problem+json",
+            cancellationToken: context.RequestAborted);
+    })));
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
