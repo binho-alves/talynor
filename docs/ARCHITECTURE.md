@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation, SPIKE-001, Phase 2, the published VS-001, Phase 3.1, and the published Phase 3.2A are completed and approved. Phase 3.2B.1 — Account Registration and Phase 3.2B.2A — Security Stamp Compatibility are completed, approved, and published. Phase 3.2B.2B — Session Flow is implemented and pending review: login/logout/me, current user, native lockout, and login rate limiting. Registration remains without auto-login. Workspace and frontend authentication are not implemented. The separate React frontend still reads two in-memory demonstration maps from the API. Further slices require scoped tasks.
+This document records the approved high-level direction. Foundation, Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2 — Identity and Session Backend are completed, approved, and published. Phase 3.3 — Personal Workspace and Ownership is implemented and pending review. Further slices require scoped tasks. The separate React frontend and the anonymous, global in-memory demonstration maps remain unchanged.
 
 ## Approved direction
 
@@ -17,7 +17,7 @@ This document records the approved high-level direction. Foundation, SPIKE-001, 
 | Persistence technology | EF Core. |
 | Early development database | SQLite for development and prototyping. |
 | Production database target | PostgreSQL. |
-| Initial account strategy | Local ASP.NET Core Identity; cookie infrastructure in 3.2A, registration in 3.2B.1, session workflows in 3.2B.2B (pending review). |
+| Initial account strategy | Local ASP.NET Core Identity; cookie infrastructure in 3.2A, registration in 3.2B.1, published session workflows in 3.2B.2B. |
 
 ## High-level responsibilities
 
@@ -83,7 +83,7 @@ The native `SecurityStampValidator<IdentityUser>`, its callback, 30-minute inter
 
 `HttpCurrentUser` is scoped in the API and reads IHttpContextAccessor. Missing context, anonymous identity, missing/blank/duplicate NameIdentifier, or multiple authenticated identities yield false/null. Email is never an identity fallback. `/me` uses this ID and the minimal `IIdentityAccountService.GetByIdAsync` extension; Infrastructure reads current Identity data and returns AccountSummary, never IdentityUser. Missing accounts/invalid IDs result in 401 and local sign-out; database errors do not become missing accounts.
 
-Native exception handling is restricted to login/me/logout paths, before authentication middleware, so a database failure during native cookie/stamp validation also returns no-store 500 unexpected_error rather than raw diagnostics. This is not a global handler or a replacement for SecurityStampValidator; registration and other endpoints retain their existing behavior. Controller-level operational failures use the same sanitized response.
+Native exception handling is restricted to login/me/logout and the current-workspace paths, before authentication middleware, so a database failure during native cookie/stamp validation also returns no-store 500 unexpected_error rather than raw diagnostics. This is not a global handler or a replacement for SecurityStampValidator; registration and other endpoints retain their existing behavior. Controller-level operational failures use the same sanitized response.
 
 A login-only response callback suppresses positive application-cookie renewal on failed login responses, including an already-authenticated 409 after the stamp interval. It preserves deletion headers and never changes the native validator/callback. Normal authenticated reads still allow native valid-stamp renewal.
 
@@ -92,6 +92,18 @@ Anonymous `POST /api/auth/login` accepts independent email/password input, trims
 Native lockout allows new users, uses five failures and a five-minute duration. Login has its own fixed-window policy of ten requests per minute per normalized remote IP, no queue, a shared missing-IP bucket, and no forwarded-header trust. Registration quota is unchanged. Login uses the native 8 KiB action limit where supported. Login/logout require the existing native CSRF filter; GET me does not. Clients must bootstrap a new request token after login/logout because identity changes, without assuming tokens are globally revoked or one-time.
 
 Multiple browsers may hold independent sessions; a new login does not invalidate earlier sessions. Logout deletes the local browser cookie, not all tickets or other browsers. No session table, global revocation, or single-session enforcement is added. Unconfirmed email is explicitly permitted; no confirmation/reset sender or provider is introduced. The B.2A native validator and technical auxiliary handler are preserved without functional MFA or auxiliary-cookie issuance. Domain, EF model/migrations, production Data Protection, dependencies, and frontend are unchanged.
+
+## Phase 3.3 - Personal Workspace and Ownership
+
+Implemented and pending review under [ADR-009](DECISIONS.md#adr-009---personal-workspace-and-ownership). `PersonalWorkspace` is the first Domain entity, containing only an application-generated Guid ID, immutable owner user ID string, and UTC creation timestamp. It has no dependency on Identity or EF. Atlas remains provisional; this technical workspace does not define a separate Atlas entity or finalize their product relationship.
+
+`GetOrCreatePersonalWorkspace` in Application resolves ownership exclusively from `ICurrentUser`, verifies the current account still exists through the existing account port, and returns its own projection. It receives `TimeProvider` for creation time, reads by owner, and creates only when absent. `IPersonalWorkspaceStore` exposes owner lookup and add-or-return-existing behavior; no generic repository or HTTP/Identity/EF types are introduced in Application. Register and login do not create a workspace.
+
+The scoped Infrastructure store uses EF Core/SQLite. `PersonalWorkspaces` has an explicit PK, required owner/time, and UNIQUE index on OwnerUserId. On the exact SQLite owner UNIQUE conflict, it detaches the losing candidate and rereads the winner; all other provider failures propagate. Independent request contexts and the database index enforce idempotence/concurrency without an in-memory lock. SQLite-specific conflict recognition remains confined to Infrastructure and requires adaptation when PostgreSQL is explicitly scoped. Existing project-reference directions remain unchanged; Infrastructure accesses Domain through its existing Application reference.
+
+`GET /api/workspace` requires Authorize, accepts no owner or workspace identifier, lazily resolves/creates the authenticated user's workspace, and returns 200 with only id/createdAtUtc and no-store. Anonymous/invalid/deleted-account sessions return sanitized 401; absent accounts cause local sign-out. Operational failures, including native stamp validation before the controller, remain sanitized 500. The existing restricted exception handler now includes only this additional endpoint. This approved GET can initialize an empty personal workspace; it has no client-controlled mutation payload or content CRUD. Login/logout CSRF and cookie protections are unchanged.
+
+OwnerUserId is a logical Identity reference with no navigation/FK/cascade. Account removal is not a workspace cleanup mechanism: orphan records can remain, and deletion lifecycle requires future design. The current account check prevents an already-removed account from accessing its workspace; it is not an atomic account-deletion lifecycle transaction. Knowledge Maps remain global, anonymous, demo, and in-memory. Frontend authentication remains future 3.4. Migrations stay explicit; startup never migrates, initializes, or seeds a database.
 
 ## Knowledge graph
 
@@ -138,4 +150,4 @@ The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, El
 
 ## Open design questions
 
-Local ASP.NET Core Identity, cookie/antiforgery infrastructure, account registration/password policy, Session Flow/lockout, and a future single personal workspace per user are approved under ADR-008. Account recovery and verification and detailed workspace behavior still require scoped implementation/design. Product module boundaries, automatic layout, final interaction design, relationship taxonomy and knowledge persistence representation, further business API contracts, frontend test tooling, package manager, deployment topology, and production migration procedures remain open. Local Identity migrations are explicit as documented above; PostgreSQL infrastructure remains unauthorized.
+Local ASP.NET Core Identity, cookie/antiforgery infrastructure, account registration/password policy, and Session Flow/lockout are approved under ADR-008; the initial personal workspace is defined in ADR-009. Account recovery and verification, workspace lifecycle, and future workspace operations still require scoped implementation/design. Product module boundaries, automatic layout, final interaction design, relationship taxonomy and knowledge persistence representation, further business API contracts, frontend test tooling, package manager, deployment topology, and production migration procedures remain open. Local Identity migrations are explicit as documented above; PostgreSQL infrastructure remains unauthorized.

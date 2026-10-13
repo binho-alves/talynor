@@ -10,6 +10,8 @@ using Talynor.Infrastructure.Accounts;
 using Talynor.Application.KnowledgeMaps;
 using Talynor.Infrastructure.KnowledgeMaps;
 using Talynor.Infrastructure.Persistence;
+using Talynor.Application.Workspaces;
+using Talynor.Infrastructure.Workspaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,9 @@ builder.Services.AddScoped<GetKnowledgeMap>();
 builder.Services.AddScoped<RegisterUser>();
 builder.Services.AddScoped<LoginUser>();
 builder.Services.AddScoped<GetCurrentUser>();
+builder.Services.AddScoped<GetOrCreatePersonalWorkspace>();
+builder.Services.AddScoped<IPersonalWorkspaceStore, PersonalWorkspaceStore>();
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, HttpCurrentUser>();
 builder.Services.AddScoped<ISessionService, IdentitySessionService>();
@@ -186,13 +191,14 @@ app.Use(async (context, next) =>
     await next(context);
 });
 // Native cookie validation can fail before a controller (for example, a database outage).
-// Sanitize only this slice's session endpoints; do not replace the stamp validator.
+// Sanitize only session/current-workspace endpoints; do not replace the stamp validator.
 app.UseWhen(context =>
 {
     var path = context.Request.Path.Value?.TrimEnd('/');
     return string.Equals(path, "/api/auth/login", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(path, "/api/auth/me", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(path, "/api/auth/logout", StringComparison.OrdinalIgnoreCase);
+        string.Equals(path, "/api/auth/logout", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(path, "/api/workspace", StringComparison.OrdinalIgnoreCase);
 }, branch =>
     branch.UseExceptionHandler(handler => handler.Run(async context =>
     {

@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration and Phase 3.2B.2A — Security Stamp Compatibility are completed, approved, and published. Phase 3.2B.2B — Session Flow is implemented and pending review. Workspace/ownership remains future 3.3; frontend authentication remains future 3.4.
+- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration and Phase 3.2B.2A — Security Stamp Compatibility are completed, approved, and published. Phase 3.2B.2B — Session Flow is completed, approved, and published, completing Phase 3.2. Phase 3.3 — Personal Workspace and Ownership is implemented and pending review; frontend authentication remains future 3.4.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -172,7 +172,7 @@ The published 3.2B.2A fixes the reproduced missing-TwoFactorRememberMe rejection
 
 ## Phase 3.2B.2B - Session Flow
 
-Implemented and pending review. Use the existing trusted HTTPS API profile and an explicitly migrated disposable local database; no database is created/migrated at startup. Test infrastructure uses only isolated temporary SQLite files with Pooling=false and cleanup after host disposal. RegistrationTestFactory is reused with a small optional service-configuration hook for the controlled session clock; no production header trust or time override is added.
+Completed, approved, and published. Use the existing trusted HTTPS API profile and an explicitly migrated disposable local database; no database is created/migrated at startup. Test infrastructure uses only isolated temporary SQLite files with Pooling=false and cleanup after host disposal. RegistrationTestFactory is reused with a small optional service-configuration hook for the controlled session clock; no production header trust or time override is added.
 
 Manual sequence with the same in-memory cookie jar throughout:
 
@@ -186,6 +186,21 @@ Manual sequence with the same in-memory cookie jar throughout:
 Login failures (missing account, wrong password, locked out, or not allowed) are uniform 401 invalid_credentials; an existing session is 409 already_authenticated. Input is 400 validation_failed, native CSRF failures 400 csrf_invalid, login quota 429 rate_limited, and operational failures sanitized 500 unexpected_error. All responses are no-store. Login quota is ten requests/minute per remote IP; invalid CSRF requests also consume it. Native lockout uses five failures/five minutes; tests control LockoutEnd rather than sleeping. Registration retains its own five-request/ten-minute quota.
 
 Run tool restore, solution restore/build/tests, unchanged frontend build/lint, and the safe in-memory pending-model command above. SessionUseCaseTests cover Application decisions and failure propagation; CurrentUserTests cover fail-closed IDs; SessionFlowTests cover real registration/login, cookie properties, login validation, CSRF transitions, lockout, independent IP quotas, account reads/removal/provider failure, multiple browsers/local logout, and real-login stamp rejection/expiry with a controlled clock. Published B.2A regressions remain unchanged. No new package, migration, frontend code, or Development seed is added. TestServer does not establish real browser SameSite/TLS, Kestrel body-size enforcement, or deployment readiness.
+
+## Phase 3.3 - Personal Workspace and Ownership
+
+Implemented and pending review. Phase 3.2 is completed and published. The new AddPersonalWorkspace migration adds only PersonalWorkspaces and its UNIQUE owner index. Review it, explicitly select the disposable local SQLite path using the existing database-selection procedure, then run `dotnet tool run dotnet-ef database update --project src/backend/Talynor.Infrastructure`. This explicit operation applies both existing Identity and new workspace migrations as needed. It was not run against the Development database by this implementation; startup never migrates/initializes/seeds it. Account deletion does not cascade to workspaces; cleanup/lifecycle remain future work.
+
+Manual verification uses the trusted HTTPS API and the same in-memory cookie jar from the Session Flow procedure:
+
+1. GET `/api/auth/csrf`, retain the request token only in memory, and POST `/api/auth/login` with disposable credentials obtained interactively and the X-CSRF-TOKEN header. Registration/login do not create a workspace.
+2. Refresh CSRF after login for subsequent unsafe auth actions. GET `/api/workspace` needs no CSRF header and accepts no owner/workspace ID. First access creates an empty workspace and returns 200 with only id/createdAtUtc and no-store.
+3. Repeat GET workspace: the ID and original creation time stay unchanged. In a separate authenticated cookie jar for another account, expect a different workspace; each browser continues to receive its own. Query-supplied owner/workspace IDs cannot select another user's record.
+4. An anonymous cookie jar receives sanitized 401. Logout remains the existing CSRF-protected operation and ends only the current browser session. Do not print cookies, credentials, CSRF tokens, tickets, full headers, or real account data. Clear in-memory references as in the existing procedure.
+
+Run tool/solution restore, solution build/tests, frontend build/lint, and the existing safe pending-model command with `Data Source=:memory:`. PersonalWorkspaceUseCaseTests cover authentication, account existence, owner derivation, idempotent lookup, controlled creation time, and error propagation. PersonalWorkspaceTests cover real register/login, lazy initialization, exact response shape, sequential reuse, two-user isolation, synchronized simultaneous HTTP access, removed accounts, native stamp/provider failures, and Development OpenAPI. PersonalWorkspacePersistenceTests cover cross-context roundtrip, the actual UNIQUE constraint/recovery, and non-owner provider failures. RegistrationTestFactory is reused without another host factory; databases are temporary/migrated explicitly with Pooling=false, ephemeral Data Protection, and cleanup.
+
+Knowledge Maps and frontend remain unchanged; no production deployment/browser-security claim is made. SQLite-specific conflict recognition must be adapted when a future PostgreSQL transition is explicitly authorized. No new dependency or frontend package manager decision is made.
 
 ## Intended workflow
 

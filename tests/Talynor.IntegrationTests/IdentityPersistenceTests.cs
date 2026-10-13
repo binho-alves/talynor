@@ -14,7 +14,7 @@ namespace Talynor.IntegrationTests;
 public class IdentityPersistenceTests
 {
     [Fact]
-    public async Task Migrations_create_only_role_free_identity_schema_and_can_be_reapplied()
+    public async Task Migrations_create_role_free_identity_and_personal_workspace_schema_and_can_be_reapplied()
     {
         await using var connection = new SqliteConnection("Data Source=:memory:");
         await connection.OpenAsync();
@@ -35,9 +35,11 @@ public class IdentityPersistenceTests
             }
         }
 
-        Assert.Equal(new[] { "AspNetUserClaims", "AspNetUserLogins", "AspNetUserTokens", "AspNetUsers" }, tables);
+        Assert.Equal(new[] { "AspNetUserClaims", "AspNetUserLogins", "AspNetUserTokens", "AspNetUsers", "PersonalWorkspaces" }, tables);
         var applied = (await context.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.EndsWith("_InitialIdentity", Assert.Single(applied));
+        Assert.Equal(2, applied.Length);
+        Assert.EndsWith("_InitialIdentity", applied[0]);
+        Assert.EndsWith("_AddPersonalWorkspace", applied[1]);
 
         await context.Database.MigrateAsync();
 
