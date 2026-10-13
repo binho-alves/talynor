@@ -1,6 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
+using System.Threading.RateLimiting;
+using Talynor.Application.Accounts;
+using Talynor.Infrastructure.Accounts;
 using Talynor.Application.KnowledgeMaps;
 using Talynor.Infrastructure.KnowledgeMaps;
 using Talynor.Infrastructure.Persistence;
@@ -16,6 +21,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IKnowledgeMapReader, InMemoryKnowledgeMapReader>();
 builder.Services.AddScoped<GetKnowledgeMap>();
+builder.Services.AddScoped<RegisterUser>();
+builder.Services.AddScoped<IIdentityAccountService, IdentityAccountService>();
 builder.Services.AddDbContext<TalynorDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Talynor");
@@ -34,7 +41,18 @@ builder.Services.AddDbContext<TalynorDbContext>(options =>
     options.UseSqlite(sqlite.ConnectionString);
 });
 
-builder.Services.AddIdentityCore<IdentityUser>()
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        // The email contract accepts Unicode; do not impose the default ASCII username whitelist.
+        options.User.AllowedUserNameCharacters = string.Empty;
+        options.Password.RequiredLength = 15;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireDigit = false;
+        options.Password.RequireNonAlphanumeric = false;
+        options.Password.RequiredUniqueChars = 1;
+    })
     .AddEntityFrameworkStores<TalynorDbContext>()
     .AddSignInManager();
 
@@ -71,6 +89,39 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
     options.Cookie.Path = "/";
 });
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("registration", context =>
+    {
+        var address = context.Connection.RemoteIpAddress;
+        if (address?.IsIPv4MappedToIPv6 == true)
+        {
+            address = address.MapToIPv4();
+        }
+        return RateLimitPartition.GetFixedWindowLimiter(address?.ToString() ?? "missing-ip", _ => new()
+        {
+            PermitLimit = 5, Window = TimeSpan.FromMinutes(10), QueueLimit = 0,
+            AutoReplenishment = true
+        });
+    });
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        context.HttpContext.Response.Headers.CacheControl = "no-store";
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = Math.Ceiling(retryAfter.TotalSeconds)
+                .ToString(CultureInfo.InvariantCulture);
+        }
+        await context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+        {
+            Status = StatusCodes.Status429TooManyRequests,
+            Title = "Limite de solicitações atingido. Tente novamente mais tarde.",
+            Extensions = { ["code"] = "rate_limited" }
+        }, options: (System.Text.Json.JsonSerializerOptions?)null,
+            contentType: "application/problem+json", cancellationToken: cancellationToken);
+    };
+});
 
 var app = builder.Build();
 
@@ -80,8 +131,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 
 app.MapControllers();
 app.MapHealthChecks("/health");

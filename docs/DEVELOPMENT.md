@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phases 1 and 2, VS-001, and Phase 3.1 completed and approved; VS-001 and 3.1 published. Phase 3.2 started with 3.2A — Session HTTP Foundation and CSRF Bootstrap, implemented and pending review. Account/session endpoints and workspace workflows have not started.
+- Current stage: Phases 1 and 2, VS-001, Phase 3.1, and Phase 3.2A completed and approved; VS-001, 3.1, and 3.2A published. Phase 3.2B.1 — Account Registration is implemented and pending review. Login/logout/me/current user remain reserved for 3.2B.2, Workspace/ownership for 3.3, and frontend authentication for 3.4.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -116,7 +116,7 @@ Run the backend restore/build/test commands above and frontend build/lint for VS
 
 ## Phase 3.2A - Session HTTP foundation and CSRF bootstrap
 
-The backend registers Identity services/stores, only the application-cookie scheme, authorization without a fallback policy, and native antiforgery. Only anonymous `GET /api/auth/csrf` is available under `/api/auth`. Register/login/logout/me, current user, account policy, rate limiting, and frontend consumption are not implemented. Application startup and CSRF bootstrap still do not initialize/migrate the database.
+3.2A registered Identity services/stores, only the application-cookie scheme, authorization without a fallback policy, and native antiforgery with anonymous `GET /api/auth/csrf`. 3.2B.1 now adds only register, account creation policy, and registration rate limiting as described below. Login/logout/me, current user, and frontend consumption are not implemented. Application startup and CSRF bootstrap still do not initialize/migrate the database.
 
 Use the existing API `https` launch profile (`https://localhost:7117`). Inspect certificate trust manually when needed; these commands are not application side effects and were not run by this slice:
 
@@ -149,6 +149,26 @@ Remove-Item Env:ConnectionStrings__Talynor -ErrorAction SilentlyContinue
 ```
 
 The current Vite proxy and React remain unchanged. `NODE_OPTIONS=--use-system-ca` helps Node trust the HTTPS API; it does not enable HTTPS on the frontend dev server. Real browser authentication integration is reserved for 3.4. Do not weaken Secure/TLS settings to accommodate it.
+
+## Phase 3.2B.1 - Account registration
+
+After explicitly selecting and migrating the intended disposable local database using the existing procedure, run the API's trusted HTTPS profile. Startup does not create/update the database. The in-process test suite creates its own isolated temporary SQLite files; it never uses the Development database.
+
+Manual verification sequence, without printing secrets or embedding credentials in commands/history:
+
+1. Create an in-memory WebRequestSession/cookie jar and call GET `/api/auth/csrf` over trusted HTTPS, as shown above.
+2. Obtain a disposable email and password through interactive input (masked for password). Build the JSON request in memory; do not put literal credentials in a script, shell command, transcript, tracked file, or request log. Any conversion required for JSON briefly materializes the password in memory; clear references promptly and do not claim managed memory is securely erased.
+3. POST `{ "email": "...", "password": "..." }` to `/api/auth/register` using the same cookie jar and header X-CSRF-TOKEN from bootstrap. Inspect only status and sanitized error categories, not tokens, payloads, password/hash values, or complete headers.
+4. Expect 201 with an empty body, no Location, and no auth cookie. The account is unconfirmed and the client remains anonymous. Registration does not require a new CSRF token because identity is unchanged.
+5. Equivalent duplicate email returns generic 400 registration_failed; invalid fields/policy return 400 validation_failed. Native CSRF failures return 400 csrf_invalid. A synthetic already-authenticated test session returns 409 already_authenticated; no login endpoint exists to create one manually yet.
+6. Five registration requests per ten minutes per remote IP are admitted; an admitted request consumes quota even if CSRF/input rejects it. The sixth returns 429 rate_limited. Do not bypass quota through untrusted forwarded headers; bootstrap/health/maps do not consume it.
+7. Dispose the cookie jar and remove all token/password/request references after verification. Do not lower Secure cookies or TLS verification to accommodate a client.
+
+Run the root restore/build/test commands and the unchanged frontend build/lint commands. Reuse the documented `has-pending-model-changes` command with `Data Source=:memory:`; expect no model change. No new dependency, migration, DbContext change, frontend code, or development account seed is introduced. Do not run migrations on the Development database just to run tests.
+
+New unit tests exercise RegisterUser through a creation-only fake. HTTP integration tests use native CSRF and cookies, a unique temporary SQLite file per factory, explicit fixture migrations, Pooling=false, and cleanup after disposing the host. They cover policy/limits, success without authentication, generic duplicates, existing-session rejection, safe errors, real concurrent unique-index failure, negative operational-fault injection, and IP quota behavior. The concurrency interceptor synchronizes two pending inserts with bounded waits and no sleeps; busy/PK/other-unique failures are not treated as duplicates. IP overrides exist only in the test host. TestServer does not validate real TLS, browser SameSite, or actual enforcement of the native 8 KiB server request-size limit.
+
+Security Stamp remains unchanged. Before session implementation in 3.2B.2, reproduce the potential missing-TwoFactorRememberMe rejection path against the real setup rather than introducing a speculative validator or MFA scheme.
 
 ## Intended workflow
 
