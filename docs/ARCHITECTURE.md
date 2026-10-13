@@ -2,7 +2,7 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation, SPIKE-001, Phase 2, and the published VS-001 are completed and approved. Phase 3 has started with 3.1 — Persistence Foundation, implemented and pending review. EF Core/SQLite now supplies role-free Identity persistence; HTTP authentication, sessions, and workspace are not implemented. The separate React frontend still reads two in-memory demonstration maps from the API. Further slices require scoped tasks.
+This document records the approved high-level direction. Foundation, SPIKE-001, Phase 2, the published VS-001, and the published Phase 3.1 are completed and approved. Phase 3.2A — Session HTTP Foundation and CSRF Bootstrap is implemented and pending review. Identity persistence now has HTTP cookie/authorization and antiforgery infrastructure, but no register, login, logout, `/me`, or workspace workflow. The separate React frontend still reads two in-memory demonstration maps from the API. Further slices require scoped tasks.
 
 ## Approved direction
 
@@ -17,7 +17,7 @@ This document records the approved high-level direction. Foundation, SPIKE-001, 
 | Persistence technology | EF Core. |
 | Early development database | SQLite for development and prototyping. |
 | Production database target | PostgreSQL. |
-| Initial account strategy | Local ASP.NET Core Identity; browser cookie sessions are approved for a future slice, not configured yet. |
+| Initial account strategy | Local ASP.NET Core Identity; browser-cookie infrastructure is configured in 3.2A, with account/session workflows reserved for 3.2B. |
 
 ## High-level responsibilities
 
@@ -45,9 +45,19 @@ The frontend uses native fetch, basic runtime JSON validation, and an explicit `
 
 `TalynorDbContext` lives in Infrastructure and derives from `IdentityUserContext<IdentityUser>` without roles or an empty custom user class. Its schema contains users, user claims, user logins, and user tokens; these framework tables do not authorize external login or token HTTP endpoints. No workspace, knowledge-map, node, or edge table is included. Domain and Application remain independent of Identity and EF Core, and project-reference directions are unchanged. No explicit ASP.NET Core shared-framework reference was needed in Infrastructure for this persistence-only model.
 
-The API registers only the DbContext with SQLite. The Development connection string is configurable; relative runtime database paths resolve against the API content root. Registration does not open a connection, create a file, apply migrations, or seed users. Health and demonstration reads do not depend on the database. Other environments must configure the connection string before using persistence.
+In 3.1, the API registered only the DbContext with SQLite; 3.2A adds the services described below. The Development connection string is configurable; relative runtime database paths resolve against the API content root. Registration does not open a connection, create a file, apply migrations, or seed users. Health and demonstration reads do not depend on the database. Other environments must configure the connection string before using persistence.
 
 Infrastructure owns the explicit `InitialIdentity` migration and a design-time factory. The factory requires `ConnectionStrings__Talynor` rather than guessing a database, and does not start the API. EF commands use the versioned local tool manifest. See [Development](DEVELOPMENT.md#phase-31---identity-persistence) for database selection and lifecycle commands. No automatic startup migration or `EnsureCreated` is used.
+
+## Phase 3.2A - Session HTTP foundation and CSRF bootstrap
+
+The API composes `AddIdentityCore<IdentityUser>()`, the existing EF stores, and `AddSignInManager()` without roles, UI, account endpoints, extra token providers, or schema changes. Domain and Application remain untouched. `AddApplicationCookie()` registers only `Identity.Application` and preserves `SecurityStampValidator`; redirect callbacks return 401/403 instead of HTML navigation. No external or two-factor cookie schemes are registered.
+
+The application cookie is `__Host-Talynor.Auth`, HttpOnly, Secure Always, SameSite Lax, Path `/`, with no Domain. Tickets have an eight-hour lifetime without sliding expiration. No login currently issues this cookie; non-persistent sign-in is reserved for 3.2B. Authorization services and middleware are registered without a global fallback policy. Health, demonstration maps, and CSRF bootstrap remain anonymous; OpenAPI remains Development-only. HTTPS redirection precedes authentication and authorization, then controllers. Routing uses the existing WebApplication behavior; no CORS or rate limiter is added.
+
+`AuthController` exposes only `GET /api/auth/csrf`, calling native `IAntiforgery.GetAndStoreTokens` and returning `{ "token": "..." }` with `Cache-Control: no-store`. The separate `__Host-Talynor.Csrf` cookie is HttpOnly, Secure Always, SameSite Strict, Path `/`, without Domain; the request header is `X-CSRF-TOKEN`. The cookie token is never included in the JSON response. MVC uses `AddControllersWithViews` to register the native antiforgery filters, without adding views, Razor Pages, or Identity UI. `[AutoValidateAntiforgeryToken]` prepares the controller for future unsafe methods and skips its current GET. No artificial POST endpoint is introduced. Account POST validation and token refresh across authentication changes belong to 3.2B; frontend consumption belongs to 3.4.
+
+Production code keeps the default local Data Protection setup without a custom key ring. Startup and CSRF bootstrap do not create/migrate SQLite or seed users. Tests check native token-pair validity, host cookie/scheme configuration, 401/403 callbacks, unchanged runtime EF model, and the existing anonymous endpoints.
 
 ## Knowledge graph
 
@@ -94,4 +104,4 @@ The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, El
 
 ## Open design questions
 
-Local ASP.NET Core Identity, future browser cookies, and a future single personal workspace per user are approved under ADR-008. Session security settings, account recovery and verification workflows, and detailed workspace behavior still require scoped design and implementation. Product module boundaries, automatic layout, final interaction design, relationship taxonomy and knowledge persistence representation, further business API contracts, frontend test tooling, package manager, deployment topology, and production migration procedures remain open. Local Identity migrations are now explicit as documented above; PostgreSQL infrastructure remains unauthorized.
+Local ASP.NET Core Identity, the initial cookie/antiforgery infrastructure, and a future single personal workspace per user are approved under ADR-008. Account/session workflows, password and lockout policy, account recovery and verification, and detailed workspace behavior still require scoped implementation/design. Product module boundaries, automatic layout, final interaction design, relationship taxonomy and knowledge persistence representation, further business API contracts, frontend test tooling, package manager, deployment topology, and production migration procedures remain open. Local Identity migrations are explicit as documented above; PostgreSQL infrastructure remains unauthorized.

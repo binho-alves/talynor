@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -95,6 +96,7 @@ public class IdentityPersistenceTests
             using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
             {
                 builder.UseEnvironment("Development");
+                builder.ConfigureServices(services => services.AddDataProtection().UseEphemeralDataProtectionProvider());
                 builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
                     new Dictionary<string, string?> { ["ConnectionStrings:Talynor"] = $"Data Source={path}" }));
             });
@@ -108,8 +110,10 @@ public class IdentityPersistenceTests
 
             using var health = await client.GetAsync("/health");
             using var map = await client.GetAsync("/api/knowledge-maps/software");
+            using var csrf = await client.GetAsync("/api/auth/csrf");
             health.EnsureSuccessStatusCode();
             map.EnsureSuccessStatusCode();
+            csrf.EnsureSuccessStatusCode();
             Assert.False(File.Exists(path));
         }
         finally

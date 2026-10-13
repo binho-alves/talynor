@@ -2,9 +2,11 @@
 
 Talynor is a visual learning and personal knowledge platform where users build interconnected knowledge maps, organize learning content, and track their studies.
 
-**Current status:** foundation, Phase 1 — SPIKE-001, Phase 2 — Solution and Application Skeleton, and VS-001 — Read-only Knowledge Graph Vertical Slice are completed and approved; VS-001 is published. Phase 3 — Identity and Workspace has started. Its current slice, 3.1 — Persistence Foundation, implements role-free Identity persistence with EF Core/SQLite, an explicit migration, and persistence tests, pending review. HTTP authentication, sessions, and workspace are not implemented. React still reads the two in-memory demonstration maps through the .NET API and adapts the independent HTTP contract to XYFlow; progress and study time remain demonstration values.
+**Current status:** foundation, Phase 1 — SPIKE-001, Phase 2 — Solution and Application Skeleton, VS-001, and Phase 3.1 — Persistence Foundation are completed and approved; VS-001 and 3.1 are published. Phase 3.2 has started with **3.2A — Session HTTP Foundation and CSRF Bootstrap**, implemented and pending review. It composes Identity services/stores, application-cookie and authorization infrastructure, and native antiforgery with anonymous `GET /api/auth/csrf`. Register, login, logout, `/me`, and Workspace are not implemented. React still reads the two in-memory demonstration maps through the .NET API; frontend behavior, progress, and study time are unchanged.
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
+
+See [the 3.2A development procedure](docs/DEVELOPMENT.md#phase-32a---session-http-foundation-and-csrf-bootstrap) for HTTPS and the CSRF bootstrap. No account/session workflow is available yet.
 
 See [the frontend spike](src/frontend/talynor-web/README.md) for local commands, interactions, limitations, and React learning notes.
 

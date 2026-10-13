@@ -42,7 +42,13 @@ This roadmap defines phase-level goals and outputs, not detailed implementation 
 
 ## Phase 3 - Identity and Workspace
 
-**Status:** started; not completed. The current authorized slice is **3.1 — Persistence Foundation**, implemented and pending review: role-free Identity persistence through EF Core/SQLite, local EF tooling, an explicit migration, and persistence tests. No HTTP authentication or workspace exists yet. VS-001 remains a separate completed demonstration slice.
+**Status:** started; not completed. **3.1 — Persistence Foundation** is completed, approved, and published. **3.2 — Identity and Session Backend** has started with 3.2A, implemented and pending review. Session HTTP infrastructure exists, but account endpoints and workspace are not implemented. VS-001 remains a separate completed demonstration slice.
+
+**Phase 3 incremental slices:**
+
+- **3.2A — Session HTTP Foundation and CSRF Bootstrap:** Identity services/stores over the existing schema, application-cookie and authorization infrastructure, native antiforgery, anonymous `GET /api/auth/csrf`, and integration verification. Implemented, pending review.
+- **3.2B — Identity and Session Workflows:** register/login/logout/me, current-user abstraction, scoped account/session behavior, password and lockout policy, rate limiting, and session/CSRF tests. Not implemented; requires a separate task.
+- **3.3 — Personal Workspace:** remains reserved for workspace storage and ownership; not started. Frontend authentication remains outside 3.2 and reserved for 3.4.
 
 **Goal:** establish account and knowledge workspace workflows with explicit access boundaries.
 
@@ -52,7 +58,7 @@ One future personal workspace per user is approved, without implementing it in 3
 
 **Approved incremental direction:** local ASP.NET Core Identity and future browser cookies, recorded in [ADR-008](DECISIONS.md#adr-008---incremental-local-identity-and-persistence). Phase 3.2 introduces scoped identity/session HTTP behavior; Phase 3.3 introduces the personal workspace. Approval of this direction does not authorize implementing those slices in 3.1.
 
-**Current slice non-goals:** login/register/logout, current user, cookies/JWT, antiforgery, authorization, workspace, frontend authentication, or knowledge-map persistence. Social networking, public marketplace, and real-time collaboration remain outside this phase.
+**Current slice (3.2A) non-goals:** register/login/logout/me, current user, account/session adapters, password/lockout or unique-email policy, rate limiting, JWT, workspace, frontend authentication, or knowledge-map persistence. Social networking, public marketplace, and real-time collaboration remain outside this phase.
 
 ## Phase 4 - Knowledge Graph
 
