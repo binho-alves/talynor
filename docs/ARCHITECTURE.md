@@ -2,7 +2,9 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation, Phases 1 and 2, VS-001, Phase 3.1, Phase 3.2 — Identity and Session Backend, and Phase 3.3 — Personal Workspace and Ownership are completed, approved, and published. Phase 3.4 — Authenticated Frontend is implemented and pending review. Further slices require scoped tasks. The separate React frontend now consumes session/workspace endpoints; Knowledge Maps remain anonymous, global in-memory demos.
+This document records the approved high-level direction. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 validation and closure is completed; Phase 3 is complete. Phase 4 — Persistent Knowledge Authoring is next and not started. Further implementation requires scoped tasks.
+
+The published backend includes Identity with EF Core/SQLite, cookie authentication, antiforgery, and persistent owned PersonalWorkspace records. The React frontend includes session bootstrap, login, me/workspace loading, logout, an authenticated shell, and the KnowledgeGraph demo. Real-browser HTTPS validation is completed for these local flows. PersonalWorkspace is persistent and owned; current Knowledge Maps remain anonymous, global in-memory demos without workspace ownership or knowledge persistence.
 
 ## Approved direction
 
@@ -107,7 +109,7 @@ OwnerUserId is a logical Identity reference with no navigation/FK/cascade. Accou
 
 ## Phase 3.4 - Authenticated Frontend
 
-Implemented and pending review under [ADR-010](DECISIONS.md#adr-010---authenticated-frontend-session-flow). App uses a small `useSession` custom hook and conditional rendering; no Context/Provider, router, form framework, or application state library is needed. `sessionClient` coordinates the HTTP sequence independently of React; `authApi`, `workspaceApi`, and a small native-fetch helper retain status/error categories and validate external JSON. Known ProblemDetails codes are mapped to local messages; raw server titles/details are not rendered.
+Completed, approved, and published under [ADR-010](DECISIONS.md#adr-010---authenticated-frontend-session-flow), with local real-browser validation completed in Phase 3.5. App uses a small `useSession` custom hook and conditional rendering; no Context/Provider, router, form framework, or application state library is needed. `sessionClient` coordinates the HTTP sequence independently of React; `authApi`, `workspaceApi`, and a small native-fetch helper retain status/error categories and validate external JSON. Known ProblemDetails codes are mapped to local messages; raw server titles/details are not rendered.
 
 Bootstrap calls `/api/auth/me`, then `/api/workspace` only after a valid user response. Only id/email and workspace id/createdAtUtc are retained in state. A 401 on either protected read leads to anonymous login; network/500/protocol failures lead to an error/retry gate, not an inferred logout. Anonymous CSRF is fetched when submitting login. Login uses X-CSRF-TOKEN and on 204 refreshes CSRF before reading me/workspace. A 409 rechecks me without switching accounts. Invalid login CSRF gets one renewal and requires a new user submission; credentials are never automatically replayed.
 
@@ -116,6 +118,10 @@ The browser owns the HttpOnly auth cookie. Fetch uses relative `/api`, credentia
 `KnowledgeGraph` contains the existing map navigation, selection, dragged positions, loading/retry, adapter, and XYFlow behavior. It mounts only after session/workspace bootstrap and unmounts on logout/expiration, aborting pending map requests and resetting visual state. Map errors remain separate and never end the session. The session gate is UX protection, not authorization of demo content: the map API remains anonymous and is not linked to personal workspace persistence.
 
 Vite retains the development same-origin proxy, now requires an HTTPS API target and trusted external certificate/key paths for browser-to-Vite HTTPS, and rejects the historical insecure proxy flag. It does not generate/trust certificates or alter the backend. Production same-origin routing/TLS, frontend test tooling, package manager, real-device interaction, and full accessibility remain separately scoped.
+
+## Phase 3.5 - Validation and Phase Closure
+
+Completed on 2026-10-13 using explicitly migrated disposable SQLite and an existing trusted localhost certificate, with exported PEM/key files outside the repository. Browser session, CSRF, workspace, refresh/logout, graph/error isolation, desktop/tablet/mobile layout, and accessibility smoke checks passed. Chrome Storage and Network metadata were confirmed through assisted manual inspection. Backend build, 33 unit tests, 111 integration tests, frontend build/lint, and the unchanged EF model passed; no code correction or weakened TLS was required. This closes Phase 3, without a public-deployment or full-accessibility claim.
 
 ## Knowledge graph
 

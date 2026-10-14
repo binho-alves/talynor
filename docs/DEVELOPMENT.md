@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phases 1 and 2, VS-001, Phase 3.1, Phase 3.2 — Identity and Session Backend, and Phase 3.3 — Personal Workspace and Ownership are completed, approved, and published. Phase 3.4 — Authenticated Frontend is implemented and pending review. Phase 3.5 validation/closure remains future work.
+- Current stage: Phase 3 is complete. Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 validation and closure is completed. Next is Phase 4 — Persistent Knowledge Authoring, not started and requiring a separately scoped task.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -40,9 +40,9 @@ pnpm dev
 
 The example target matches the current HTTPS launch profile; update local configuration if its port changes. Vite proxies `/api` to this target, while React uses relative URLs. Build/lint do not require the target. The proxy is not a production hosting or `vite preview` configuration. No backend CORS is needed for this development setup.
 
-TLS verification is enabled by default. If Node reports a certificate trust error for the local development certificate, diagnose it and establish correct certificate trust. In the validated Node 24 Windows environment, `$env:NODE_OPTIONS = '--use-system-ca'` let the proxy trust the existing development certificate without disabling verification. Set it before starting Vite when needed.
+TLS verification is enabled by default. If Node reports a certificate trust error for the local development certificate, diagnose it and establish correct certificate trust. In the historical VS-001 Node 24 Windows environment, `$env:NODE_OPTIONS = '--use-system-ca'` let the proxy trust the existing development certificate without disabling verification. Phase 3.5 required the process-specific OpenSSL trust configuration recorded below; do not assume that every local Node runtime uses the same trust setup.
 
-Historical VS-001 context only: `$env:TALYNOR_API_PROXY_INSECURE = 'true'` was a permitted local fallback for the anonymous demonstration experiment; configuration rejects it for non-loopback or non-HTTPS targets. It disables certificate verification on the Vite-to-API proxy connection and is not authorized for authenticated flows. Do not use it to bypass TLS problems in Phase 3.2 or future session integrations. Establish correct certificate trust instead; Secure cookies and TLS validation must not be weakened. Never store secrets in these variables or tracked files.
+Historical VS-001 context only: `$env:TALYNOR_API_PROXY_INSECURE = 'true'` was a permitted local fallback for the anonymous demonstration experiment; the historical configuration rejected it for non-loopback or non-HTTPS targets; the current authenticated configuration rejects the flag entirely. It disables certificate verification on the Vite-to-API proxy connection and is not authorized for authenticated flows. Do not use it to bypass TLS problems in Phase 3.2 or future session integrations. Establish correct certificate trust instead; Secure cookies and TLS validation must not be weakened. Never store secrets in these variables or tracked files.
 
 VS-001 frontend verification uses `pnpm build`, `pnpm lint`, and browser checks for navigation, request errors, retry, cancellation, and responsive layout. pnpm remains the available tool, not the official package manager decision.
 
@@ -206,7 +206,7 @@ Phase 3.3 left Knowledge Maps and frontend unchanged; 3.4 adds frontend sessions
 
 ## Phase 3.4 - Authenticated Frontend
 
-Implemented and pending review; 3.3 is published and 3.5 has not started. No backend, EF model, migration, or dependency is changed by 3.4. Historical slice procedures above describe what each slice introduced; current browser integration follows this section.
+Completed, approved, and published; 3.5 real-browser validation and Phase 3 closure are completed. No backend, EF model, migration, or dependency is changed by 3.4. Historical slice procedures above describe what each slice introduced; current browser integration follows this section.
 
 Use an explicitly selected/migrated disposable database and an account registered through the existing trusted HTTPS API procedure. There is no seed or frontend registration screen. Start the API from the root with its existing https profile. For the frontend, provide a trusted localhost PEM certificate and matching private key **outside the repository**. Certificate provisioning/export/trust is an explicit local prerequisite; Vite does not generate or trust certificates, and private keys must never be committed or logged.
 
@@ -246,6 +246,16 @@ Run `pnpm run build` and `pnpm run lint`, the root backend build/test commands, 
 | Props and callbacks | LoginView owns transient form state and calls the hook through App; KnowledgeGraph owns its own visual state. | Inputs/output event bindings, with function callbacks instead of EventEmitter. |
 
 Context/Provider was evaluated and is not needed for this shallow tree. If later justified, Context/Provider can share values through the React tree, loosely analogous to service/state injection at a chosen Angular component scope; that is not a perfect equivalence. No Context, router, or state library is introduced now.
+
+## Phase 3.5 - Validation and Phase Closure
+
+Completed on 2026-10-13. The validated flow is: anonymous browser → GET /api/auth/me 401 → login screen → CSRF → login 204 → refreshed CSRF → me 200 → workspace 200 → authenticated app → CSRF-protected logout 204 → login screen. Protected-read 401 and logout with a removed session return safely to login. The remaining graph API is still a global in-memory demo, not persisted personal content.
+
+Validation used disposable SQLite outside the repository, with InitialIdentity then AddPersonalWorkspace applied explicitly; startup did not migrate, initialize, or seed the database. An existing trusted localhost certificate served the API and Vite browser HTTPS, with PEM/key copies outside the repository. The local Node system-CA setup did not establish proxy trust; the working process configuration used `--use-openssl-ca` with `SSL_CERT_FILE` pointing to the already trusted public localhost PEM. TLS verification stayed enabled; no insecure proxy, certificate-warning bypass, or cookie-policy change was used. These are local process settings, not a production hosting decision.
+
+Real-browser checks passed for anonymous bootstrap, invalid/valid login, cookie acceptance, me/workspace, refresh, graph navigation/selection/drag/zoom/pan/minimap, preserved positions, temporary map-error isolation/retry, logout, desktop/tablet/mobile layouts, keyboard/labels/focus/disabled feedback, console, and multiple-tab behavior. Chrome Storage and Network metadata were confirmed by assisted manual inspection; cookie, password, and token values were not included in reports. Request tokens remain in memory and auth data is not stored in JavaScript persistence.
+
+Final evidence: backend build PASS (zero warnings/errors), 33 unit and 111 integration tests PASS, frontend build/lint PASS, EF pending-model changes NONE, and Git clean at validation completion. No code correction or dependency was needed. API/Vite were stopped and the disposable database, sidecars, and PEM/key copies removed; the original Windows certificate was preserved. The procedure above remains available for regressions. Real-device touch, full accessibility, Kestrel body-limit enforcement, and deployment security are not established by this smoke validation. Phase 4 is next, not started.
 
 ## Intended workflow
 

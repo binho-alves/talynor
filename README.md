@@ -2,7 +2,11 @@
 
 Talynor is a visual learning and personal knowledge platform where users build interconnected knowledge maps, organize learning content, and track their studies.
 
-**Current status:** foundation, Phases 1 and 2, VS-001, Phase 3.1, Phase 3.2 — Identity and Session Backend, and Phase 3.3 — Personal Workspace and Ownership are completed, approved, and published. Phase 3.4 — Authenticated Frontend is implemented and pending review: session bootstrap, login, workspace loading, and logout using the existing HttpOnly cookie and in-memory CSRF. Knowledge Maps remain anonymous, global in-memory demos behind the frontend session gate. Phase 3.5 — Validation / Phase Closure remains future work.
+**Current status:** Phase 3 — Identity, Session, Workspace and Authenticated Frontend is **COMPLETE**. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 — Validation and Phase Closure is validated and completed.
+
+Phase 3 delivers local account registration, cookie-based sessions with CSRF, login/me/logout, native lockout and process-local rate limiting, Security Stamp compatibility, one persistent personal workspace per user, and the authenticated React frontend. Real-browser HTTPS, cookie, session, graph, responsive-layout, and accessibility smoke validation passed. Knowledge Maps remain anonymous, global in-memory demos; they are not private workspace content.
+
+**Next:** Phase 4 — Persistent Knowledge Authoring, not started. Persisted maps, nodes, edges, positions, workspace ownership, authoring flows, and persistent submap navigation require a separately scoped implementation task. They are not implemented yet. See [the roadmap](docs/ROADMAP.md#phase-4---persistent-knowledge-authoring).
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
 

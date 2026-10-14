@@ -11,9 +11,9 @@ This index records approved decisions from the project foundation and subsequent
 | [ADR-005](#adr-005---knowledge-graph-without-an-initial-graph-database) | Knowledge graph domain without a graph database initially | Accepted |
 | [ADR-006](#adr-006---no-premature-distributed-infrastructure) | No premature distributed infrastructure | Accepted |
 | [ADR-007](#adr-007---initial-xyflow-graph-visualization) | Initial XYFlow / React Flow graph visualization | Accepted |
-| [ADR-008](#adr-008---incremental-local-identity-and-persistence) | Local Identity, future cookies, and incremental EF Core/SQLite persistence | Accepted |
-| [ADR-009](#adr-009---personal-workspace-and-ownership) | One personal workspace per user; lazy creation and authenticated ownership | Accepted |
-| [ADR-010](#adr-010---authenticated-frontend-session-flow) | Cookie-based frontend session bootstrap with private in-memory CSRF | Accepted |
+| [ADR-008](#adr-008---incremental-local-identity-and-persistence) | Local Identity, browser cookie sessions, and incremental EF Core/SQLite persistence | Accepted; implemented and published |
+| [ADR-009](#adr-009---personal-workspace-and-ownership) | One personal workspace per user; lazy creation and authenticated ownership | Accepted; implemented and published |
+| [ADR-010](#adr-010---authenticated-frontend-session-flow) | Cookie-based frontend session bootstrap with private in-memory CSRF | Accepted; implemented and published |
 
 ## ADR-001 - React frontend
 
@@ -85,9 +85,11 @@ This index records approved decisions from the project foundation and subsequent
 
 ## ADR-008 - Incremental local Identity and persistence
 
+**Status:** accepted; Identity persistence and session decisions are implemented and published in Phases 3.1 and 3.2. The approved workspace and frontend follow-through is published under ADR-009/010; Phase 3.5 validation and Phase 3 closure are completed.
+
 **Context:** VS-001 is completed and published, with anonymous, read-only demonstration maps. Phase 3 needs durable account storage before identity/session HTTP workflows and personal-workspace ownership. The scoped Phase 3.1 task explicitly approves the strategy but authorizes only its persistence foundation.
 
-**Decided:** use local ASP.NET Core Identity as the initial account system, EF Core with SQLite initially, browser cookies rather than JWT, and own HTTP endpoints rather than mapping the complete Identity endpoint set. A future single personal workspace per user is approved; no second User/ApplicationUser entity is introduced without a concrete need. PostgreSQL remains the production target under ADR-004; infrastructure requires a later explicit request. No graph database is introduced.
+**Decided:** use local ASP.NET Core Identity as the initial account system, EF Core with SQLite initially, browser cookies rather than JWT, and own HTTP endpoints rather than mapping the complete Identity endpoint set. One personal workspace per user was approved and is implemented under ADR-009; no second User/ApplicationUser entity is introduced without a concrete need. PostgreSQL remains the production target under ADR-004; infrastructure requires a later explicit request. No graph database is introduced.
 
 **Implemented and published (3.1):** Infrastructure owns `TalynorDbContext`, based on `IdentityUserContext<IdentityUser>` without roles; SQLite provider and configurable local connection string; explicit `InitialIdentity` migration; design-time factory; local versioned `dotnet-ef`; tests of migrated schema, repeat application, cross-context persistence through the role-free Identity store, and API startup without database creation. Identity/EF types remain outside Domain and Application. No automatic startup migration, `EnsureCreated`, seed, or default credentials exist.
 
@@ -103,11 +105,11 @@ This index records approved decisions from the project foundation and subsequent
 
 **Session protections:** native lockout allows new users, with five failed attempts and five-minute lockout. Native login-only rate limiting permits ten requests per minute per remote IP, QueueLimit=0, IPv4-mapped normalization, shared missing-IP bucket, and no forwarded-header trust; registration quota remains separate and unchanged. Login/logout require native CSRF. Clients obtain a new CSRF request token after each identity change. Me/logout require Authorize, challenges/forbids remain 401/403 without redirects, and all auth responses are no-store. Me returns only ID and current email read from Identity; absent accounts cause local sign-out/401. The main cookie retains its policy and normal login has no Expires/Max-Age; the technical auxiliary cookie is never issued.
 
-**Session boundaries:** multiple independent browser sessions are allowed; login does not invalidate prior sessions and logout deletes only the current browser cookie, without global ticket revocation or a session table. Login explicitly permits unconfirmed email; EmailConfirmed remains false, with no verification/reset workflow or provider. Account existence/lockout is not disclosed in errors, but timing remains distinguishable; compensatory hashing is explicitly deferred. Native stamp validation/renewal remains unchanged. Personal workspace/ownership is completed and published in 3.3 under ADR-009; frontend session integration is implemented and pending review in 3.4 under ADR-010. Recovery, verification, MFA, JWT, and other excluded account capabilities remain outside this slice.
+**Session boundaries:** multiple independent browser sessions are allowed; login does not invalidate prior sessions and logout deletes only the current browser cookie, without global ticket revocation or a session table. Login explicitly permits unconfirmed email; EmailConfirmed remains false, with no verification/reset workflow or provider. Account existence/lockout is not disclosed in errors, but timing remains distinguishable; compensatory hashing is explicitly deferred. Native stamp validation/renewal remains unchanged. Personal workspace/ownership is completed and published in 3.3 under ADR-009; frontend session integration is completed and published in 3.4 under ADR-010, with real-browser validation completed in 3.5. Recovery, verification, MFA, JWT, and other excluded account capabilities remain outside this slice.
 
 **Consequences:** account storage can be verified independently of login and frontend behavior. The existing project-reference directions remain unchanged. The 3.1 schema includes Identity's user, claim, login, and token support tables but no roles, workspace, or knowledge-content tables; 3.3 adds only the personal-workspace table under ADR-009. The framework schema is not permission to expose additional account features. Knowledge Maps remain in-memory and the demonstration endpoint stays anonymous.
 
-**Risks and boundaries:** Identity's account schema introduces framework coupling in Infrastructure. SQLite and PostgreSQL have different provider/migration behavior; a future transition needs explicit review and validation. Local databases contain sensitive data and must remain untracked. Accounts remain unconfirmed and sessions do not imply production readiness. Generic duplicate/authentication errors do not eliminate enumeration through success/failure or timing. Blocklist, Unicode handling, password-hash cost, email verification, proxy/NAT behavior, and deployment security must be reviewed before public exposure. No private knowledge-data endpoint is introduced. Local Data Protection key persistence depends on the host profile; deploy/key storage, actual browser TLS behavior, and complete session security need later verification. Cookie/token/password values must never be logged.
+**Risks and boundaries:** Identity's account schema introduces framework coupling in Infrastructure. SQLite and PostgreSQL have different provider/migration behavior; a future transition needs explicit review and validation. Local databases contain sensitive data and must remain untracked. Accounts remain unconfirmed and sessions do not imply production readiness. Generic duplicate/authentication errors do not eliminate enumeration through success/failure or timing. Blocklist, Unicode handling, password-hash cost, email verification, proxy/NAT behavior, and deployment security must be reviewed before public exposure. No private knowledge-data endpoint is introduced. Local Data Protection key persistence depends on the host profile; local browser TLS/cookie behavior was validated in 3.5, while deployment/key storage and comprehensive security still require review. Cookie/token/password values must never be logged.
 
 ## ADR-009 - Personal Workspace and Ownership
 
@@ -127,7 +129,7 @@ This index records approved decisions from the project foundation and subsequent
 
 ## ADR-010 - Authenticated Frontend Session Flow
 
-**Date/status:** 2026-10-13. Accepted by the scoped Phase 3.4 implementation request; implementation is pending review. Phase 3.3 is completed, approved, and published.
+**Date/status:** 2026-10-13. Accepted by the scoped Phase 3.4 implementation request; implementation is completed, approved, and published. Phase 3.3 is completed, approved, and published; Phase 3.5 validation and Phase 3 closure are completed.
 
 **Context:** the published backend provides login/logout/me, native antiforgery, and lazy personal workspace resolution. The existing React demo graph needs a session gate without changing its public map API or introducing new libraries.
 
@@ -137,7 +139,7 @@ This index records approved decisions from the project foundation and subsequent
 
 **Consequences:** session and graph state remain separate. The existing Knowledge Maps are still anonymous, global demos, not personal workspace content. Conditional UI is not backend authorization. Request cancellation and identity guards handle StrictMode, retries, and unmounts; session changes discard graph state. Development requires trusted browser-to-Vite HTTPS using externally supplied certificate/key paths and verified Vite-to-API HTTPS, with no insecure proxy fallback.
 
-**Risks/boundaries:** no cross-tab synchronization, polling, production hosting, token persistence, remember-me, frontend registration, workspace CRUD, or additional dependency. Another tab discovers changes only on a protected request/reload; an ambiguous POST/network failure can leave the browser session changed, requiring explicit session retry/reload. Real browser cookie/TLS and touch/accessibility checks remain necessary when trusted local certificates and a disposable account/database are available. Frontend test tooling and package manager remain open; this slice does not close Phase 3 or claim production readiness.
+**Risks/boundaries:** no cross-tab synchronization, polling, production hosting, token persistence, remember-me, frontend registration, workspace CRUD, or additional dependency. Another tab discovers changes only on a protected request/reload; an ambiguous POST/network failure can leave the browser session changed, requiring explicit session retry/reload. Local real-browser cookie/TLS, desktop/tablet/mobile layout, and accessibility smoke checks passed in Phase 3.5, including assisted Chrome Storage/Network inspection. Real touchscreen gestures and full accessibility remain unvalidated. Frontend test tooling and package manager remain open. Phase 3.5 completed Phase 3 closure without a production-readiness claim.
 
 ## Decision discipline
 
