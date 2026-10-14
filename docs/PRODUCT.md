@@ -28,7 +28,7 @@ Users can explore how concepts connect, keep resources close to the concepts the
 | --- | --- |
 | Atlas / Workspace | Provisional product terms for a user's organized space for interconnected knowledge maps and learning material. Their exact relationship is not yet decided; they are not defined as separate domain entities. |
 | Knowledge Graph | The domain concept composed of knowledge nodes and their relationships. |
-| Knowledge map | A visual representation or view over knowledge graph concepts. Persistence semantics remain undefined. |
+| Knowledge map | A visual representation or view over knowledge graph concepts. ADR-011 defines the initial relational representation for Phase 4.1; broader product semantics remain open. |
 | Knowledge node | A concept, topic, or subject that can have learning content and connections to other nodes. A node may open another map. |
 | Relationship / edge | A connection between knowledge nodes. Possible examples include contains, prerequisite, related to, and depends on; these are illustrative, not a final taxonomy. |
 | Submap | A map reached by exploring a node at a more detailed knowledge level. |
@@ -39,7 +39,7 @@ Users can explore how concepts connect, keep resources close to the concepts the
 | Assessment | The initial assessment scope is simple quizzes used to check understanding. Other exercise types may exist later but are outside the currently committed MVP assessment scope. |
 | Progress | A view of learning activity and outcomes; exact measures remain to be defined. |
 
-Knowledge relationships must support connections beyond a folder or tree hierarchy. Cross-map behavior and map membership remain to be defined. The exact meaning and behavior of each relationship remain open.
+Knowledge relationships must support connections beyond a folder or tree hierarchy. ADR-011 scopes current same-map membership and same-workspace drill-down. Broader cross-map behavior and the exact meaning of each relationship remain open.
 
 ## Main user journey
 

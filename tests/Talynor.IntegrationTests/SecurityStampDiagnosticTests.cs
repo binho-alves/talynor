@@ -64,7 +64,11 @@ public class SecurityStampDiagnosticTests(ITestOutputHelper output)
         Assert.Equal(callback, cookie.Events.OnValidatePrincipal);
         var version = validator.GetType().Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion;
-        Assert.StartsWith("10.0.12", version);
+        // The shared framework can roll forward to a servicing patch without changing NuGet references.
+        var runtimeVersion = Version.Parse(version.Split('+')[0]);
+        Assert.Equal(10, runtimeVersion.Major);
+        Assert.Equal(0, runtimeVersion.Minor);
+        Assert.True(runtimeVersion.Build >= 12);
         output.WriteLine("Validator: " + validator.GetType().FullName);
         output.WriteLine("ValidationInterval: " + stampOptions.ValidationInterval);
         output.WriteLine("Cookie callback: SecurityStampValidator.ValidatePrincipalAsync");

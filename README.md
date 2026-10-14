@@ -4,9 +4,11 @@ Talynor is a visual learning and personal knowledge platform where users build i
 
 **Current status:** Phase 3 — Identity, Session, Workspace and Authenticated Frontend is **COMPLETE**. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 — Validation and Phase Closure is validated and completed.
 
-Phase 3 delivers local account registration, cookie-based sessions with CSRF, login/me/logout, native lockout and process-local rate limiting, Security Stamp compatibility, one persistent personal workspace per user, and the authenticated React frontend. Real-browser HTTPS, cookie, session, graph, responsive-layout, and accessibility smoke validation passed. Knowledge Maps remain anonymous, global in-memory demos; they are not private workspace content.
+Phase 3 delivers local account registration, cookie-based sessions with CSRF, login/me/logout, native lockout and process-local rate limiting, Security Stamp compatibility, one persistent personal workspace per user, and the authenticated React frontend. Real-browser HTTPS, cookie, session, graph, responsive-layout, and accessibility smoke validation passed. The frontend still consumes the anonymous, global in-memory demo maps.
 
-**Next:** Phase 4 — Persistent Knowledge Authoring, not started. Persisted maps, nodes, edges, positions, workspace ownership, authoring flows, and persistent submap navigation require a separately scoped implementation task. They are not implemented yet. See [the roadmap](docs/ROADMAP.md#phase-4---persistent-knowledge-authoring).
+**Current implementation:** Phase 4.1 — Knowledge Map Persistence Foundation is implemented and in review. Relational maps, nodes, edges, positions and same-workspace child maps are persisted with private, workspace-scoped `GET /api/maps/{mapId}`. The existing demo routes remain unchanged; startup does not seed personal maps. See [ADR-011](docs/DECISIONS.md#adr-011---persistent-knowledge-graph-foundation) and [the development procedure](docs/DEVELOPMENT.md#phase-41---knowledge-map-persistence-foundation).
+
+**Next slice, future:** scope authoring operations and frontend integration separately within [Phase 4](docs/ROADMAP.md#phase-4---persistent-knowledge-authoring). No write endpoint, authoring UI, automatic drag-save, map-list UI or persisted-map frontend rendering exists yet.
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
 

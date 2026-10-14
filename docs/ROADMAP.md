@@ -60,17 +60,19 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 **Expected outputs:** reviewed authentication and authorization design; account and workspace capabilities; defined ownership rules and relevant access-control validation.
 
-**Delivered incremental direction:** local ASP.NET Core Identity and browser cookies under [ADR-008](DECISIONS.md#adr-008---incremental-local-identity-and-persistence), personal workspace ownership under ADR-009, and authenticated frontend under ADR-010. Real-browser validation completed the phase. PersonalWorkspace is persistent and owned; current Knowledge Maps remain anonymous, global in-memory demos.
+**Delivered incremental direction:** local ASP.NET Core Identity and browser cookies under [ADR-008](DECISIONS.md#adr-008---incremental-local-identity-and-persistence), personal workspace ownership under ADR-009, and authenticated frontend under ADR-010. Real-browser validation completed the phase. Phase 3 delivered persistent owned PersonalWorkspace records and preserved anonymous global demo maps; Phase 4.1 adds separate private map persistence below.
 
 **Phase 3 non-goals:** frontend registration, workspace CRUD/switching, sharing, teams, roles, map ownership/persistence/CRUD, Security Stamp customization, JWT, functional MFA, email verification/reset, remember-me, cross-tab synchronization, global session revocation, or a session table. Knowledge authoring remains future Phase 4 work. Social networking, public marketplace, and real-time collaboration remain outside this phase.
 
 ## Phase 4 - Persistent Knowledge Authoring
 
-**Status:** next; not started. Requires a separately scoped design/implementation task.
+**Status:** current. Phase 4.1 — Knowledge Map Persistence Foundation is implemented and in review; later slices require separate authorization.
 
 **Goal:** evolve the demonstration Knowledge Maps into persistent knowledge content owned by PersonalWorkspace, supporting connected nodes beyond a folder hierarchy.
 
-**Planned high-level outputs:** persisted Knowledge Maps, Knowledge Nodes, Knowledge Edges, and node positions; workspace ownership enforcement; create/edit/delete authoring flows; persistent drill-down/submaps; frontend authoring integrated with the validated graph experience. Data representation, relationship semantics, and detailed contracts remain to be designed. These capabilities are not implemented by Phase 3 closure.
+**4.1 delivered for review:** relational Knowledge Maps, Nodes, Edges, persisted positions and ChildMapId; server-derived workspace ownership; private read endpoint, explicit migration, SQLite constraints and ownership/isolation tests. Demo routes coexist temporarily; frontend source is unchanged. See ADR-011 for the scoped model and read contract.
+
+**Future next slice:** scope authoring write operations and frontend integration separately. Create/edit/delete flows, persisted-map rendering/navigation in the frontend and drag-save are not implemented. Relationship taxonomy, broader cross-map semantics, automatic layout and authoring concurrency remain open. The phase order is unchanged.
 
 **Non-goals:** graph database, automatic internet importing, or a relationship taxonomy assumed from the initial examples.
 

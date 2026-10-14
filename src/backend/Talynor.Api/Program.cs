@@ -24,6 +24,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IKnowledgeMapReader, InMemoryKnowledgeMapReader>();
 builder.Services.AddScoped<GetKnowledgeMap>();
+builder.Services.AddScoped<GetKnowledgeMapForCurrentWorkspace>();
+builder.Services.AddScoped<IPersistedKnowledgeMapReader, PersistedKnowledgeMapReader>();
 builder.Services.AddScoped<RegisterUser>();
 builder.Services.AddScoped<LoginUser>();
 builder.Services.AddScoped<GetCurrentUser>();
@@ -191,14 +193,15 @@ app.Use(async (context, next) =>
     await next(context);
 });
 // Native cookie validation can fail before a controller (for example, a database outage).
-// Sanitize only session/current-workspace endpoints; do not replace the stamp validator.
+// Sanitize session/current-workspace and private persisted-map endpoints; preserve the stamp validator.
 app.UseWhen(context =>
 {
     var path = context.Request.Path.Value?.TrimEnd('/');
     return string.Equals(path, "/api/auth/login", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(path, "/api/auth/me", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(path, "/api/auth/logout", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(path, "/api/workspace", StringComparison.OrdinalIgnoreCase);
+        string.Equals(path, "/api/workspace", StringComparison.OrdinalIgnoreCase) ||
+        context.Request.Path.StartsWithSegments("/api/maps", StringComparison.OrdinalIgnoreCase);
 }, branch =>
     branch.UseExceptionHandler(handler => handler.Run(async context =>
     {

@@ -5,7 +5,7 @@
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 3 is complete. Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 validation and closure is completed. Next is Phase 4 — Persistent Knowledge Authoring, not started and requiring a separately scoped task.
+- Current stage: Phase 3 is complete and published. Phase 4 is current; Phase 4.1 — Knowledge Map Persistence Foundation is implemented and in review. Future authoring/frontend slices require separate authorization.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -48,7 +48,7 @@ VS-001 frontend verification uses `pnpm build`, `pnpm lint`, and browser checks 
 
 ## Phase 3.1 - Identity persistence
 
-Identity/EF Core/SQLite packages and the local `dotnet-ef` tool use version 10.0.12, aligned with the existing Microsoft packages and installed runtime. Restore the versioned `.config/dotnet-tools.json` from the repository root:
+Identity/EF Core/SQLite packages and the local `dotnet-ef` tool use version 10.0.12. The shared ASP.NET Core runtime may select a compatible installed maintenance patch; the diagnostic version check accepts 10.0 patches from 10.0.12 while preserving all scheme/validator/behavior assertions. Restore the versioned `.config/dotnet-tools.json` from the repository root:
 
 ```powershell
 dotnet tool restore
@@ -255,7 +255,19 @@ Validation used disposable SQLite outside the repository, with InitialIdentity t
 
 Real-browser checks passed for anonymous bootstrap, invalid/valid login, cookie acceptance, me/workspace, refresh, graph navigation/selection/drag/zoom/pan/minimap, preserved positions, temporary map-error isolation/retry, logout, desktop/tablet/mobile layouts, keyboard/labels/focus/disabled feedback, console, and multiple-tab behavior. Chrome Storage and Network metadata were confirmed by assisted manual inspection; cookie, password, and token values were not included in reports. Request tokens remain in memory and auth data is not stored in JavaScript persistence.
 
-Final evidence: backend build PASS (zero warnings/errors), 33 unit and 111 integration tests PASS, frontend build/lint PASS, EF pending-model changes NONE, and Git clean at validation completion. No code correction or dependency was needed. API/Vite were stopped and the disposable database, sidecars, and PEM/key copies removed; the original Windows certificate was preserved. The procedure above remains available for regressions. Real-device touch, full accessibility, Kestrel body-limit enforcement, and deployment security are not established by this smoke validation. Phase 4 is next, not started.
+Final evidence: backend build PASS (zero warnings/errors), 33 unit and 111 integration tests PASS, frontend build/lint PASS, EF pending-model changes NONE, and Git clean at validation completion. No code correction or dependency was needed. API/Vite were stopped and the disposable database, sidecars, and PEM/key copies removed; the original Windows certificate was preserved. The procedure above remains available for regressions. Real-device touch, full accessibility, Kestrel body-limit enforcement, and deployment security are not established by this smoke validation. At Phase 3 closure, Phase 4 was next and not started; current 4.1 work is recorded below.
+
+## Phase 4.1 - Knowledge Map Persistence Foundation
+
+Implemented and in review. Review AddPersistentKnowledgeGraph Up/Down, Designer and Snapshot before applying it to explicitly selected disposable data. Migration order is InitialIdentity → AddPersonalWorkspace → AddPersistentKnowledgeGraph. Use the existing absolute-path environment variable and `dotnet tool run dotnet-ef database update --project src/backend/Talynor.Infrastructure`; startup and build still never initialize/migrate/seed a database. The implementation only applies migrations to test databases, not the Development database.
+
+Tests explicitly create workspaces/maps/nodes/edges through the Infrastructure DbContext in a test-only KnowledgeGraphFixture. There is no map seed command/default account or public write endpoint. Real SQLite tests cover roundtrips across contexts, positions/child links, composite endpoint FKs, cross-workspace child triggers on insert/update and map moves, foreign/missing 404 equality, concurrent session reads, anonymous 401, no-store, removed accounts, reader/native-stamp failure sanitization, deletes and migration rollback/reapplication. Existing workspace insertion-concurrency and demo/session regressions remain applicable.
+
+Run tool restore, solution restore/build/tests, frontend build/lint and the safe in-memory pending-model command above. Do not regenerate existing migrations or use EnsureCreated to skip them. SQLite equality triggers are explicitly migration-owned; EF pending-model checks do not independently inspect live trigger bodies. Review trigger SQL and test behavior on every rebuild/rollback/provider transition. No editing-concurrency policy is implemented.
+
+Manual private-read verification requires trusted HTTPS, a disposable registered account and explicitly prepared persisted fixture data; there is no frontend authoring/rendering integration in 4.1. Obtain the cookie using the existing CSRF/login procedure, then GET `/api/maps/<fixture map Guid>` with the same in-memory jar, without WorkspaceId or a CSRF header. Expect only id/title/description/nodes/edges, node position:{x,y}/childMapId and edge endpoint IDs; never owner/workspace IDs. Own maps return 200; unknown/foreign maps return identical 404; anonymous sessions return 401; operational failures return sanitized 500. All private responses are no-store. Never print cookies, tokens, credentials or real private map content. Follow links only through the same authenticated endpoint. GET may lazily initialize an empty workspace as previously approved; it never seeds maps.
+
+The unchanged frontend still loads `/api/knowledge-maps/software` and `/csharp`. Both anonymous demo regressions remain; they do not grant public access to persisted maps. Phase 3.5 browser evidence is historical and does not constitute manual browser validation of the new backend-only endpoint.
 
 ## Intended workflow
 

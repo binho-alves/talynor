@@ -145,6 +145,111 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Talynor.Domain.KnowledgeMaps.KnowledgeEdge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("KnowledgeMapId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SourceNodeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("TargetNodeId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KnowledgeMapId", "SourceNodeId");
+
+                    b.HasIndex("KnowledgeMapId", "TargetNodeId");
+
+                    b.ToTable("KnowledgeEdges", (string)null);
+                });
+
+            modelBuilder.Entity("Talynor.Domain.KnowledgeMaps.KnowledgeMap", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WorkspaceId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("KnowledgeMaps", null, t =>
+                        {
+                            t.HasTrigger("TR_KnowledgeMaps_ChildWorkspace_Update");
+                        });
+                });
+
+            modelBuilder.Entity("Talynor.Domain.KnowledgeMaps.KnowledgeNode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ChildMapId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("KnowledgeMapId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("PositionX")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("PositionY")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildMapId");
+
+                    b.ToTable("KnowledgeNodes", null, t =>
+                        {
+                            t.HasTrigger("TR_KnowledgeNodes_ChildWorkspace_Insert");
+
+                            t.HasTrigger("TR_KnowledgeNodes_ChildWorkspace_Update");
+
+                            t.HasCheckConstraint("CK_KnowledgeNodes_FinitePositions", "abs(PositionX) <= 1.7976931348623157e308 AND abs(PositionY) <= 1.7976931348623157e308");
+                        });
+                });
+
             modelBuilder.Entity("Talynor.Domain.Workspaces.PersonalWorkspace", b =>
                 {
                     b.Property<Guid>("Id")
@@ -188,6 +293,52 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.KnowledgeMaps.KnowledgeEdge", b =>
+                {
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeMap", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeMapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeMapId", "SourceNodeId")
+                        .HasPrincipalKey("KnowledgeMapId", "Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeMapId", "TargetNodeId")
+                        .HasPrincipalKey("KnowledgeMapId", "Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.KnowledgeMaps.KnowledgeMap", b =>
+                {
+                    b.HasOne("Talynor.Domain.Workspaces.PersonalWorkspace", null)
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.KnowledgeMaps.KnowledgeNode", b =>
+                {
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeMap", null)
+                        .WithMany()
+                        .HasForeignKey("ChildMapId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeMap", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeMapId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -2,9 +2,9 @@
 
 ## Status and scope
 
-This document records the approved high-level direction. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 validation and closure is completed; Phase 3 is complete. Phase 4 — Persistent Knowledge Authoring is next and not started. Further implementation requires scoped tasks.
+This document records the approved high-level direction. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 validation and closure is completed; Phase 3 is complete. Phase 4 is current; Phase 4.1 — Knowledge Map Persistence Foundation is implemented and in review. Further implementation requires scoped tasks.
 
-The published backend includes Identity with EF Core/SQLite, cookie authentication, antiforgery, and persistent owned PersonalWorkspace records. The React frontend includes session bootstrap, login, me/workspace loading, logout, an authenticated shell, and the KnowledgeGraph demo. Real-browser HTTPS validation is completed for these local flows. PersonalWorkspace is persistent and owned; current Knowledge Maps remain anonymous, global in-memory demos without workspace ownership or knowledge persistence.
+The published backend includes Identity with EF Core/SQLite, cookie authentication, antiforgery, and persistent owned PersonalWorkspace records. The React frontend includes session bootstrap, login, me/workspace loading, logout, an authenticated shell, and the KnowledgeGraph demo. Real-browser HTTPS validation is completed for these Phase 3 local flows. Phase 4.1 adds private persistent knowledge content alongside the unchanged anonymous demo source; the frontend still uses only demos.
 
 ## Approved direction
 
@@ -105,7 +105,7 @@ The scoped Infrastructure store uses EF Core/SQLite. `PersonalWorkspaces` has an
 
 `GET /api/workspace` requires Authorize, accepts no owner or workspace identifier, lazily resolves/creates the authenticated user's workspace, and returns 200 with only id/createdAtUtc and no-store. Anonymous/invalid/deleted-account sessions return sanitized 401; absent accounts cause local sign-out. Operational failures, including native stamp validation before the controller, remain sanitized 500. The existing restricted exception handler now includes only this additional endpoint. This approved GET can initialize an empty personal workspace; it has no client-controlled mutation payload or content CRUD. Login/logout CSRF and cookie protections are unchanged.
 
-OwnerUserId is a logical Identity reference with no navigation/FK/cascade. Account removal is not a workspace cleanup mechanism: orphan records can remain, and deletion lifecycle requires future design. The current account check prevents an already-removed account from accessing its workspace; it is not an atomic account-deletion lifecycle transaction. Knowledge Maps remain global, anonymous, demo, and in-memory. Frontend authentication is described below. Migrations stay explicit; startup never migrates, initializes, or seeds a database.
+OwnerUserId is a logical Identity reference with no navigation/FK/cascade. Account removal is not a workspace cleanup mechanism: orphan records can remain, and deletion lifecycle requires future design. The current account check prevents an already-removed account from accessing its workspace; it is not an atomic account-deletion lifecycle transaction. Phase 3.3 kept Knowledge Maps as global, anonymous, in-memory demos; Phase 4.1 adds the separate private persisted source below. Frontend authentication is described below. Migrations stay explicit; startup never migrates, initializes, or seeds a database.
 
 ## Phase 3.4 - Authenticated Frontend
 
@@ -127,7 +127,7 @@ Completed on 2026-10-13 using explicitly migrated disposable SQLite and an exist
 
 Knowledge nodes and their relationships are domain concepts. A node may lead to another map, and relationships must eventually represent connections beyond a tree or folder hierarchy.
 
-A graph-shaped domain does not require a graph database. The initial direction uses relational persistence. Relationship types, directionality, cycle rules, map membership, and storage representation have not been finalized. Examples such as contains, prerequisite, related to, and depends on do not establish a final relationship taxonomy.
+A graph-shaped domain does not require a graph database. ADR-011 defines the initial relational storage, positions, same-map edge endpoints and same-workspace drill-down. Broader cross-map behavior, cycle rules and relationship semantics remain open. Examples such as contains, prerequisite, related to, and depends on do not establish a final relationship taxonomy.
 
 ## Visual experience and early validation
 
@@ -168,4 +168,18 @@ The initial scope excludes microservices, Redis, RabbitMQ, Kafka, Kubernetes, El
 
 ## Open design questions
 
-Local ASP.NET Core Identity, cookie/antiforgery infrastructure, account registration/password policy, and Session Flow/lockout are approved under ADR-008; the initial personal workspace is defined in ADR-009. Account recovery and verification, workspace lifecycle, and future workspace operations still require scoped implementation/design. Product module boundaries, automatic layout, final interaction design, relationship taxonomy and knowledge persistence representation, further business API contracts, frontend test tooling, package manager, deployment topology, and production migration procedures remain open. Local Identity migrations are explicit as documented above; PostgreSQL infrastructure remains unauthorized.
+Local ASP.NET Core Identity, cookie/antiforgery infrastructure, account registration/password policy, and Session Flow/lockout are approved under ADR-008; the initial personal workspace is defined in ADR-009 and persistent knowledge storage in ADR-011. Account recovery and verification, workspace lifecycle, and future workspace operations still require scoped implementation/design. Product module boundaries, automatic layout, final interaction design, relationship taxonomy, authoring concurrency, further business API contracts, frontend test tooling, package manager, deployment topology, and production migration procedures remain open. Migrations are explicit; PostgreSQL infrastructure remains unauthorized.
+
+## Phase 4.1 - Knowledge Map Persistence Foundation
+
+Implemented and in review under [ADR-011](DECISIONS.md#adr-011---persistent-knowledge-graph-foundation). Domain adds KnowledgeMap (workspace, title/optional description, creation/update time), KnowledgeNode (map, title/optional description, finite X/Y coordinates, optional ChildMapId, creation/update time), and KnowledgeEdge (map, source/target node IDs, creation time). IDs are application-generated Guids. Creation uses TimeProvider; initial update time equals creation time. Titles are trimmed, required and limited to 200 UTF-16 units; optional descriptions to 4000. No authoring/update flow or extra learning fields exist.
+
+Ownership is CurrentUser → validated existing account → PersonalWorkspace → KnowledgeMap → nodes/edges. `GetKnowledgeMapForCurrentWorkspace` reuses approved lazy workspace resolution; first access may initialize an empty workspace but never seed a map. `IPersistedKnowledgeMapReader` accepts only the server-resolved workspace and map ID. The scoped EF reader uses no-tracking projections and one read transaction for a consistent map/nodes/edges snapshot. Application has no EF, HTTP, SQLite or XYFlow types. There is no unused write repository; explicit test fixtures persist through the Infrastructure DbContext.
+
+Private `GET /api/maps/{mapId:guid}` returns own API contracts: id/title/description/nodes/edges; nodes include id/title/description/position:{x,y}/childMapId; edges include id/sourceNodeId/targetNodeId. Workspace/owner IDs, Identity data and demo study metrics are absent. Anonymous/invalid/deleted-account sessions return 401; unknown and foreign-workspace map IDs return the same 404 body, never existence-revealing 403. Responses are no-store. The restricted exception handler also covers this route before native cookie validation; operational errors are sanitized 500, not missing maps.
+
+Explicit FKs: workspace→map Restrict; map→nodes/edges Cascade; child map→node Restrict; source/target node→edge composite (KnowledgeMapId, node ID) NoAction. Deleting a referenced node requires removing edges first; deleting a referenced child requires clearing incoming links first. No delete endpoint exists. A composite node alternate key enforces same-map edges; minimal workspace, child and endpoint indexes support these constraints/reads. No unique edge-pair rule, self-loop ban or acyclic hierarchy is invented.
+
+SQLite triggers reject cross-workspace child links on insert/update and map-workspace changes, without duplicated workspace data on nodes. A finite-position CHECK complements Domain validation. Trigger definitions are explicitly migration-owned, represented in EF metadata and reviewed during rollback; future table rebuilds/provider transitions must preserve or replace them. A read transaction is not authoring concurrency control: rowversion, ETags and optimistic update handling are deferred.
+
+AddPersistentKnowledgeGraph follows InitialIdentity and AddPersonalWorkspace, adding only graph tables/constraints/indexes/triggers. No startup migration, EnsureCreated, personal-map seed, PostgreSQL or graph database is added. `/api/knowledge-maps/software` and `/csharp` remain anonymous in-memory demo regressions; the unchanged frontend still uses them. Persisted rendering, write endpoints, layout automation, drag-save and authoring UI need future scoped slices.
