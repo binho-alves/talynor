@@ -1,10 +1,10 @@
-import { KnowledgeGraph } from './components/KnowledgeGraph'
+import { PersistedMaps } from './components/PersistedMaps'
 import { LoginView } from './components/LoginView'
 import { useSession } from './session/useSession'
 import './App.css'
 
 function App() {
-  const { session, busy, operationError, login, logout, retryBootstrap } = useSession()
+  const { session, busy, operationError, login, logout, retryBootstrap, revalidateSession } = useSession()
 
   if (session.status === 'bootstrapping') {
     return <main className="session-page" aria-busy="true">
@@ -38,12 +38,11 @@ function App() {
         <button className="back-button" disabled={busy === 'logout'} onClick={() => void logout()}>
           {busy === 'logout' ? 'Saindo…' : 'Sair'}
         </button>
-        <span className="demo-label">Dados de demonstração</span>
       </div>
     </header>
     {operationError && <p className="session-feedback" role="alert">{operationError}</p>}
     <span className="sr-only" role="status">{busy === 'logout' ? 'Encerrando sua sessão…' : ''}</span>
-    <KnowledgeGraph />
+    <PersistedMaps key={`${session.user.id}:${session.workspace.id}`} onAuthenticationRequired={revalidateSession} />
   </div>
 }
 

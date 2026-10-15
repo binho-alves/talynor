@@ -1,21 +1,17 @@
 import type { Edge, Node } from '@xyflow/react'
 
-// Spike identifiers and view data; these are not persistence/domain entities.
-export type MapId = string
-
+// Visualization data, independent of HTTP contracts and persistence entities.
 export type KnowledgeNodeData = {
   title: string
-  description: string
-  progress: number
-  studyMinutes: number
-  childMapId: MapId | null
+  description: string | null
+  childMapId: string | null
 }
 
 export type KnowledgeNode = Node<KnowledgeNodeData, 'knowledge'>
 
 export type KnowledgeMap = {
   title: string
-  description: string
+  description: string | null
   nodes: KnowledgeNode[]
   edges: Edge[]
 }

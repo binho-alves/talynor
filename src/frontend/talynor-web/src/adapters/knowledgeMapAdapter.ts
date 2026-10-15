@@ -1,33 +1,16 @@
-import { knowledgeMapPositions } from '../data/knowledgeMapPositions'
-import type { KnowledgeMap } from '../types/knowledge'
-import type { KnowledgeMapResponse } from '../types/knowledgeMapResponse'
+import type { KnowledgeMap } from '../types/knowledge.ts'
+import type { PersistedKnowledgeMapDto } from '../types/persistedKnowledgeMap.ts'
 
-export function adaptKnowledgeMap(map: KnowledgeMapResponse): KnowledgeMap {
-  const positions = Object.hasOwn(knowledgeMapPositions, map.id) ? knowledgeMapPositions[map.id] : undefined
+export function adaptKnowledgeMap(map: PersistedKnowledgeMapDto): KnowledgeMap {
   return {
     title: map.title,
     description: map.description,
-    nodes: map.nodes.map((node) => {
-      const position = positions && Object.hasOwn(positions, node.id) ? positions[node.id] : undefined
-      if (!position) throw new Error('O mapa recebido contém um conceito sem posição demonstrativa conhecida.')
-      return {
-        id: node.id,
-        type: 'knowledge',
-        position: { ...position },
-        data: {
-          title: node.title,
-          description: node.description,
-          progress: node.progress,
-          studyMinutes: node.studyMinutes,
-          childMapId: node.childMapId,
-        },
-      }
-    }),
+    nodes: map.nodes.map((node) => ({
+      id: node.id, type: 'knowledge', position: { ...node.position },
+      data: { title: node.title, description: node.description, childMapId: node.childMapId },
+    })),
     edges: map.edges.map((edge) => ({
-      id: edge.id,
-      source: edge.sourceNodeId,
-      target: edge.targetNodeId,
-      type: 'smoothstep',
+      id: edge.id, source: edge.sourceNodeId, target: edge.targetNodeId, type: 'smoothstep',
     })),
   }
 }

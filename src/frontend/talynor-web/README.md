@@ -1,9 +1,8 @@
-# Talynor Web — SPIKE-001, VS-001 and Authenticated Frontend
+# Talynor Web — Persistent Graph Frontend Integration
 
-**Status:** SPIKE-001 and VS-001 completed, approved, and published. Phase 3.3 is published; Phase 3.4 — Authenticated Frontend is implemented and pending review. XYFlow / React Flow is adopted as Talynor's initial graph visualization library; see [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization). The limitations below remain applicable, and the package manager decision remains open.
+**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is implemented and in review. Phase 4 remains incomplete; 4.4 Authoring UX is next/future. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
 
-Initial React + TypeScript frontend spike using Vite and @xyflow/react.
-VS-001 loads knowledge content and connections from `GET /api/knowledge-maps/{mapId}` for `software` and `csharp`. Progress and study time remain demonstration values supplied by the in-memory backend. Phase 3.4 adds cookie-based login/session/workspace bootstrap and logout; the graph is still a public API demo without knowledge persistence or production graph semantics. The original spike validation below is historical.
+React + TypeScript with Vite and XYFlow now consumes private persisted maps. The historical demo-only client, coordinates and mock learning metrics have been removed from the authenticated experience. Backend demo endpoints remain available for regression. No backend, dependency or database change is introduced by this frontend slice.
 
 ## Run locally
 
@@ -35,55 +34,56 @@ option may be selected later. pnpm-lock.yaml remains in the spike to reproduce
 the exact dependency versions used in this execution.
 No automatic test suite is configured yet.
 
-## Explore
 
-First log in using an existing disposable account registered through the HTTPS backend procedure; there is no frontend registration screen or default account. Bootstrap loads me then workspace. Login/logout use private in-memory CSRF and the browser-managed HttpOnly cookie. Loading/error/retry gates precede graph rendering; refresh rediscovers the session. Logout discards session and graph state. No auth/password/CSRF data is persisted in browser storage, and no cross-tab synchronization is implemented.
+## Explore persisted maps
 
-1. Select a concept to see its description, mock progress, and mock study time.
-2. Drag nodes or the background; use the zoom and fit controls.
-3. Select C# and choose **Explorar C#** to load its demonstration submap from the API. Double-clicking C# is a desktop shortcut.
-4. Use **Voltar ao mapa anterior** to return.
+Log in with a disposable account registered through the HTTPS API; there is no frontend registration or default account. Session bootstrap remains me → workspace, with browser-managed HttpOnly cookies and private in-memory CSRF for login/logout. There is no localStorage/sessionStorage or cross-tab synchronization.
 
-On desktop, details appear beside the map. On tablet and mobile, details appear below it.
-The minimap is hidden on narrow screens; zoom and fit controls remain available.
-Node positions and selection survive map navigation in memory. Reloading resets them.
-Each map is fitted again when entered; viewport position is not preserved between maps.
-Connections are illustrative, without defining prerequisites or a relationship taxonomy.
+Without a map query, GET /api/maps shows an explicit button picker, including when there is only one map. An empty workspace shows a stable empty message, without creating/selecting a map or falling back to demos. The list order is presentation only.
+
+Choose a map to request GET /api/maps/{id}. The address becomes `?map=<guid>`. F5 restores session/workspace then the requested map; valid direct links need no picker first. Invalid/empty/duplicate map parameters show a safe address error without sending a malformed map request. Missing and foreign maps have the same unavailable message; the URL stays until the user navigates.
+
+Select a node to read its description. A child link enables the details button; double-click is a desktop shortcut. Drill-down pushes another visit, so cycles A → B → A work without inferring a unique parent. Internal Back follows current mounted visits; direct entry/reload offers **Todos os mapas**. Browser Back/Forward is handled through popstate. **Todos os mapas** returns to discovery, not to login.
+
+Coordinates initially come from the backend. Mouse drag and keyboard movement change only local XYFlow state: there is no PATCH/autosave. Revisit, retry/refetch or F5 reloads persisted positions and clears selection; no local position cache is used. Zoom/pan/minimap remain; the minimap hides on narrow screens and the details panel moves below the graph. Study/progress metrics are absent because the persisted contract does not supply them.
+
+Loading is separate for session, discovery and map. Map network/500/protocol errors offer retry inside the shell, preserving email/workspace/logout. A private-read 401 rechecks me/workspace through the existing session client; an ended session returns to login, while a valid session leaves an explicit map retry without an automatic loop.
 
 ## Read the code in small steps
 
-1. src/types/knowledge.ts describes view data, not persistence entities.
-2. src/types/knowledgeMapResponse.ts and src/api/knowledgeMaps.ts define the independent HTTP contract, native fetch, and basic runtime validation.
-3. src/components/KnowledgeNodeCard.tsx renders a typed custom node.
-4. src/components/NodeDetails.tsx renders information received through props.
-5. src/components/KnowledgeGraph.tsx owns the active map, nodes/edges, selection, positions by map, drill-down/back, and map loading/retry, and wires React Flow to them. App uses session state and actions from src/session/useSession.ts to choose login/loading/error views or the authenticated shell. src/session/sessionClient.ts coordinates explicit auth/workspace HTTP sequences without graph state or a global singleton.
-6. src/App.css and src/index.css provide responsive layout without a UI framework.
+1. src/types/persistedKnowledgeMap.ts defines own HTTP DTOs; src/api/knowledgeMapsApi.ts validates external JSON and loads list/map with relative same-origin native fetch.
+2. src/navigation/mapLocation.ts parses/builds map URLs; usePersistedMapNavigation.ts handles native history and visit identity without a router or state framework.
+3. src/components/PersistedMaps.tsx orchestrates discovery/map requests, picker/empty/error states and session revalidation callbacks.
+4. src/adapters/knowledgeMapAdapter.ts is a pure DTO → visual model transformation. API/backend/domain remain independent of XYFlow.
+5. KnowledgeGraph.tsx receives map/callback props and owns temporary node movement and derived selection; KnowledgeNodeCard/NodeDetails render text and child navigation.
+6. App/useSession/sessionClient retain the existing session gate and auth/CSRF sequencing; the map container is scoped by current user/workspace.
 
-VS-001 adds `src/data/knowledgeMapPositions.ts` for local demonstration coordinates and `src/adapters/knowledgeMapAdapter.ts` for explicit HTTP DTO → XYFlow adaptation. Missing positions fail explicitly; the API never supplies visual coordinates, handles, or styles. Local content mocks have been removed.
-
-Each map visit and retry requests content again. Visual models, including their content in `data`, remain temporarily in memory during the session; after a new HTTP response arrives, previous positions and selection are reapplied to the new visual nodes. This is not a persistent cache or reuse of HTTP responses instead of fetching. Loading is announced, 404 is distinct, errors offer retry, and there is no silent mock fallback. Every navigation and retry gets a new request identity, so even a quick return shows loading until its new response arrives. Effect cleanup aborts obsolete requests and ignores stale results, including StrictMode development cycles. Runtime validation checks required fields, numeric ranges, unique IDs, and valid edge references; TypeScript alone does not validate incoming JSON.
-
-Phase 3.4 adds src/api/http.ts, authApi.ts, workspaceApi.ts and src/types/session.ts for status-preserving fetch and manual session JSON validation, plus LoginView for labeled, responsive form inputs. There is no Context/Provider, router, additional state/form library or frontend test framework. [React learning notes](../../../docs/DEVELOPMENT.md#react-learning-notes-for-session-integration) explain the custom hook, effect cleanup, refs and approximate Angular comparisons. Map failures stay separate from session errors; me/workspace 401 returns to login, while network/500 produces recoverable errors. No backend/schema/dependency change is needed.
+Runtime checks cover GUID-like IDs, nullable descriptions/child links, finite coordinates, unique IDs and valid edge endpoints. Extra response fields are discarded before state. Unknown server error detail/title is never rendered. Request cleanup uses AbortController plus a current-request guard; every visit/retry has a distinct identity, so A finishing after B cannot overwrite B, including StrictMode cleanup. Each visit fetches again; no HTTP response cache or automatic layout is added.
 
 ## React concepts and approximate Angular equivalents
 
-| Concept | Use and reason | Approximate Angular equivalent |
+| Concept | Where and why | Approximate Angular analogy |
 | --- | --- | --- |
-| Function components and JSX | App, cards, and details split the UI into readable pieces. | Components and their templates. |
-| Typed props and callbacks | Details receives the selected node and a navigation callback; no global state is needed. | Inputs and outputs/event bindings. Callback props are functions, not EventEmitter objects. |
-| useState | KnowledgeGraph owns the active map and node arrays. Updates request a render. | Component-local signals or fields bound to a template. |
-| Derived state | Selection is found in the active node array rather than duplicated. | A computed signal or derived template value. |
-| Immutable functional updates | Node changes use previous state and replace the affected array. | Signal update returning a new object. |
-| useCallback | Stabilizes the node-change handler while the active map is unchanged. | No direct equivalent; component methods typically retain identity. |
-| Conditional rendering | Back button, empty details, and submap action depend on state. | @if in a template. |
-| key | Remounts React Flow to fit the new map; KnowledgeGraph retains node positions. | View identity via track is related, but not an exact lifecycle equivalent. |
-| StrictMode | The Vite entry point enables development checks for impure behavior. | No direct equivalent; Angular development checks share some intent. |
+| Props/callbacks | PersistedMaps passes map and child-navigation action to KnowledgeGraph. | Inputs and outputs; callbacks are functions rather than EventEmitter objects. |
+| useState and derived state | Graph nodes are local; selection is derived from them. Loading is derived from request identity. | Local signals and computed signals. |
+| useEffect / cleanup | Fetch per visit; abort and ignore obsolete work on change/unmount/StrictMode. | Lifecycle/reactive effects with teardown; not exactly ngOnInit. |
+| AbortController | Cancel obsolete HTTP work; a current guard also rejects late results. | HTTP subscription teardown is related. |
+| Custom hook | usePersistedMapNavigation composes local state/listeners. | Reusable scoped service logic, without implying singleton state. |
+| URLSearchParams / popstate | Native URL selection and Back/Forward, zero router package. | Browser APIs; Angular Router provides a broader abstraction. |
+| key | Remount the graph per successful visit to reset selection/local positions. | View identity/track is related, not an exact lifecycle equivalent. |
+| useCallback | Keeps graph node-change and session-recheck handlers stable. | No direct equivalent; component methods normally keep identity. |
+
+## Validation and limits
+
+No frontend test framework was added. Build/lint and dependency-free ad hoc Node checks cover runtime validators, adapter, URL helpers, error statuses and cancellation. Real trusted-HTTPS browser checks are recorded in [Development](../../../docs/DEVELOPMENT.md#phase-43---persistent-graph-frontend-integration), separately from automated results.
+
+Discovery is currently unpaginated. Local drag does not save, and viewport state is not retained between map visits. Full accessibility, real touchscreen gestures, larger graphs, production routing/TLS and authoring remain future scoped work. Package manager remains open; the pnpm notes above still apply.
 
 ## XYFlow assessment
 
 XYFlow supplies custom React nodes, typed node/edge data, zoom, pan, selection,
 dragging, controls, and a minimap. Drill-down is local map navigation implemented
-by KnowledgeGraph, rather than a database hierarchy or automatic domain feature.
+through the navigation container/callbacks, rather than a database hierarchy or automatic domain feature.
 
 The spike informed the approved initial adoption of XYFlow / React Flow.
 The library remains isolated to frontend visualization; domain and application

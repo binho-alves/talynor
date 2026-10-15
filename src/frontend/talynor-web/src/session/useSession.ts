@@ -32,6 +32,14 @@ export function useSession() {
     return loadSession(controller)
   }, [loadSession])
 
+  // Recheck /me and /workspace after a map 401, without an automatic map retry.
+  const revalidateSession = useCallback(async () => {
+    if (activeRequest.current) return
+    const controller = new AbortController()
+    activeRequest.current = controller
+    await loadSession(controller)
+  }, [loadSession])
+
   useEffect(() => {
     const controller = new AbortController()
     activeRequest.current = controller
@@ -88,5 +96,5 @@ export function useSession() {
     }
   }
 
-  return { session, busy, operationError, login, logout, retryBootstrap }
+  return { session, busy, operationError, login, logout, retryBootstrap, revalidateSession }
 }

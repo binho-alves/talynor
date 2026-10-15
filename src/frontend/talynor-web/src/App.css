@@ -5,6 +5,12 @@ h1 { margin-bottom: 8px; font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.0
 .intro { margin-bottom: 0; color: #475569; }
 .demo-label { border: 1px solid #cbd5e1; border-radius: 24px; padding: 8px 12px; font-size: 12px; white-space: nowrap; color: #475569; }
 .map-navigation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; font-size: 14px; }
+.map-message { background: white; border: 1px solid #dbe3ee; border-radius: 16px; padding: 24px; overflow-wrap: anywhere; }
+.map-picker { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.map-picker li { min-width: 0; }
+.map-choice { width: 100%; min-height: 64px; padding: 16px; text-align: left; border: 1px solid #94a3b8; border-radius: 8px; background: #f8fafc; color: #1e40af; overflow-wrap: anywhere; }
+.map-choice:hover { background: #eff6ff; }
+.map-heading h2, .details-panel h2, .knowledge-node strong, .details-description, .map-help { overflow-wrap: anywhere; min-width: 0; }
 .back-button { border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; margin-right: 12px; background: white; color: #1e40af; min-height: 44px; }
 .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
 .graph-section, .details-panel { background: white; border: 1px solid #dbe3ee; border-radius: 16px; overflow: hidden; }
