@@ -25,6 +25,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IKnowledgeMapReader, InMemoryKnowledgeMapReader>();
 builder.Services.AddScoped<GetKnowledgeMap>();
 builder.Services.AddScoped<GetKnowledgeMapForCurrentWorkspace>();
+builder.Services.AddScoped<ListKnowledgeMapsForCurrentWorkspace>();
 builder.Services.AddScoped<IPersistedKnowledgeMapReader, PersistedKnowledgeMapReader>();
 builder.Services.AddScoped<IKnowledgeMapStore, KnowledgeMapStore>();
 builder.Services.AddScoped<CreateKnowledgeMap>();

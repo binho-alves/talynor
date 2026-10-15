@@ -6,6 +6,15 @@ namespace Talynor.Infrastructure.KnowledgeMaps;
 
 public sealed class PersistedKnowledgeMapReader(TalynorDbContext context) : IPersistedKnowledgeMapReader
 {
+    public async Task<IReadOnlyList<KnowledgeMapSummary>> ListAsync(Guid workspaceId, CancellationToken cancellationToken)
+    {
+        var maps = await context.KnowledgeMaps.AsNoTracking()
+            .Where(map => map.WorkspaceId == workspaceId)
+            .OrderBy(map => map.Title).ThenBy(map => map.Id)
+            .Select(map => new KnowledgeMapSummary(map.Id, map.Title)).ToArrayAsync(cancellationToken);
+        return Array.AsReadOnly(maps);
+    }
+
     public async Task<PersistedKnowledgeMap?> GetAsync(Guid mapId, Guid workspaceId, CancellationToken cancellationToken)
     {
         // One read snapshot for map, nodes and edges; no mix of separately committed graph states.

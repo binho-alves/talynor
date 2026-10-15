@@ -1,6 +1,6 @@
 # Secure-development principles
 
-Phase 3 and 4.1 are complete, approved and published. 4.2 — Map/Node/Edge Authoring Backend is implemented and in review. Anonymous demos remain separate from private maps; no account/map seed exists. Phase 4 is incomplete; no production-readiness claim is made.
+Phase 3, 4.1 and 4.2 are complete, approved and published. 4.3A — Persisted Map Discovery is implemented and in review. Anonymous demos remain separate from private maps; no account/map seed exists. Phase 4 is incomplete; no production-readiness claim is made.
 
 ## Secrets and configuration
 
@@ -123,3 +123,11 @@ All eight nested authoring endpoints require the validated cookie session and na
 Application validates relations before save; existing composite FKs and SQLite triggers remain defense-in-depth. Referenced map/node deletion returns controlled 409 map_in_use/node_in_use, without silent edge deletion. Expected FK/known-trigger failures are translated only after confirming the corresponding condition; busy, PK, unknown constraints/outages remain sanitized 500. Explicit logs contain only generic operation names. Framework diagnostic/redaction limitations remain as before.
 
 Writes use own DTOs/projections, no ownership fields in responses, and no-store on successful/error responses including pre-controller native stamp failures. The endpoint-only native 32 KiB request limit fits bounded escaped JSON; TestServer does not establish real-server enforcement. No new authoring limiter, cookie/CSRF policy change, concurrency tokens or provider/schema/dependency change exists. Account deletion/orphan lifecycle and non-atomic account check remain unresolved. Demos stay anonymous/transitional, frontend stays unchanged, and no deployment-security claim is made.
+
+## Phase 4.3A discovery security
+
+GET /api/maps is private and authenticated. ListKnowledgeMapsForCurrentWorkspace reuses the existing ICurrentUser/current-account/personal-workspace chain; the reader filters the server-derived workspace in SQL and projects only map ID/title. Arbitrary query parameters cannot select WorkspaceId or OwnerUserId. Foreign-workspace maps and in-memory demos never enter this collection, and no owner/workspace ID, graph content, position, child link or unnecessary timestamp is returned.
+
+Success and error responses are no-store. An empty maps array is 200 and describes only the current workspace, providing no evidence about another workspace. Invalid/removed accounts use the existing sanitized 401/local-sign-out behavior; operational/provider and pre-controller stamp failures remain sanitized 500 rather than empty results. GET introduces no CSRF token requirement and leaves authoring/session protections unchanged.
+
+Discovery creates/selects no map, defines no root/default and adds no public listing, frontend, seed, schema or dependency. It is currently unpaginated without search/filter/sort inputs; scale and future pagination/search require separate review. Phase 4.3 frontend integration remains pending approval/publication of 4.3A, without a production-readiness claim.

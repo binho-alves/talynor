@@ -165,6 +165,8 @@ public class PersistedKnowledgeMapTests
     }
     private sealed class Reader : IPersistedKnowledgeMapReader
     {
+        public Task<IReadOnlyList<KnowledgeMapSummary>> ListAsync(Guid workspaceId, CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
         public PersonalWorkspace Workspace { get; } = PersonalWorkspace.Create("owner", Now);
         public PersistedKnowledgeMap? Map { get; init; }
         public Guid? MapWorkspaceId { get; init; }

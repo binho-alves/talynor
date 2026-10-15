@@ -66,15 +66,19 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 4 - Persistent Knowledge Authoring
 
-**Status:** current and incomplete. Phase 4.1 — Knowledge Map Persistence Foundation is complete, approved and published; 4.2 — Map/Node/Edge Authoring Backend is implemented and in review. Later slices need separate authorization.
+**Status:** current and incomplete. Phase 4.1 — Knowledge Map Persistence Foundation and 4.2 — Map/Node/Edge Authoring Backend are complete, approved and published. Phase 4.3A — Persisted Map Discovery is implemented and in review. Later slices need separate authorization.
 
 **Goal:** evolve the demonstration Knowledge Maps into persistent knowledge content owned by PersonalWorkspace, supporting connected nodes beyond a folder hierarchy.
 
 **4.1 completed/published:** relational Knowledge Maps, Nodes, Edges, persisted positions and ChildMapId; server-derived workspace ownership; private read endpoint, explicit migration, SQLite constraints and ownership/isolation tests. Demo routes coexist temporarily; frontend source is unchanged. See ADR-011 for the scoped model and read contract.
 
-**4.2 implemented/in review:** private nested map/node create, PATCH and delete; position and ChildMap set-clear; edge create/delete; native CSRF, session-derived ownership and controlled errors, tests and documentation. No schema/provider/dependency/frontend change. See ADR-012.
+**4.2 completed/published:** private nested map/node create, PATCH and delete; position and ChildMap set-clear; edge create/delete; native CSRF, session-derived ownership and controlled errors, tests and documentation. No schema/provider/dependency/frontend change. See ADR-012.
 
-**Future next slice:** Phase 4.3 — Persistent Graph Frontend Integration, not started. Persisted frontend rendering/navigation, authoring and browser drag-save require separate scope. Relationship taxonomy, broader cross-map semantics, automatic layout and advanced authoring concurrency remain open.
+**4.3A current, implemented/in review:** authenticated workspace-scoped `GET /api/maps` returns id/title summaries in a maps envelope, ordered by database title then ID. Empty workspaces return 200 with an empty maps array. No root/default map, automatic selection, frontend, schema or dependency change.
+
+**Next slice:** Phase 4.3 — Persistent Graph Frontend Integration, not started and blocked until 4.3A is approved and published. The future client can discover maps, let the user select one, then load its private read endpoint; no automatic first-map rule is defined.
+
+**Future:** Phase 4.4 — Authoring UX. Persisted frontend rendering/navigation, authoring and browser drag-save require their own scoped tasks. Relationship taxonomy, broader cross-map semantics, automatic layout and advanced authoring concurrency remain open.
 
 **Non-goals:** graph database, automatic internet importing, or a relationship taxonomy assumed from the initial examples.
 

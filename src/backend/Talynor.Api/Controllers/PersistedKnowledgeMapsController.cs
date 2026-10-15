@@ -11,6 +11,33 @@ namespace Talynor.Api.Controllers;
 [Authorize]
 public sealed class PersistedKnowledgeMapsController : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType<KnowledgeMapListResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> List(
+        [FromServices] ListKnowledgeMapsForCurrentWorkspace listMaps, [FromServices] ISessionService sessions,
+        [FromServices] ILogger<PersistedKnowledgeMapsController> logger, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store";
+        try
+        {
+            var result = await listMaps.ExecuteAsync(cancellationToken);
+            if (result.Status == KnowledgeMapListStatus.AuthenticationRequired)
+            {
+                await sessions.LogoutAsync(cancellationToken);
+                return MapProblem(401, "authentication_required", "Autenticação necessária.");
+            }
+            return Ok(new KnowledgeMapListResponse(result.Maps!.Select(map =>
+                new KnowledgeMapSummaryResponse(map.Id, map.Title)).ToArray()));
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            logger.LogError("Persisted knowledge map discovery failed due to an unexpected operational error.");
+            return MapProblem(500, "unexpected_error", "Não foi possível concluir a operação.");
+        }
+    }
+
     [HttpGet("{mapId:guid}")]
     [ProducesResponseType<PersistedKnowledgeMapResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]

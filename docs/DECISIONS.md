@@ -15,7 +15,7 @@ This index records approved decisions from the project foundation and subsequent
 | [ADR-009](#adr-009---personal-workspace-and-ownership) | One personal workspace per user; lazy creation and authenticated ownership | Accepted; implemented and published |
 | [ADR-010](#adr-010---authenticated-frontend-session-flow) | Cookie-based frontend session bootstrap with private in-memory CSRF | Accepted; implemented and published |
 | [ADR-011](#adr-011---persistent-knowledge-graph-foundation) | Relational workspace-owned maps, nodes, edges, positions and private reads | Accepted; completed, approved and published |
-| [ADR-012](#adr-012---knowledge-graph-authoring-api) | Private nested authoring, explicit PATCH semantics and controlled conflicts | Accepted by scoped 4.2 task; implemented, in review |
+| [ADR-012](#adr-012---knowledge-graph-authoring-api) | Private nested authoring, explicit PATCH semantics and controlled conflicts | Accepted; completed, approved and published |
 
 ## ADR-001 - React frontend
 
@@ -165,7 +165,7 @@ This index records approved decisions from the project foundation and subsequent
 
 ## ADR-012 - Knowledge Graph Authoring API
 
-**Date/status:** 2026-10-14. Accepted by the scoped Phase 4.2 request; implemented and in review. 4.1 is complete/published and Phase 4 remains incomplete.
+**Date/status:** 2026-10-14. Accepted by the scoped Phase 4.2 request; completed, approved and published. 4.1 is complete/published and Phase 4 remains incomplete. The explicitly authorized 4.3A discovery follow-through below is implemented and in review.
 
 **Context/decision:** durable private graph content needs nested authoring without frontend/schema changes. Use one Application use case per map/node create-update-delete and edge create-delete, a specific IKnowledgeMapStore, tracked scoped EF entities and atomic SaveChanges. Expose only nested /api/maps routes, deriving ownership from the validated current account/workspace. All unsafe endpoints require native CSRF and return no-store. Unknown DTO properties are rejected; creates return own 201 projections with map Location to its read, while PATCH/delete returns 204. Native 32 KiB bodies accommodate bounded text even with JSON escapes. No generic repository/transaction wrapper, new dependency or authoring limiter is introduced.
 
@@ -175,7 +175,9 @@ This index records approved decisions from the project foundation and subsequent
 
 **Concurrency/risks:** no rowversion/ETag/If-Match, history or audit framework. Same modified-column writes are last committed write wins; EF only writes changed properties, allowing disjoint changes to merge. UpdatedAtUtc is not a monotonic commit sequence. Constraint rechecks are not a blanket retry/locking policy. Account/workspace lifecycle and non-atomic account checks remain incomplete; native body limits require real-server verification. SQLite-specific classification/triggers must be adapted during an explicitly authorized PostgreSQL transition.
 
-**Consequences:** backend authoring is available over the unchanged schema/migrations/snapshot/reader and existing session foundation. Demos remain anonymous/transitional; frontend still uses demos and 4.3 integration is future. No frontend authoring, public/sharing/study capability, seed, provider/dependency change or production-readiness claim is introduced.
+**Authorized discovery follow-through (4.3A, implemented/in review):** extend the existing persisted reader with a workspace-scoped summary query and authenticated GET /api/maps. Use an own { "maps": [{ "id": "...", "title": "..." }] } API envelope, 200 with an empty maps array, database Title then Id ordering, and no-store. Ownership/account/error protections are reused. This read capability defines no root/default or automatic selection and adds no pagination/search, frontend, schema or dependency. Phase 4.3 remains blocked until 4.3A is approved and published.
+
+**Phase 4.2 consequences:** backend authoring was added over the unchanged schema/migrations/snapshot/reader and existing session foundation; 4.3A subsequently extends only the reader's summary capability as described above. Demos remain anonymous/transitional; frontend still uses demos and 4.3 integration is future. No frontend authoring, public/sharing/study capability, seed, provider/dependency change or production-readiness claim is introduced.
 
 ## Decision discipline
 

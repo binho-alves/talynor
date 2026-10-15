@@ -204,7 +204,9 @@ public class KnowledgeAuthoringHttpTests
         }
         using var edge = await WriteAsync(client, "POST", $"/api/maps/{map.Id}/edges", new { sourceNodeId = Guid.Empty, targetNodeId = node.Id });
         await ProblemAsync(edge, HttpStatusCode.BadRequest, "validation_failed");
-        using var list = await client.GetAsync("/api/maps"); Assert.Equal(HttpStatusCode.MethodNotAllowed, list.StatusCode);
+        using var list = await client.GetAsync("/api/maps"); Assert.Equal(HttpStatusCode.OK, list.StatusCode);
+        var discovered = (await list.Content.ReadFromJsonAsync<KnowledgeMapListResponse>())!;
+        Assert.Equal(map.Id, Assert.Single(discovered.Maps).Id);
     }
 
     [Theory]
