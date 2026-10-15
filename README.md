@@ -12,7 +12,9 @@ Phase 3 delivers local account registration, cookie-based sessions with CSRF, lo
 
 **Published discovery:** Phase 4.3A — Persisted Map Discovery is complete, approved and published. Authenticated `GET /api/maps` returns only current-workspace map summaries as `{ "maps": [{ "id": "...", "title": "..." }] }`, including an empty maps array when appropriate. There is no root/default map or automatic selection.
 
-**Current implementation:** Phase 4.3 — Persistent Graph Frontend Integration is implemented and in review. After session/workspace bootstrap, an explicit picker consumes discovery; `?map=<guid>` loads private persisted content, positions and ChildMap drill-down. Native history supports Back/Forward and F5. Drag is local only and resets on refetch/revisit; no write API is called by the frontend. Phase 4.4 — Authoring UX is next/future. Phase 4 remains incomplete.
+**Published frontend:** Phase 4.3 — Persistent Graph Frontend Integration is complete, approved and published. Session/workspace bootstrap, explicit discovery/picker, private persisted rendering, ChildMap and native URL/History navigation are preserved.
+
+**Current implementation:** Phase 4.4 — Authoring UX is implemented and in review. Explicit edit mode adds map/node CRUD, ChildMap set/clear, edge creation/deletion and position saving on drag stop through the published API. Writes use existing session CSRF, explicit retries and pessimistic creates/deletes. Phase 4 remains incomplete; advanced authoring, layout and broader validation remain separately scoped.
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
 

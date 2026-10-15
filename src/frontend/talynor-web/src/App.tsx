@@ -4,7 +4,7 @@ import { useSession } from './session/useSession'
 import './App.css'
 
 function App() {
-  const { session, busy, operationError, login, logout, retryBootstrap, revalidateSession } = useSession()
+  const { session, busy, operationError, login, logout, retryBootstrap, revalidateSession, authoring } = useSession()
 
   if (session.status === 'bootstrapping') {
     return <main className="session-page" aria-busy="true">
@@ -42,7 +42,7 @@ function App() {
     </header>
     {operationError && <p className="session-feedback" role="alert">{operationError}</p>}
     <span className="sr-only" role="status">{busy === 'logout' ? 'Encerrando sua sessão…' : ''}</span>
-    <PersistedMaps key={`${session.user.id}:${session.workspace.id}`} onAuthenticationRequired={revalidateSession} />
+    <PersistedMaps key={`${session.user.id}:${session.workspace.id}`} onAuthenticationRequired={revalidateSession} authoring={authoring} />
   </div>
 }
 

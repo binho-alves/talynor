@@ -1,11 +1,14 @@
 import { getCsrf, getCurrentUser, postLogin, postLogout } from '../api/authApi.ts'
 import { ApiError } from '../api/http.ts'
 import { getPersonalWorkspace } from '../api/workspaceApi.ts'
+import { createKnowledgeMapAuthoringClient } from '../api/knowledgeMapAuthoringApi.ts'
 import type { CurrentUser, ResolvedSession } from '../types/session'
 
 export class SessionBootstrapError extends Error {
   constructor() { super('Não foi possível carregar sua sessão.') }
 }
+
+export type WithCsrf = <T>(action: (token: string, signal: AbortSignal) => Promise<T>, signal: AbortSignal) => Promise<T>
 
 // One instance per hook, never a module-global session. CSRF stays private and only in memory.
 export function createSessionClient() {
@@ -105,7 +108,17 @@ export function createSessionClient() {
     return { status: 'anonymous' }
   }
 
-  return { bootstrap, login, logout, clearCsrf }
+  // Authoring uses the same private CSRF lifecycle. Never replay a mutation, even after a CSRF failure.
+  const withCsrf: WithCsrf = async (action, signal) => {
+    const token = await renewCsrf(signal)
+    try { return await action(token, signal) } catch (error) {
+      if (error instanceof ApiError && error.code === 'csrf_invalid') clearCsrf()
+      throw error
+    }
+  }
+
+  const authoring = createKnowledgeMapAuthoringClient(withCsrf)
+  return { bootstrap, login, logout, clearCsrf, authoring }
 }
 
 export function loginErrorMessage(error: unknown): string {

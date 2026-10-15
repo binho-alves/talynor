@@ -66,7 +66,7 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 4 - Persistent Knowledge Authoring
 
-**Status:** current and incomplete. Phase 4.1 — Knowledge Map Persistence Foundation and 4.2 — Map/Node/Edge Authoring Backend are complete, approved and published. Phase 4.3A — Persisted Map Discovery is complete, approved and published; 4.3 — Persistent Graph Frontend Integration is implemented and in review. Later slices need separate authorization.
+**Status:** current and incomplete. Phase 4.1 — Knowledge Map Persistence Foundation and 4.2 — Map/Node/Edge Authoring Backend are complete, approved and published. Phase 4.3A — Persisted Map Discovery is complete, approved and published; 4.3 — Persistent Graph Frontend Integration is complete, approved and published; 4.4 — Authoring UX is implemented and in review. Later slices need separate authorization.
 
 **Goal:** evolve the demonstration Knowledge Maps into persistent knowledge content owned by PersonalWorkspace, supporting connected nodes beyond a folder hierarchy.
 
@@ -76,9 +76,9 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 **4.3A completed/published:** authenticated workspace-scoped `GET /api/maps` returns id/title summaries in a maps envelope, ordered by database title then ID. Empty workspaces return 200 with an empty maps array. No root/default map, automatic selection, frontend, schema or dependency change.
 
-**4.3 implemented/in review:** authenticated discovery and explicit picker, private map rendering with backend positions, ChildMap drill-down and visit-based Back/Forward, `?map=<guid>` deep links/F5, recoverable map errors and session revalidation on 401. Drag is local only; no authoring endpoints or automatic first-map selection.
+**4.3 completed/published:** authenticated discovery and explicit picker, private map rendering with backend positions, ChildMap drill-down and visit-based Back/Forward, `?map=<guid>` deep links/F5, recoverable map errors and session revalidation on 401. Drag is local only; no authoring endpoints or automatic first-map selection.
 
-**Next/future:** Phase 4.4 — Authoring UX. Authoring and browser drag-save require their own scoped tasks. Relationship taxonomy, broader cross-map semantics, automatic layout and advanced authoring concurrency remain open.
+**4.4 implemented/in review:** explicit edit mode, map/node CRUD, persisted drag stop with rollback, ChildMap set/clear and edge create/delete through the published API; native CSRF, explicit mutation retries and delete confirmations. No backend/schema/dependency change. Phase 4 remains incomplete pending review/closure and separately scoped refinements; relationship taxonomy, broader cross-map semantics, automatic layout and advanced authoring concurrency remain open.
 
 **Non-goals:** graph database, automatic internet importing, or a relationship taxonomy assumed from the initial examples.
 

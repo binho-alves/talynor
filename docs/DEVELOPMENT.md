@@ -1,11 +1,25 @@
 # Development workflow
 
+## Phase 4.4 - Authoring UX
+
+Implemented and in review; 4.3 is complete, approved and published. Reuse the trusted HTTPS certificate, process-only Vite proxy and explicitly migrated disposable SQLite procedure below. No backend/schema/migration/package change or development seed exists. Test accounts and graph content are disposable; create the main graph through the UI, using API fixtures only for auxiliary ownership scenarios.
+
+In an empty workspace choose Criar mapa, enter title/optional description, save, then Editar mapa → Adicionar nó. View mode retains navigation/selection/local movement; edit mode enables metadata, node/edge actions and ChildMap choices. New nodes use (node count × 240, 0); use graph controls to frame the view. Titles allow up to 200 UTF-16 units after trim; descriptions up to 4000. Backend remains authoritative. Empty description/child fields produce clear flags on edit, omitted fields preserve values.
+
+There is no keystroke autosave. Edit-mode drag PATCHes once at stop; keyboard movement uses Salvar posição do nó. Failed position writes restore the last confirmed position. Saves/creates/deletes are pessimistic, with one pending write per editor and explicit confirmations for deletions. Writes obtain fresh CSRF through the existing session client; none automatically replay, including POST after network/500/csrf_invalid/401. After ambiguous outcomes reload before creating again. Foreign/missing resources have the same unavailable feedback; map_in_use/node_in_use instruct removing references explicitly. Navigation discards drafts and does not abort writes already sent; late completions do not affect another visit. A revisit during an outstanding write may require reload after that write finishes; no cross-visit cache/concurrency coordinator is introduced.
+
+Validation on 2026-10-15: backend build PASS (zero warnings/errors), 79 unit and 179 integration tests PASS; safe :memory: EF pending-model changes NONE. Frontend build/lint and 65 existing Node checks passed; 37 additional dependency-free checks cover real authoring validators, request/PATCH shapes, eight operations and CSRF/no replay. Five real HTTPS API/client checks cover missing CSRF and foreign map/node/child/edge references. These ad hoc checks add no framework and do not prove React lifecycle timing.
+
+Trusted-HTTPS browser validation used a freshly migrated disposable database and a temporary fixture/proxy outside the repository. The main UI flow passed: login/empty workspace/first map; two nodes; drag-stop save; metadata; edge creation; F5 persistence of title/description/position/edge/ChildMap; drill-down/internal Back; clear description/ChildMap; real node_in_use/map_in_use; edge then node deletion; rename/picker synchronization; Back/Forward/F5; current map deletion returning to empty picker; logout. Desktop 1440×1000, tablet 768×1024 and mobile 390×844 form/control checks passed without horizontal document overflow. Keyboard movement plus explicit save and failed-position rollback passed. No full screen-reader or real touch-device audit was run.
+
+The temporary HTTPS proxy forwarded to the unchanged API with certificate validation enabled. It recorded only method/path/status and boolean cookie/CSRF/Bearer/workspace/cache metadata, never values or bodies. UI writes carried CSRF/cookies; GETs carried no CSRF; no Bearer/workspace override/demo call or duplicated create POST appeared. One-shot proxy faults (not backend/database changes) exercised write 401 with valid session, 500, connection loss and position-save failure; shell/drafts stayed recoverable, no automatic replay occurred, manual retry succeeded, and position rollback matched the last saved value. Foreign invalid_child_map/invalid_edge_nodes were tested through the real API/client, not forced through UI selection. Production hosting/body-limit/scale and adversarial lifecycle races remain outside this smoke evidence.
+
 ## Project context
 
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. Phase 4 is incomplete; 4.3 — Persistent Graph Frontend Integration is implemented and in review; 4.4 — Authoring UX is next/future.
+- Current stage: Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. Phase 4 is incomplete; 4.3 is complete, approved and published; 4.4 — Authoring UX is implemented and in review.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -309,7 +323,7 @@ Complete, approved and published; 4.1 and 4.2 are complete, approved and publish
 
 The query returns only current-workspace summaries, ordered by database Title ascending then stored Id ascending. SQLite currently uses default BINARY title collation, including case-sensitive ordering; this is not a locale/user-defined sort. Equal titles use ID as the deterministic tie-breaker. There is no pagination/search/filter/sort input. No result is a default/root map and callers must not assume the first item is selected.
 
-Phase 4.3 implements login → workspace → GET /api/maps → user selects a map → GET /api/maps/{id}, or a direct map URL after session bootstrap. 4.3A itself left frontend unchanged; 4.4 Authoring UX remains future.
+Phase 4.3 implements login → workspace → GET /api/maps → user selects a map → GET /api/maps/{id}, or a direct map URL after session bootstrap. 4.3A itself left frontend unchanged; 4.4 Authoring UX is implemented and in review above.
 
 All responses are no-store. Anonymous/invalid/removed-account sessions get sanitized 401; a missing account triggers existing local sign-out. Account/reader/provider failures and native stamp failures get sanitized 500, never a misleading empty list. WorkspaceId/OwnerUserId query parameters cannot override server ownership and are not returned. An empty list describes only this user's workspace. GET needs no CSRF token; create+discover uses the existing CSRF-protected POST /api/maps followed by this read.
 
@@ -317,7 +331,7 @@ Run tool restore, solution restore/build/tests, safe in-memory EF pending-model 
 
 ## Phase 4.3 - Persistent Graph Frontend Integration
 
-Implemented and in review; 4.3A is complete, approved and published. Reuse trusted HTTPS and explicitly migrated disposable SQLite above. Prepare a disposable account and maps through the published CSRF-protected 4.2 API, outside application startup; do not create a permanent seed. Prepare Map A with known coordinates, two nodes/one edge and a ChildMapId to B; B may link back to A for cycle validation. A second empty account tests empty discovery and foreign-map 404.
+Complete, approved and published; 4.3A is complete, approved and published. The following records the read-only 4.3 validation; 4.4 authoring is described above. Reuse trusted HTTPS and explicitly migrated disposable SQLite. Prepare a disposable account and maps through the published CSRF-protected 4.2 API, outside application startup; do not create a permanent seed. Prepare Map A with known coordinates, two nodes/one edge and a ChildMapId to B; B may link back to A for cycle validation. A second empty account tests empty discovery and foreign-map 404.
 
 The normal flow is login → me → workspace → discovery → explicit choice → private map read. Without ?map, zero maps means an empty message and no individual read; one/many maps still require a click. With `?map=<guid>`, F5 bootstraps session/workspace then reads that map. Invalid/duplicate map parameters show an invalid-address state without sending an invalid map request. Direct entry/reload offers Todos os mapas; current-scope visits support internal Back and browser Back/Forward. No parent identity is assumed.
 

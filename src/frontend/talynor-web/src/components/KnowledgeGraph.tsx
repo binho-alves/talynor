@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
+import type { ReactNode } from 'react'
 import {
-  applyNodeChanges, Background, Controls, MiniMap, ReactFlow, type NodeChange,
+  Background, Controls, MiniMap, ReactFlow, type NodeChange, type EdgeChange,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { KnowledgeNodeCard } from './KnowledgeNodeCard'
@@ -11,13 +11,12 @@ import type { KnowledgeMap, KnowledgeNode } from '../types/knowledge'
 const nodeTypes = { knowledge: KnowledgeNodeCard }
 const fitViewOptions = { padding: 0.18 }
 
-export function KnowledgeGraph({ map, onOpenMap }: { map: KnowledgeMap; onOpenMap: (id: string) => void }) {
-  // The container remounts this view per successful visit. Drag/selection stay local.
-  const [nodes, setNodes] = useState(map.nodes)
+export function KnowledgeGraph({ map, onOpenMap, onNodesChange, onEdgesChange, onNodeDragStop, onSelectionChange, editing, pending, children }:
+  { map: KnowledgeMap; onOpenMap: (id: string) => void; onNodesChange: (changes: NodeChange<KnowledgeNode>[]) => void;
+    onEdgesChange: (changes: EdgeChange[]) => void; onNodeDragStop: (node: KnowledgeNode) => void;
+    onSelectionChange: () => void; editing: boolean; pending: boolean; children?: ReactNode }) {
+  const nodes = map.nodes
   const selectedNode = nodes.find((node) => node.selected)
-  const onNodesChange = useCallback((changes: NodeChange<KnowledgeNode>[]) => {
-    setNodes((previous) => applyNodeChanges(changes, previous))
-  }, [])
   function openSubmap(node: KnowledgeNode) {
     if (node.data.childMapId) onOpenMap(node.data.childMapId)
   }
@@ -33,16 +32,22 @@ export function KnowledgeGraph({ map, onOpenMap }: { map: KnowledgeMap; onOpenMa
         <div className="graph-canvas">
           <ReactFlow<KnowledgeNode>
             nodes={nodes}
-            edges={map.edges}
+            edges={map.edges.map((edge) => ({ ...edge, selectable: editing }))}
             nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange}
-            onNodeDoubleClick={(_event, node) => openSubmap(node)}
+            onNodesChange={(changes) => {
+              if (changes.some((change) => change.type === 'select' && change.selected)) onSelectionChange()
+              onNodesChange(changes)
+            }}
+            onEdgesChange={onEdgesChange}
+            onNodeDragStop={(_event, node) => onNodeDragStop(node)}
+            onNodeDoubleClick={(_event, node) => { if (!editing) openSubmap(node) }}
             fitView
             fitViewOptions={fitViewOptions}
             minZoom={0.25}
             maxZoom={2}
             nodesConnectable={false}
-            edgesFocusable={false}
+            edgesFocusable={editing}
+            nodesDraggable={!pending}
             edgesReconnectable={false}
             deleteKeyCode={null}
             multiSelectionKeyCode={null}
@@ -56,7 +61,7 @@ export function KnowledgeGraph({ map, onOpenMap }: { map: KnowledgeMap; onOpenMa
               'node.a11yDescription.ariaLiveMessage': ({ x, y }) =>
                 `Nó selecionado movido. Nova posição: x ${x}, y ${y}.`,
               'edge.a11yDescription.default':
-                'Conexão entre conceitos. As conexões não podem ser editadas nesta visualização.',
+                'Conexão entre conceitos. No modo de edição, selecione para acessar a exclusão com confirmação.',
               'controls.ariaLabel': 'Controles do mapa',
               'controls.zoomIn.ariaLabel': 'Aproximar mapa',
               'controls.zoomOut.ariaLabel': 'Afastar mapa',
@@ -78,11 +83,12 @@ export function KnowledgeGraph({ map, onOpenMap }: { map: KnowledgeMap; onOpenMa
         <p className="interaction-help">
           Selecione um nó para ver detalhes. Arraste os nós para reorganizar;
           arraste o fundo para mover o mapa. Use os controles para ajustar o zoom.
-          As posições alteradas são locais e voltam ao valor salvo ao recarregar ou revisitar.
+          {editing ? 'A posição é salva ao soltar o nó. Após mover por teclado, use Salvar posição do nó.'
+            : 'As posições alteradas são locais. Entre em Editar mapa para salvar mudanças.'}
         </p>
       </section>
 
-      <NodeDetails node={selectedNode} onOpenSubmap={openSubmap} />
+      {children || <NodeDetails node={selectedNode} onOpenSubmap={openSubmap} />}
     </div>
   )
 }

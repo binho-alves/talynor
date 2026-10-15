@@ -5,7 +5,9 @@ import { adaptKnowledgeMap } from '../adapters/knowledgeMapAdapter.ts'
 import { usePersistedMapNavigation } from '../navigation/usePersistedMapNavigation.ts'
 import type { KnowledgeMap } from '../types/knowledge.ts'
 import type { KnowledgeMapSummaryDto } from '../types/persistedKnowledgeMap.ts'
-import { KnowledgeGraph } from './KnowledgeGraph.tsx'
+import { MapWorkspace } from './MapWorkspace.tsx'
+import { CreateMap } from './CreateMap.tsx'
+import type { KnowledgeMapAuthoringClient } from '../api/knowledgeMapAuthoringApi.ts'
 
 type LoadState = { identity: string } & (
   | { status: 'loading' | 'not-found' | 'session-check' }
@@ -14,7 +16,7 @@ type LoadState = { identity: string } & (
   | { status: 'map'; map: KnowledgeMap }
 )
 
-export function PersistedMaps({ onAuthenticationRequired }: { onAuthenticationRequired: () => Promise<void> }) {
+export function PersistedMaps({ onAuthenticationRequired, authoring }: { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient }) {
   const navigation = usePersistedMapNavigation()
   const { route, revision } = navigation
   const mapId = route.kind === 'map' ? route.id : null
@@ -82,14 +84,20 @@ export function PersistedMaps({ onAuthenticationRequired }: { onAuthenticationRe
       </section>}
       {state.status === 'list' && <section className="map-message" aria-labelledby="picker-title">
         <h2 id="picker-title">Seus mapas de conhecimento</h2>
-        {state.maps.length === 0 ? <p>Você ainda não tem mapas de conhecimento. A criação pela interface virá em uma próxima etapa.</p>
+        {state.maps.length === 0 ? <p>Você ainda não tem mapas de conhecimento. Crie seu primeiro mapa para começar.</p>
           : <><p>Escolha um mapa para explorar.</p><ul className="map-picker">
             {state.maps.map((map) => <li key={map.id}><button className="map-choice" onClick={() => navigation.openMap(map.id)}>
               {map.title}
             </button></li>)}
           </ul></>}
+        <CreateMap key={identity} authoring={authoring} revalidate={onAuthenticationRequired} onCreated={(map) => {
+          setLoaded((previous) => previous.status === 'list' ? { ...previous, maps: [...previous.maps, { id: map.id, title: map.title }] } : previous)
+          navigation.openMap(map.id)
+        }} />
       </section>}
-      {state.status === 'map' && <KnowledgeGraph key={identity} map={state.map} onOpenMap={navigation.openMap} />}
+      {state.status === 'map' && mapId && <MapWorkspace key={identity} id={mapId} initial={state.map} authoring={authoring}
+        revalidate={onAuthenticationRequired} onOpenMap={navigation.openMap} onDeleted={navigation.showPicker}
+        onRename={(title) => setLoaded((previous) => previous.status === 'map' ? { ...previous, map: { ...previous.map, title } } : previous)} />}
     </>}
     </div>
   </main>

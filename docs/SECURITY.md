@@ -1,6 +1,12 @@
 # Secure-development principles
 
-Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. 4.3 — Persistent Graph Frontend Integration is implemented and in review. Anonymous demos remain separate from private maps; no account/map seed exists. Phase 4 is incomplete; no production-readiness claim is made.
+## Phase 4.4 authoring frontend
+
+All graph writes use the existing authenticated nested API with native CSRF. The same per-session client renews a private in-memory request token immediately before each attempt; it is sent only in X-CSRF-TOKEN, never URL or JS storage. No auth cookie policy, backend authorization, JWT or workspace override is introduced. Ownership remains server-derived; a map GUID is not a secret. Foreign/missing 404 share safe local feedback, and invalid_child_map/invalid_edge_nodes disclose no ownership details.
+
+No mutation is automatically replayed, including POST after ambiguous network/protocol/500 responses. csrf_invalid clears the cached token; the next explicit action renews it. Write 401 uses existing session revalidation without replay. Unknown diagnostics never render. Creates/metadata/deletes wait for valid success; deletion requires an explicit UI confirmation. map_in_use/node_in_use never trigger client-side cascading deletion. Position failures roll back the visual value, without claiming a failed/ambiguous response proves server rollback. Reload reconciles uncertain outcomes. Titles/descriptions remain React-escaped text; no HTML, credentials or map content are stored in browser storage. Sent writes may finish after navigation, but unmounted-editor callbacks cannot change the next view. Server authorization/constraints remain authoritative under races; no optimistic concurrency claim is made.
+
+Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. 4.3 — Persistent Graph Frontend Integration is complete, approved and published. 4.4 — Authoring UX is implemented and in review. Anonymous demos remain separate from private maps; no account/map seed exists. Phase 4 is incomplete; no production-readiness claim is made.
 
 ## Secrets and configuration
 

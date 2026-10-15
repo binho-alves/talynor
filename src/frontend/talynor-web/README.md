@@ -1,6 +1,27 @@
-# Talynor Web — Persistent Graph Frontend Integration
+# Talynor Web — Persistent Graph and Authoring UX
 
-**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is implemented and in review. Phase 4 remains incomplete; 4.4 Authoring UX is next/future. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
+## Phase 4.4 - Authoring UX
+
+Implemented and in review. Use Criar mapa in the picker, then Editar mapa to enable editing. Forms edit title/optional description, add/edit nodes and choose/remove ChildMap from current-workspace discovery. Nodes start at the predictable (node count × 240, 0); no automatic layout is added. Conectar nós uses labeled source/target selects; self links and duplicate edges are allowed by the API. The edge selector provides a keyboard-accessible selection/deletion path in addition to graph selection. Node and edge selections are mutually exclusive. All deletions require explicit inline confirmation.
+
+Creates wait for validated 201, metadata/deletes for 204, then update local state without refetching the entire graph. Clearing description or ChildMap sends explicit clear flags; unchanged fields are omitted. Picker visits refetch server-ordered discovery, so create/rename/delete are synchronized without a response cache. Creating a map opens that explicitly requested map; ordinary discovery still never auto-selects.
+
+Drag is local in view mode. In edit mode, releasing the node sends one position PATCH; failure restores the last confirmed coordinates. Keyboard movement uses Salvar posição do nó. One mutation per editor is admitted synchronously and disables controls/drag while pending; position versions and mounted-editor guards reject stale completions. Graph rendering remains free of fetch/CSRF/ownership logic.
+
+Every write renews CSRF through the existing per-hook session client. There is no automatic mutation retry, including POST after CSRF/network/500/401 failures. Revalidation of a 401 may return to login or retain an explicit retry; it never resends the write. Read safe conflict messages and remove references explicitly before retrying. After ambiguous results reload before creating again. Drafts are discarded on navigation; sent writes are not aborted and may finish after leaving. Reload after completion if revisiting during a pending write. No undo, cross-tab coordinator, autosave per keystroke, concurrency tokens or new dependencies are introduced.
+
+| React concept | Use and purpose | Approximate Angular analogy |
+| --- | --- | --- |
+| Controlled forms / local draft | MetadataForm binds input value/onChange; Save commits and Cancel discards. | Form control state or component signals with explicit submit. |
+| Mutation state | useAuthoring separates pending/feedback from page loading. A ref blocks double submit before rerender. | Component signals plus a synchronous guard. |
+| Callback props | MapWorkspace translates graph movement into an API request; KnowledgeGraph has no transport logic. | Inputs and Outputs/EventEmitter. |
+| Functional state updates | Add/remove/modify graph elements from the latest state after confirmed writes. | Signal update(previous => next). |
+| Per-entity identity / rollback | Position versions and mounted scope reject obsolete results; failed movement restores confirmed coordinates. | Scoped request IDs and restoring the previous signal value. |
+| Derived selection | Selected node/edge is read from the graph state rather than duplicated forms of identity. | Computed signals. |
+
+Validation: backend build, 79 unit/179 integration tests and EF pending-model NONE; frontend build/lint, 65 existing plus 37 authoring Node checks and 5 real HTTPS API/client isolation/CSRF checks passed. Browser UI CRUD, persisted F5 state, ChildMap, conflicts, rollback, 401/manual retry, 500/network failures, Back/Forward, logout and three responsive sizes passed. Proxy metadata confirmed methods/CSRF/no duplicate creates. No component test framework, full screen-reader audit, real-device touch, scale benchmark or production-readiness claim is included. See Development for scope and evidence.
+
+**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX is implemented and in review; Phase 4 remains incomplete. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
 
 React + TypeScript with Vite and XYFlow now consumes private persisted maps. The historical demo-only client, coordinates and mock learning metrics have been removed from the authenticated experience. Backend demo endpoints remain available for regression. No backend, dependency or database change is introduced by this frontend slice.
 
@@ -45,7 +66,7 @@ Choose a map to request GET /api/maps/{id}. The address becomes `?map=<guid>`. F
 
 Select a node to read its description. A child link enables the details button; double-click is a desktop shortcut. Drill-down pushes another visit, so cycles A → B → A work without inferring a unique parent. Internal Back follows current mounted visits; direct entry/reload offers **Todos os mapas**. Browser Back/Forward is handled through popstate. **Todos os mapas** returns to discovery, not to login.
 
-Coordinates initially come from the backend. Mouse drag and keyboard movement change only local XYFlow state: there is no PATCH/autosave. Revisit, retry/refetch or F5 reloads persisted positions and clears selection; no local position cache is used. Zoom/pan/minimap remain; the minimap hides on narrow screens and the details panel moves below the graph. Study/progress metrics are absent because the persisted contract does not supply them.
+Coordinates initially come from the backend. In view mode, mouse drag and keyboard movement change only local XYFlow state. Phase 4.4 adds explicit edit mode: drag stop saves a position PATCH; keyboard movement uses Save position. Revisit, retry/refetch or F5 reloads persisted positions and clears selection; no local position cache is used. Zoom/pan/minimap remain; the minimap hides on narrow screens and the details panel moves below the graph. Study/progress metrics are absent because the persisted contract does not supply them.
 
 Loading is separate for session, discovery and map. Map network/500/protocol errors offer retry inside the shell, preserving email/workspace/logout. A private-read 401 rechecks me/workspace through the existing session client; an ended session returns to login, while a valid session leaves an explicit map retry without an automatic loop.
 
@@ -77,7 +98,7 @@ Runtime checks cover GUID-like IDs, nullable descriptions/child links, finite co
 
 No frontend test framework was added. Build/lint and dependency-free ad hoc Node checks cover runtime validators, adapter, URL helpers, error statuses and cancellation. Real trusted-HTTPS browser checks are recorded in [Development](../../../docs/DEVELOPMENT.md#phase-43---persistent-graph-frontend-integration), separately from automated results.
 
-Discovery is currently unpaginated. Local drag does not save, and viewport state is not retained between map visits. Full accessibility, real touchscreen gestures, larger graphs, production routing/TLS and authoring remain future scoped work. Package manager remains open; the pnpm notes above still apply.
+Discovery is currently unpaginated. Local drag does not save, and viewport state is not retained between map visits. Full accessibility, real touchscreen gestures, larger graphs and production routing/TLS remain future scoped work. The current authoring scope is described below. Package manager remains open; the pnpm notes above still apply.
 
 ## XYFlow assessment
 

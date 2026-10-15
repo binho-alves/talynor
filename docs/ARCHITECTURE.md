@@ -1,8 +1,18 @@
 # Architecture
 
+## Phase 4.4 - Authoring UX
+
+Implemented and in review over the unchanged Phase 4.2 contracts. MapWorkspace owns per-visit visual state and explicit edit mode; KnowledgeGraph receives callbacks and performs no HTTP/auth/ownership work. MetadataForm holds local drafts, CreateMap handles the empty/picker entry, and knowledgeMapAuthoringApi translates own request/201 DTOs, validates responses and uses the existing native-fetch transport. No new dependency or architecture ADR is needed.
+
+The per-hook session client exposes a CSRF-protected action using its existing private in-memory token lifecycle. Every authoring attempt renews CSRF, sends one mutation and never replays automatically, including csrf_invalid, 401 and ambiguous network/500 responses. Login/logout policies stay unchanged. A 401 invokes existing session revalidation; a valid session retains a recoverable error and explicit retry.
+
+Creates wait for validated 201; metadata/deletes wait for 204 before updating local state. PATCH sends only changed metadata, with explicit clearDescription/clearChildMap. Child choices come from current-workspace discovery; self links, cycles, self edges and duplicate edges follow backend rules. Initial node position is the predictable (node count × 240, 0), without a layout engine. Edit-mode drag stays local until stop; the PATCH translates only finite x/y, stores the confirmed position and rolls back on failure. Keyboard movement has an explicit Save position action. View-mode movement remains temporary.
+
+One mutation per mounted editor is admitted synchronously; controls and dragging are disabled while pending. Per-node position versions and per-mount completion guards prevent old responses overwriting a newer visit. Sent writes are not aborted on navigation, because abort cannot establish rollback; completions from an unmounted editor are ignored. Returning to the picker refetches server-ordered discovery, keeping create/rename/delete summaries authoritative without a persistent cache. Drafts may be discarded by navigation; no unsaved-change blocker or cross-tab concurrency guarantee is introduced. Reopen/reload reconciles ambiguous outcomes. The original URL/History strategy remains.
+
 ## Status and scope
 
-This document records the approved direction. Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. Phase 4 is current and incomplete; 4.3 — Persistent Graph Frontend Integration is implemented and in review. Later slices require scoped authorization.
+This document records the approved direction. Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. Phase 4 is current and incomplete; 4.3 is complete, approved and published; 4.4 — Authoring UX is implemented and in review. Later slices require scoped authorization.
 
 The published backend includes Identity with EF Core/SQLite, cookie authentication, antiforgery, and persistent owned PersonalWorkspace records. The React frontend includes session bootstrap, login, me/workspace loading, logout, an authenticated shell, and the persisted KnowledgeGraph view. Real-browser HTTPS validation is completed for these Phase 3 local flows. Phase 4.1 adds private persistent knowledge content alongside the unchanged anonymous demo source; the current authenticated frontend consumes private persistence under Phase 4.3 below.
 
@@ -204,11 +214,11 @@ ListKnowledgeMapsForCurrentWorkspace reuses GetOrCreatePersonalWorkspace: ICurre
 
 The existing private read controller maps Application summaries to independent HTTP DTOs. All discovery responses are no-store; anonymous/invalid/removed accounts get sanitized 401 with the existing local sign-out behavior, and operational/account/reader/pre-controller stamp failures remain sanitized 500 rather than empty maps. Client query parameters cannot choose a workspace. GET requires no CSRF header; existing unsafe authoring protections remain unchanged.
 
-There is no pagination, search, filter, sort parameter or metadata beyond maps; these may need scoped design as real scale grows. Phase 4.3A left schema, DbContext, snapshot, triggers, dependencies, demos and frontend unchanged. Phase 4.3 integration is described below; 4.4 Authoring UX is future and Phase 4 is incomplete.
+There is no pagination, search, filter, sort parameter or metadata beyond maps; these may need scoped design as real scale grows. Phase 4.3A left schema, DbContext, snapshot, triggers, dependencies, demos and frontend unchanged. Phase 4.3 integration is described below; 4.4 Authoring UX is implemented and in review above, and Phase 4 is incomplete.
 
 ## Phase 4.3 - Persistent Graph Frontend Integration
 
-Implemented and in review. After me/workspace bootstrap, PersistedMaps handles authenticated discovery, explicit choice and map reads. With no map URL it loads GET /api/maps and shows a picker or a stable empty state, never a default map or silent demo fallback. A validated `?map=<guid>` can load GET /api/maps/{id} directly. Native URLSearchParams/History API and a small navigation hook support pushState, popstate, F5 and Back/Forward without React Router. History records visits rather than a parent tree, so A → B → A is valid. Internal Back is limited to the current mounted navigation scope; direct entry/reload offers Todos os mapas.
+Complete, approved and published. After me/workspace bootstrap, PersistedMaps handles authenticated discovery, explicit choice and map reads. With no map URL it loads GET /api/maps and shows a picker or a stable empty state, never a default map or silent demo fallback. A validated `?map=<guid>` can load GET /api/maps/{id} directly. Native URLSearchParams/History API and a small navigation hook support pushState, popstate, F5 and Back/Forward without React Router. History records visits rather than a parent tree, so A → B → A is valid. Internal Back is limited to the current mounted navigation scope; direct entry/reload offers Todos os mapas.
 
 Independent persisted DTOs and manual runtime validators check GUID formats, nullable descriptions/child links, finite positions, unique node/edge IDs and valid edge references. The pure adapter maps those contracts into visualization types only. KnowledgeGraph receives map/callback props and owns local node drag/selection, zoom/pan/minimap and details. Persisted coordinates initialize each successful visit; revisit/refetch/F5 resets local drag and selection. No response/position cache or browser storage is introduced. Demo-only client/coordinates/contracts and mock study metrics are removed from the authenticated frontend; backend demo endpoints stay unchanged.
 
