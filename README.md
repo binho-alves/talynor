@@ -6,9 +6,11 @@ Talynor is a visual learning and personal knowledge platform where users build i
 
 Phase 3 delivers local account registration, cookie-based sessions with CSRF, login/me/logout, native lockout and process-local rate limiting, Security Stamp compatibility, one persistent personal workspace per user, and the authenticated React frontend. Real-browser HTTPS, cookie, session, graph, responsive-layout, and accessibility smoke validation passed. The frontend still consumes the anonymous, global in-memory demo maps.
 
-**Current implementation:** Phase 4.1 — Knowledge Map Persistence Foundation is implemented and in review. Relational maps, nodes, edges, positions and same-workspace child maps are persisted with private, workspace-scoped `GET /api/maps/{mapId}`. The existing demo routes remain unchanged; startup does not seed personal maps. See [ADR-011](docs/DECISIONS.md#adr-011---persistent-knowledge-graph-foundation) and [the development procedure](docs/DEVELOPMENT.md#phase-41---knowledge-map-persistence-foundation).
+**Published foundation:** Phase 4.1 — Knowledge Map Persistence Foundation is complete, approved and published. The private persisted read model, explicit migration and integrity rules are recorded in [ADR-011](docs/DECISIONS.md#adr-011---persistent-knowledge-graph-foundation). Demos remain separate; startup does not seed maps.
 
-**Next slice, future:** scope authoring operations and frontend integration separately within [Phase 4](docs/ROADMAP.md#phase-4---persistent-knowledge-authoring). No write endpoint, authoring UI, automatic drag-save, map-list UI or persisted-map frontend rendering exists yet.
+**Current implementation:** Phase 4.2 — Map/Node/Edge Authoring Backend is implemented and in review. Private nested create/PATCH/delete, node positions/ChildMap set-clear and edge create/delete enforce session-derived ownership, native CSRF and controlled conflicts. See [ADR-012](docs/DECISIONS.md#adr-012---knowledge-graph-authoring-api) and [Development](docs/DEVELOPMENT.md#phase-42---mapnodeedge-authoring-backend).
+
+**Next slice, future:** Phase 4.3 — Persistent Graph Frontend Integration requires separate authorization. Frontend still uses demos; authoring UI, browser drag-save and map-list UI are absent. Phase 4 remains incomplete.
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
 

@@ -11,14 +11,22 @@ public sealed class KnowledgeMap
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset UpdatedAtUtc { get; private set; }
 
-    public static KnowledgeMap Create(Guid workspaceId, string title, string? description, TimeProvider timeProvider)
+    public static KnowledgeMap Create(Guid workspaceId, string title, string? description, DateTimeOffset createdAtUtc)
     {
         KnowledgeValidation.Id(workspaceId, nameof(workspaceId));
         title = KnowledgeValidation.Title(title);
         KnowledgeValidation.Description(description);
-        ArgumentNullException.ThrowIfNull(timeProvider);
-        var now = timeProvider.GetUtcNow().ToUniversalTime();
+        var now = createdAtUtc.ToUniversalTime();
         return new() { Id = Guid.NewGuid(), WorkspaceId = workspaceId, Title = title,
             Description = description, CreatedAtUtc = now, UpdatedAtUtc = now };
+    }
+
+    public void UpdateDetails(string title, string? description, DateTimeOffset updatedAtUtc)
+    {
+        title = KnowledgeValidation.Title(title);
+        KnowledgeValidation.Description(description);
+        Title = title;
+        Description = description;
+        UpdatedAtUtc = updatedAtUtc.ToUniversalTime();
     }
 }

@@ -53,7 +53,7 @@ public class KnowledgeGraphPersistenceTests
         using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TalynorDbContext>();
         var fixture = await KnowledgeGraphFixture.CreateAsync(db);
-        var invalid = KnowledgeNode.Create(fixture.Map.Id, "Invalid child", null, 0, 0, fixture.OtherMap.Id, TimeProvider.System);
+        var invalid = KnowledgeNode.Create(fixture.Map.Id, "Invalid child", null, 0, 0, fixture.OtherMap.Id, TimeProvider.System.GetUtcNow());
         db.KnowledgeNodes.Add(invalid);
         var insert = await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
         Assert.Equal(1811, Assert.IsType<SqliteException>(insert.InnerException).SqliteExtendedErrorCode);
@@ -82,7 +82,7 @@ public class KnowledgeGraphPersistenceTests
         var fixture = await KnowledgeGraphFixture.CreateAsync(db);
         db.KnowledgeEdges.Add(KnowledgeEdge.Create(fixture.Map.Id,
             invalidSource ? fixture.ChildNode.Id : fixture.First.Id,
-            invalidSource ? fixture.Second.Id : fixture.ChildNode.Id, TimeProvider.System));
+            invalidSource ? fixture.Second.Id : fixture.ChildNode.Id, TimeProvider.System.GetUtcNow()));
         var error = await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
         Assert.Equal(787, Assert.IsType<SqliteException>(error.InnerException).SqliteExtendedErrorCode);
         db.ChangeTracker.Clear();
@@ -107,11 +107,11 @@ public class KnowledgeGraphPersistenceTests
         var missing = Guid.NewGuid();
         switch (reference)
         {
-            case "workspace": db.KnowledgeMaps.Add(KnowledgeMap.Create(missing, "Missing", null, TimeProvider.System)); break;
-            case "map": db.KnowledgeNodes.Add(KnowledgeNode.Create(missing, "Missing", null, 0, 0, null, TimeProvider.System)); break;
-            case "child": db.KnowledgeNodes.Add(KnowledgeNode.Create(fixture.Map.Id, "Missing", null, 0, 0, missing, TimeProvider.System)); break;
-            case "source": db.KnowledgeEdges.Add(KnowledgeEdge.Create(fixture.Map.Id, missing, fixture.Second.Id, TimeProvider.System)); break;
-            case "target": db.KnowledgeEdges.Add(KnowledgeEdge.Create(fixture.Map.Id, fixture.First.Id, missing, TimeProvider.System)); break;
+            case "workspace": db.KnowledgeMaps.Add(KnowledgeMap.Create(missing, "Missing", null, TimeProvider.System.GetUtcNow())); break;
+            case "map": db.KnowledgeNodes.Add(KnowledgeNode.Create(missing, "Missing", null, 0, 0, null, TimeProvider.System.GetUtcNow())); break;
+            case "child": db.KnowledgeNodes.Add(KnowledgeNode.Create(fixture.Map.Id, "Missing", null, 0, 0, missing, TimeProvider.System.GetUtcNow())); break;
+            case "source": db.KnowledgeEdges.Add(KnowledgeEdge.Create(fixture.Map.Id, missing, fixture.Second.Id, TimeProvider.System.GetUtcNow())); break;
+            case "target": db.KnowledgeEdges.Add(KnowledgeEdge.Create(fixture.Map.Id, fixture.First.Id, missing, TimeProvider.System.GetUtcNow())); break;
         }
         var error = await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
         Assert.Equal(787, Assert.IsType<SqliteException>(error.InnerException).SqliteExtendedErrorCode);
@@ -173,11 +173,11 @@ public class KnowledgeGraphPersistenceTests
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());
         Assert.False(db.Database.HasPendingModelChanges());
         // The recreated triggers still reject invalid links, not only the first Up.
-        var map = KnowledgeMap.Create(fixture.Workspace.Id, "A", null, TimeProvider.System);
-        var other = KnowledgeMap.Create(fixture.OtherWorkspace.Id, "B", null, TimeProvider.System);
+        var map = KnowledgeMap.Create(fixture.Workspace.Id, "A", null, TimeProvider.System.GetUtcNow());
+        var other = KnowledgeMap.Create(fixture.OtherWorkspace.Id, "B", null, TimeProvider.System.GetUtcNow());
         db.KnowledgeMaps.AddRange(map, other);
         await db.SaveChangesAsync();
-        db.KnowledgeNodes.Add(KnowledgeNode.Create(map.Id, "Bad", null, 0, 0, other.Id, TimeProvider.System));
+        db.KnowledgeNodes.Add(KnowledgeNode.Create(map.Id, "Bad", null, 0, 0, other.Id, TimeProvider.System.GetUtcNow()));
         await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
     }
 }

@@ -19,13 +19,13 @@ internal sealed record KnowledgeGraphFixture(PersonalWorkspace Workspace, Person
             db.PersonalWorkspaces.Add(workspace);
         if (db.Entry(otherWorkspace).State == Microsoft.EntityFrameworkCore.EntityState.Detached)
             db.PersonalWorkspaces.Add(otherWorkspace);
-        var map = KnowledgeMap.Create(workspace.Id, "Software", "Persistent fixture", clock);
-        var child = KnowledgeMap.Create(workspace.Id, "C#", null, clock);
-        var other = KnowledgeMap.Create(otherWorkspace.Id, "Private B", null, clock);
-        var first = KnowledgeNode.Create(map.Id, "C#", null, 125.5, -32.25, child.Id, clock);
-        var second = KnowledgeNode.Create(map.Id, "Architecture", "Design", -8, 50, null, clock);
-        var childNode = KnowledgeNode.Create(child.Id, "LINQ", null, 0, 0, null, clock);
-        var edge = KnowledgeEdge.Create(map.Id, first.Id, second.Id, clock);
+        var map = KnowledgeMap.Create(workspace.Id, "Software", "Persistent fixture", clock.GetUtcNow());
+        var child = KnowledgeMap.Create(workspace.Id, "C#", null, clock.GetUtcNow());
+        var other = KnowledgeMap.Create(otherWorkspace.Id, "Private B", null, clock.GetUtcNow());
+        var first = KnowledgeNode.Create(map.Id, "C#", null, 125.5, -32.25, child.Id, clock.GetUtcNow());
+        var second = KnowledgeNode.Create(map.Id, "Architecture", "Design", -8, 50, null, clock.GetUtcNow());
+        var childNode = KnowledgeNode.Create(child.Id, "LINQ", null, 0, 0, null, clock.GetUtcNow());
+        var edge = KnowledgeEdge.Create(map.Id, first.Id, second.Id, clock.GetUtcNow());
         db.KnowledgeMaps.AddRange(map, child, other);
         db.KnowledgeNodes.AddRange(first, second, childNode);
         db.KnowledgeEdges.Add(edge);

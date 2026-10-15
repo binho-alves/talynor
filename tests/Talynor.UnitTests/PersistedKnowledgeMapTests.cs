@@ -14,10 +14,10 @@ public class PersistedKnowledgeMapTests
     public void Domain_creates_minimal_graph_with_guid_ids_and_controlled_utc_time()
     {
         var workspace = Guid.NewGuid();
-        var map = KnowledgeMap.Create(workspace, " Map ", null, new Clock());
+        var map = KnowledgeMap.Create(workspace, " Map ", null, new Clock().GetUtcNow());
         var child = Guid.NewGuid();
-        var node = KnowledgeNode.Create(map.Id, " Node ", "Description", -12.5, 99.25, child, new Clock());
-        var edge = KnowledgeEdge.Create(map.Id, node.Id, node.Id, new Clock());
+        var node = KnowledgeNode.Create(map.Id, " Node ", "Description", -12.5, 99.25, child, new Clock().GetUtcNow());
+        var edge = KnowledgeEdge.Create(map.Id, node.Id, node.Id, new Clock().GetUtcNow());
         Assert.NotEqual(Guid.Empty, map.Id);
         Assert.NotEqual(Guid.Empty, node.Id);
         Assert.NotEqual(Guid.Empty, edge.Id);
@@ -44,23 +44,23 @@ public class PersistedKnowledgeMapTests
     [InlineData(null)]
     public void Titles_cannot_be_empty_or_whitespace(string? title)
     {
-        Assert.ThrowsAny<ArgumentException>(() => KnowledgeMap.Create(Guid.NewGuid(), title!, null, new Clock()));
-        Assert.ThrowsAny<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), title!, null, 0, 0, null, new Clock()));
+        Assert.ThrowsAny<ArgumentException>(() => KnowledgeMap.Create(Guid.NewGuid(), title!, null, new Clock().GetUtcNow()));
+        Assert.ThrowsAny<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), title!, null, 0, 0, null, new Clock().GetUtcNow()));
     }
 
     [Fact]
     public void Ids_and_text_limits_are_validated()
     {
-        Assert.Throws<ArgumentException>(() => KnowledgeMap.Create(Guid.Empty, "Map", null, new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeMap.Create(Guid.NewGuid(), new string('a', 201), null, new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeMap.Create(Guid.NewGuid(), "Map", new string('a', 4001), new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.Empty, "Node", null, 0, 0, null, new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), "Node", null, 0, 0, Guid.Empty, new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), new string('a', 201), null, 0, 0, null, new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), "Node", new string('a', 4001), 0, 0, null, new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeEdge.Create(Guid.Empty, Guid.NewGuid(), Guid.NewGuid(), new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeEdge.Create(Guid.NewGuid(), Guid.Empty, Guid.NewGuid(), new Clock()));
-        Assert.Throws<ArgumentException>(() => KnowledgeEdge.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.Empty, new Clock()));
+        Assert.Throws<ArgumentException>(() => KnowledgeMap.Create(Guid.Empty, "Map", null, new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeMap.Create(Guid.NewGuid(), new string('a', 201), null, new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeMap.Create(Guid.NewGuid(), "Map", new string('a', 4001), new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.Empty, "Node", null, 0, 0, null, new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), "Node", null, 0, 0, Guid.Empty, new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), new string('a', 201), null, 0, 0, null, new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeNode.Create(Guid.NewGuid(), "Node", new string('a', 4001), 0, 0, null, new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeEdge.Create(Guid.Empty, Guid.NewGuid(), Guid.NewGuid(), new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeEdge.Create(Guid.NewGuid(), Guid.Empty, Guid.NewGuid(), new Clock().GetUtcNow()));
+        Assert.Throws<ArgumentException>(() => KnowledgeEdge.Create(Guid.NewGuid(), Guid.NewGuid(), Guid.Empty, new Clock().GetUtcNow()));
     }
 
     [Theory]
@@ -73,7 +73,7 @@ public class PersistedKnowledgeMapTests
     public void Positions_must_be_finite_and_identify_the_invalid_parameter(double x, double y, string parameter)
     {
         var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
-            KnowledgeNode.Create(Guid.NewGuid(), "Node", null, x, y, null, new Clock()));
+            KnowledgeNode.Create(Guid.NewGuid(), "Node", null, x, y, null, new Clock().GetUtcNow()));
         Assert.Equal(parameter, error.ParamName);
     }
 

@@ -1,6 +1,6 @@
 # Secure-development principles
 
-Talynor's foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 local real-browser validation and Phase 3 closure are completed. Phase 4.1 — Knowledge Map Persistence Foundation is implemented and in review. Registration remains without auto-login and no accounts/maps are seeded. Anonymous global demos coexist temporarily with private persistent maps. These principles do not claim production readiness.
+Phase 3 and 4.1 are complete, approved and published. 4.2 — Map/Node/Edge Authoring Backend is implemented and in review. Anonymous demos remain separate from private maps; no account/map seed exists. Phase 4 is incomplete; no production-readiness claim is made.
 
 ## Secrets and configuration
 
@@ -78,7 +78,7 @@ These results close Phase 3 only. Email confirmation and password reset remain a
 - `GET /api/maps/{mapId:guid}` requires Authorize and derives workspace through ICurrentUser, current account validation and the existing personal-workspace resolver. No client WorkspaceId/owner selection exists; query parameters cannot override it. Reader queries require both map ID and server-resolved workspace ID. Nodes/edges belong to that scoped map and ChildMapId stays within its workspace.
 - Missing and foreign maps have the same no-store 404 body, never 403/existence disclosure. Anonymous/invalid/removed accounts return sanitized 401 and invalid accounts cause local sign-out. Reader/provider and pre-controller native stamp errors become no-store 500 unexpected_error, without SQL, SQLite diagnostics, stack, private content or internal workspace ID. Added logs contain only a generic operation name; existing framework diagnostics/redaction limitations remain.
 - Explicit FKs and composite map/node endpoint keys enforce referential and same-map edge integrity. SQLite migration-owned triggers reject cross-workspace child insertion/update and map moves atomically, including direct SQL writes; they do not rely on a client or an application precheck. Future schema rebuilds/provider transitions must preserve these protections. Positions must be finite; Domain validates required IDs/titles and bounded text. No rich content, files or rendering policy is introduced yet.
-- Workspace/map and incoming child links restrict deletion; map deletion cascades its nodes/edges and endpoint deletion requires explicit edge removal. No delete/write API exists. Account deletion still does not cascade to workspace/graph and orphan cleanup is unresolved; the account check is not atomic with deletion. Read snapshots/concurrent read tests do not solve future authoring concurrency.
+- Workspace/map and incoming child links restrict deletion; map deletion cascades its nodes/edges and endpoint deletion requires explicit edge removal. 4.2 adds authenticated, scoped delete/write APIs below; 4.1 introduced none. Account deletion still does not cascade to workspace/graph and orphan cleanup is unresolved; the account check is not atomic with deletion. Read snapshots/concurrent read tests do not solve future authoring concurrency.
 - Responses contain no WorkspaceId/OwnerUserId, Identity data, XYFlow types or mock study metrics. Persisted maps are private, with no public/share endpoint. `/api/knowledge-maps/software` and `/csharp` remain anonymous demonstration data, separate from private persistence; the unchanged frontend uses only demos. No startup seed, provider/package change, global auth policy, CSRF weakening or production-readiness claim is added.
 
 ## Input and content validation
@@ -115,3 +115,11 @@ These results close Phase 3 only. Email confirmation and password reset remain a
 - Avoid unnecessary public exposure of services or stored content.
 
 Concrete controls, operational procedures, and security tooling must be designed in their relevant phases. This document does not authorize infrastructure setup during foundation.
+
+## Phase 4.2 authoring security
+
+All eight nested authoring endpoints require the validated cookie session and native CSRF. Current account/workspace is resolved server-side; store queries scope map and node/edge IDs together. No client owner/workspace choice, public authoring or global node/edge write exists. Unknown request properties are rejected. Missing/foreign target resources have identical 404; invalid foreign/missing child or edge endpoints have uniform 400 relation codes without owner/existence disclosure.
+
+Application validates relations before save; existing composite FKs and SQLite triggers remain defense-in-depth. Referenced map/node deletion returns controlled 409 map_in_use/node_in_use, without silent edge deletion. Expected FK/known-trigger failures are translated only after confirming the corresponding condition; busy, PK, unknown constraints/outages remain sanitized 500. Explicit logs contain only generic operation names. Framework diagnostic/redaction limitations remain as before.
+
+Writes use own DTOs/projections, no ownership fields in responses, and no-store on successful/error responses including pre-controller native stamp failures. The endpoint-only native 32 KiB request limit fits bounded escaped JSON; TestServer does not establish real-server enforcement. No new authoring limiter, cookie/CSRF policy change, concurrency tokens or provider/schema/dependency change exists. Account deletion/orphan lifecycle and non-atomic account check remain unresolved. Demos stay anonymous/transitional, frontend stays unchanged, and no deployment-security claim is made.

@@ -66,13 +66,15 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 4 - Persistent Knowledge Authoring
 
-**Status:** current. Phase 4.1 — Knowledge Map Persistence Foundation is implemented and in review; later slices require separate authorization.
+**Status:** current and incomplete. Phase 4.1 — Knowledge Map Persistence Foundation is complete, approved and published; 4.2 — Map/Node/Edge Authoring Backend is implemented and in review. Later slices need separate authorization.
 
 **Goal:** evolve the demonstration Knowledge Maps into persistent knowledge content owned by PersonalWorkspace, supporting connected nodes beyond a folder hierarchy.
 
-**4.1 delivered for review:** relational Knowledge Maps, Nodes, Edges, persisted positions and ChildMapId; server-derived workspace ownership; private read endpoint, explicit migration, SQLite constraints and ownership/isolation tests. Demo routes coexist temporarily; frontend source is unchanged. See ADR-011 for the scoped model and read contract.
+**4.1 completed/published:** relational Knowledge Maps, Nodes, Edges, persisted positions and ChildMapId; server-derived workspace ownership; private read endpoint, explicit migration, SQLite constraints and ownership/isolation tests. Demo routes coexist temporarily; frontend source is unchanged. See ADR-011 for the scoped model and read contract.
 
-**Future next slice:** scope authoring write operations and frontend integration separately. Create/edit/delete flows, persisted-map rendering/navigation in the frontend and drag-save are not implemented. Relationship taxonomy, broader cross-map semantics, automatic layout and authoring concurrency remain open. The phase order is unchanged.
+**4.2 implemented/in review:** private nested map/node create, PATCH and delete; position and ChildMap set-clear; edge create/delete; native CSRF, session-derived ownership and controlled errors, tests and documentation. No schema/provider/dependency/frontend change. See ADR-012.
+
+**Future next slice:** Phase 4.3 — Persistent Graph Frontend Integration, not started. Persisted frontend rendering/navigation, authoring and browser drag-save require separate scope. Relationship taxonomy, broader cross-map semantics, automatic layout and advanced authoring concurrency remain open.
 
 **Non-goals:** graph database, automatic internet importing, or a relationship taxonomy assumed from the initial examples.
 

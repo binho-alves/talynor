@@ -10,14 +10,13 @@ public sealed class KnowledgeEdge
     public Guid TargetNodeId { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
 
-    public static KnowledgeEdge Create(Guid knowledgeMapId, Guid sourceNodeId, Guid targetNodeId, TimeProvider timeProvider)
+    public static KnowledgeEdge Create(Guid knowledgeMapId, Guid sourceNodeId, Guid targetNodeId, DateTimeOffset createdAtUtc)
     {
         KnowledgeValidation.Id(knowledgeMapId, nameof(knowledgeMapId));
         KnowledgeValidation.Id(sourceNodeId, nameof(sourceNodeId));
         KnowledgeValidation.Id(targetNodeId, nameof(targetNodeId));
-        ArgumentNullException.ThrowIfNull(timeProvider);
         return new() { Id = Guid.NewGuid(), KnowledgeMapId = knowledgeMapId,
             SourceNodeId = sourceNodeId, TargetNodeId = targetNodeId,
-            CreatedAtUtc = timeProvider.GetUtcNow().ToUniversalTime() };
+            CreatedAtUtc = createdAtUtc.ToUniversalTime() };
     }
 }

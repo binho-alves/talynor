@@ -26,6 +26,15 @@ builder.Services.AddSingleton<IKnowledgeMapReader, InMemoryKnowledgeMapReader>()
 builder.Services.AddScoped<GetKnowledgeMap>();
 builder.Services.AddScoped<GetKnowledgeMapForCurrentWorkspace>();
 builder.Services.AddScoped<IPersistedKnowledgeMapReader, PersistedKnowledgeMapReader>();
+builder.Services.AddScoped<IKnowledgeMapStore, KnowledgeMapStore>();
+builder.Services.AddScoped<CreateKnowledgeMap>();
+builder.Services.AddScoped<UpdateKnowledgeMap>();
+builder.Services.AddScoped<DeleteKnowledgeMap>();
+builder.Services.AddScoped<CreateKnowledgeNode>();
+builder.Services.AddScoped<UpdateKnowledgeNode>();
+builder.Services.AddScoped<DeleteKnowledgeNode>();
+builder.Services.AddScoped<CreateKnowledgeEdge>();
+builder.Services.AddScoped<DeleteKnowledgeEdge>();
 builder.Services.AddScoped<RegisterUser>();
 builder.Services.AddScoped<LoginUser>();
 builder.Services.AddScoped<GetCurrentUser>();
