@@ -167,7 +167,10 @@ public class KnowledgeGraphPersistenceTests
         db.ChangeTracker.Clear();
         Assert.Equal(2, await db.PersonalWorkspaces.CountAsync());
         Assert.Equal(0, await db.Users.CountAsync());
-        Assert.Single(await db.Database.GetPendingMigrationsAsync());
+        var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
+        Assert.Equal(2, pending.Length);
+        Assert.EndsWith("_AddPersistentKnowledgeGraph", pending[0]);
+        Assert.EndsWith("_AddKnowledgeContent", pending[1]);
         await db.Database.MigrateAsync();
         Assert.Empty(await db.KnowledgeMaps.ToListAsync());
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());

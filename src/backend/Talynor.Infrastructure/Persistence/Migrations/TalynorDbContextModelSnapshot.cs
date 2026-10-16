@@ -145,6 +145,48 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Talynor.Domain.KnowledgeContents.KnowledgeContent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Body")
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("KnowledgeNodeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(2048)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KnowledgeNodeId", "CreatedAtUtc", "Id");
+
+                    b.ToTable("KnowledgeContents", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_KnowledgeContents_Payload", "(Type = 'note' AND Body IS NOT NULL AND Url IS NULL) OR (Type = 'link' AND Url IS NOT NULL AND Body IS NULL)");
+
+                            t.HasCheckConstraint("CK_KnowledgeContents_Type", "Type IN ('note', 'link')");
+                        });
+                });
+
             modelBuilder.Entity("Talynor.Domain.KnowledgeMaps.KnowledgeEdge", b =>
                 {
                     b.Property<Guid>("Id")
@@ -293,6 +335,15 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.KnowledgeContents.KnowledgeContent", b =>
+                {
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeNodeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

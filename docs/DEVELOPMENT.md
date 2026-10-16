@@ -1,5 +1,17 @@
 # Development workflow
 
+## Phase 5 - Knowledge Content Foundation
+
+Phase 5 is in progress; the first approved slice is Note and Link Content. The foundation/read increment is implemented and in review under [ADR-013](DECISIONS.md#adr-013---initial-node-owned-knowledge-content). Content authoring and frontend integration remain future scoped increments. No new package or seed is introduced. The frontend remains the published Phase 4 experience.
+
+Migration order is InitialIdentity → AddPersonalWorkspace → AddPersistentKnowledgeGraph → AddKnowledgeContent. Use the existing explicitly selected absolute disposable SQLite path and `dotnet tool run dotnet-ef database update --project src/backend/Talynor.Infrastructure`; never migrate Development merely to run tests. Startup remains migration-free. Inspect Up/Down/Designer/Snapshot: only KnowledgeContents, its node cascade FK, ordering index and type/payload CHECKs are added. Existing graph triggers and timestamp mappings must remain intact.
+
+With an authenticated test account and test-only prepared content, GET /api/maps/{mapId}/nodes/{nodeId}/contents returns summaries in creation-time/ID order, without Note bodies; GET .../contents/{contentId} returns the applicable body/url. GETs need no CSRF and return no-store, with no client workspace selection. Unknown/foreign/mixed IDs share 404; a valid empty node returns contents: []. Content cannot yet be created by HTTP or the frontend: use isolated test fixtures, not a permanent seed or manual Development data modification. Internal HTTP(S) URLs are stored only, never fetched or rendered by this increment.
+
+Run the existing restore/build/test workflow, tool restore and safe in-memory EF pending-model check, plus unchanged frontend build/lint. New tests cover Domain/URL limits, scoped use cases, real SQLite migration rollback/reapplication, UTC DateTime conversion and adversarial tie-breaking, constraints/cascades, preserved node_in_use/map_in_use, HTTP JSON/auth/no-store/ownership/error behavior, and absence of content write routes. The existing schema inventory and graph-rollback tests now account for the fourth migration without changing their historical assertions. No browser content flow exists to validate yet.
+
+Validation on 2026-10-16: backend build PASS with zero warnings/errors; 129 unit tests (50 new) and 198 integration tests (19 new) PASS. Content fixtures use different source offsets, a shared instant with fractional ticks and controlled reverse-inserted IDs to verify UTC roundtrip and SQL tie-breaking. The explicit migration Up/Down/reapply and graph-trigger preservation tests passed. dotnet-ef 10.0.12 lists all four migrations with --no-connect; the safe :memory: pending-model check reports NONE without touching Development data. Unchanged frontend build/lint PASS; local documentation links/anchors (54) PASS. The initial full run exposed two old schema/migration-count expectations; only those expectations were updated before the successful full run. No content browser UI or Kestrel write-body limit is claimed by this GET-only increment.
+
 ## Phase 4.4 - Authoring UX
 
 Complete, approved and published in `c427c6e`; 4.3 is complete, approved and published in `f19c3d5`. Reuse the trusted HTTPS certificate, process-only Vite proxy and explicitly migrated disposable SQLite procedure below. No backend/schema/migration/package change or development seed was introduced by 4.4. Phase 4 closure records the reviewed approved scope, without claiming production readiness or removing documented limitations. Test accounts and graph content are disposable; create the main graph through the UI, using API fixtures only for auxiliary ownership scenarios.
@@ -19,7 +31,7 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 4 and its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 are complete, approved and published; Phase 3 remains complete. Phase 5 — Knowledge Content is next/planned, with implementation not started. Initial content types and lifecycle/validation rules must be agreed before implementation; this closure selects none.
+- Current stage: Phase 4 and its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 are complete, approved and published; Phase 3 remains complete. Phase 5 — Knowledge Content is in progress; the approved Note and Link Content slice currently implements foundation/read only, in review under ADR-013. Content authoring and frontend integration require later scoped tasks.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 

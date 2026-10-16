@@ -12,6 +12,8 @@ using Talynor.Infrastructure.KnowledgeMaps;
 using Talynor.Infrastructure.Persistence;
 using Talynor.Application.Workspaces;
 using Talynor.Infrastructure.Workspaces;
+using Talynor.Application.KnowledgeContents;
+using Talynor.Infrastructure.KnowledgeContents;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +30,9 @@ builder.Services.AddScoped<GetKnowledgeMapForCurrentWorkspace>();
 builder.Services.AddScoped<ListKnowledgeMapsForCurrentWorkspace>();
 builder.Services.AddScoped<IPersistedKnowledgeMapReader, PersistedKnowledgeMapReader>();
 builder.Services.AddScoped<IKnowledgeMapStore, KnowledgeMapStore>();
+builder.Services.AddScoped<IKnowledgeContentReader, KnowledgeContentReader>();
+builder.Services.AddScoped<ListKnowledgeContentsForNode>();
+builder.Services.AddScoped<GetKnowledgeContentForNode>();
 builder.Services.AddScoped<CreateKnowledgeMap>();
 builder.Services.AddScoped<UpdateKnowledgeMap>();
 builder.Services.AddScoped<DeleteKnowledgeMap>();

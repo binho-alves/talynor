@@ -2,7 +2,9 @@
 
 Talynor is a visual learning and personal knowledge platform where users build interconnected knowledge maps, organize learning content, and track their studies.
 
-**Current status:** Phase 4 — Persistent Knowledge Authoring is **COMPLETE / APPROVED / PUBLISHED**. Its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 deliver private persistent maps, discovery, navigation and authoring. This is scoped phase completion, not production readiness.
+**Current status:** Phase 5 — Knowledge Content is **IN PROGRESS**. First approved slice: Note and Link Content. The Knowledge Content Foundation increment implements persistent private foundation/read behavior and is in review under [ADR-013](docs/DECISIONS.md#adr-013---initial-node-owned-knowledge-content). No content writes or frontend content UI are implemented.
+
+**Published Phase 4:** Phase 4 — Persistent Knowledge Authoring is **COMPLETE / APPROVED / PUBLISHED**. Its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 deliver private persistent maps, discovery, navigation and authoring. This is scoped phase completion, not production readiness.
 
 **Previous foundation:** Phase 3 — Identity, Session, Workspace and Authenticated Frontend is complete. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 — Validation and Phase Closure is validated and completed.
 
@@ -18,7 +20,7 @@ Phase 3 delivers local account registration, cookie-based sessions with CSRF, lo
 
 **Published authoring UX:** Phase 4.4 — Authoring UX is complete, approved and published in `c427c6e`; Phase 4.3 was published in `f19c3d5`. Explicit edit mode adds map/node CRUD, ChildMap set/clear, edge creation/deletion and position saving on drag stop through the published API. Writes use existing session CSRF, explicit retries and pessimistic creates/deletes. Advanced authoring, layout and broader validation remain separately scoped limitations, not unmet Phase 4 completion requirements.
 
-**Next/planned:** Phase 5 — Knowledge Content has not started. Implementation must not begin until the initial content types and their lifecycle/validation rules are agreed. This closure selects no content types or file upload/storage approach.
+**Phase 5 boundary:** Note + Link, node ownership and initial lifecycle/validation rules are explicitly approved in ADR-013. Only authenticated list/detail reads are implemented; files, rich rendering, study features, content authoring and frontend integration are outside this increment. Phase 5 is not complete. The existing Phase 4 authoring/frontend remains unchanged.
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
 

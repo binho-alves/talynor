@@ -1,12 +1,20 @@
 # Secure-development principles
 
+## Phase 5 content foundation security
+
+Private contents derive access only through the validated account, server-resolved workspace, map and node. Both nested content GETs require authentication, return no-store and accept no ownership override; foreign/missing/mixed paths receive the same 404 without existence disclosure. Reads do not require CSRF. Existing cookie/stamp, sanitized operational-error and local sign-out behavior remain. No content writes or frontend content UI are exposed.
+
+Note is bounded literal plain text; no Markdown/HTML parser or active rendering is added. Link stores a bounded absolute HTTP(S) URL with host, without userinfo, controls, whitespace ambiguity or backslashes; internal URLs are intentionally allowed. BCL validation performs no DNS or server-side fetch, redirects, scraping or preview; storing a URL does not establish destination safety. Future UI must use safe explicit link navigation and React text rendering, without auth/CSRF/browser-storage persistence. Logs/responses must not expose private bodies or provider diagnostics.
+
+The new content FK and CHECKs protect parent existence and discriminator/payload shape; Domain enforces UTF-16 limits and URL syntax. Permitted node/map deletion hard-deletes dependent content; existing edge/ChildMap blockers remain. Files/upload/storage, embeds, rich HTML, study features and new dependencies remain absent. ADR-013 records the future CSRF-protected authoring boundary and 32 KiB write limit; this increment adds no unsafe content endpoint or GET body-size metadata.
+
 ## Phase 4.4 authoring frontend
 
 All graph writes use the existing authenticated nested API with native CSRF. The same per-session client renews a private in-memory request token immediately before each attempt; it is sent only in X-CSRF-TOKEN, never URL or JS storage. No auth cookie policy, backend authorization, JWT or workspace override is introduced. Ownership remains server-derived; a map GUID is not a secret. Foreign/missing 404 share safe local feedback, and invalid_child_map/invalid_edge_nodes disclose no ownership details.
 
 No mutation is automatically replayed, including POST after ambiguous network/protocol/500 responses. csrf_invalid clears the cached token; the next explicit action renews it. Write 401 uses existing session revalidation without replay. Unknown diagnostics never render. Creates/metadata/deletes wait for valid success; deletion requires an explicit UI confirmation. map_in_use/node_in_use never trigger client-side cascading deletion. Position failures roll back the visual value, without claiming a failed/ambiguous response proves server rollback. Reload reconciles uncertain outcomes. Titles/descriptions remain React-escaped text; no HTML, credentials or map content are stored in browser storage. Sent writes may finish after navigation, but unmounted-editor callbacks cannot change the next view. Server authorization/constraints remain authoritative under races; no optimistic concurrency claim is made.
 
-Phase 3 and Phase 4, including 4.1, 4.2, 4.3A, 4.3 and 4.4, are complete, approved and published. Frontend authoring is available under the protections above; anonymous demos remain separate from private maps and no account/map seed exists. Phase 5 — Knowledge Content is next/planned, not started; initial content types and lifecycle/validation rules require agreement before implementation. Content/file security decisions remain open. No production-readiness claim is made.
+Phase 3 and Phase 4, including 4.1, 4.2, 4.3A, 4.3 and 4.4, are complete, approved and published. Frontend authoring is available under the protections above; anonymous demos remain separate from private maps and no account/map seed exists. Phase 5 — Knowledge Content is in progress with the approved Note/Link foundation/read protections above. Content authoring/frontend remain unimplemented and file-specific security/storage decisions remain open. No production-readiness claim is made.
 
 ## Secrets and configuration
 

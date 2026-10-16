@@ -86,7 +86,7 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 5 - Knowledge Content
 
-**Status:** next/planned; implementation has not started. Implementation must not begin until the initial content types and their lifecycle/validation rules are agreed. Product examples do not select the initial types; no content model, contracts, delete behavior or file upload/storage approach is decided by Phase 4 closure.
+**Status:** in progress. First approved slice: **Note and Link Content**. Current increment: **Knowledge Content Foundation (foundation/read)**, implemented and in review under [ADR-013](DECISIONS.md#adr-013---initial-node-owned-knowledge-content). Approved decisions now cover Note/Link, single-node ownership, plain text, URL policy, stable relational representation, UTC ordering and hard-delete cascades. This increment delivers Domain invariants, EF mapping/migration, private nested collection/detail GETs and unit/integration tests. No content write API or frontend content UI is implemented; later increments require scoped authorization. Phase 5 is not complete. Product examples do not authorize other types; file upload/storage remains undecided and absent.
 
 **Goal:** associate learning material with knowledge nodes.
 
