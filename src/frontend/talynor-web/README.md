@@ -2,7 +2,7 @@
 
 ## Phase 4.4 - Authoring UX
 
-Implemented and in review. Use Criar mapa in the picker, then Editar mapa to enable editing. Forms edit title/optional description, add/edit nodes and choose/remove ChildMap from current-workspace discovery. Nodes start at the predictable (node count × 240, 0); no automatic layout is added. Conectar nós uses labeled source/target selects; self links and duplicate edges are allowed by the API. The edge selector provides a keyboard-accessible selection/deletion path in addition to graph selection. Node and edge selections are mutually exclusive. All deletions require explicit inline confirmation.
+Complete, approved and published in `c427c6e`. Use Criar mapa in the picker, then Editar mapa to enable editing. Forms edit title/optional description, add/edit nodes and choose/remove ChildMap from current-workspace discovery. Nodes start at the predictable (node count × 240, 0); no automatic layout is added. Conectar nós uses labeled source/target selects; self links and duplicate edges are allowed by the API. The edge selector provides a keyboard-accessible selection/deletion path in addition to graph selection. Node and edge selections are mutually exclusive. All deletions require explicit inline confirmation.
 
 Creates wait for validated 201, metadata/deletes for 204, then update local state without refetching the entire graph. Clearing description or ChildMap sends explicit clear flags; unchanged fields are omitted. Picker visits refetch server-ordered discovery, so create/rename/delete are synchronized without a response cache. Creating a map opens that explicitly requested map; ordinary discovery still never auto-selects.
 
@@ -21,7 +21,7 @@ Every write renews CSRF through the existing per-hook session client. There is n
 
 Validation: backend build, 79 unit/179 integration tests and EF pending-model NONE; frontend build/lint, 65 existing plus 37 authoring Node checks and 5 real HTTPS API/client isolation/CSRF checks passed. Browser UI CRUD, persisted F5 state, ChildMap, conflicts, rollback, 401/manual retry, 500/network failures, Back/Forward, logout and three responsive sizes passed. Proxy metadata confirmed methods/CSRF/no duplicate creates. No component test framework, full screen-reader audit, real-device touch, scale benchmark or production-readiness claim is included. See Development for scope and evidence.
 
-**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX is implemented and in review; Phase 4 remains incomplete. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
+**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX and Phase 4 are complete, approved and published. Phase 5 — Knowledge Content is next/planned, not started; initial content types and lifecycle/validation rules require agreement before implementation. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
 
 React + TypeScript with Vite and XYFlow now consumes private persisted maps. The historical demo-only client, coordinates and mock learning metrics have been removed from the authenticated experience. Backend demo endpoints remain available for regression. No backend, dependency or database change is introduced by this frontend slice.
 
@@ -76,7 +76,7 @@ Loading is separate for session, discovery and map. Map network/500/protocol err
 2. src/navigation/mapLocation.ts parses/builds map URLs; usePersistedMapNavigation.ts handles native history and visit identity without a router or state framework.
 3. src/components/PersistedMaps.tsx orchestrates discovery/map requests, picker/empty/error states and session revalidation callbacks.
 4. src/adapters/knowledgeMapAdapter.ts is a pure DTO → visual model transformation. API/backend/domain remain independent of XYFlow.
-5. KnowledgeGraph.tsx receives map/callback props and owns temporary node movement and derived selection; KnowledgeNodeCard/NodeDetails render text and child navigation.
+5. MapWorkspace.tsx owns per-visit visual authoring state, coordinates persisted mutations and position persistence, and derives node/edge selection. KnowledgeGraph.tsx presents the graph and reports interaction callbacks without HTTP/auth/ownership logic; KnowledgeNodeCard/NodeDetails render text and child navigation.
 6. App/useSession/sessionClient retain the existing session gate and auth/CSRF sequencing; the map container is scoped by current user/workspace.
 
 Runtime checks cover GUID-like IDs, nullable descriptions/child links, finite coordinates, unique IDs and valid edge endpoints. Extra response fields are discarded before state. Unknown server error detail/title is never rendered. Request cleanup uses AbortController plus a current-request guard; every visit/retry has a distinct identity, so A finishing after B cannot overwrite B, including StrictMode cleanup. Each visit fetches again; no HTTP response cache or automatic layout is added.
@@ -85,20 +85,20 @@ Runtime checks cover GUID-like IDs, nullable descriptions/child links, finite co
 
 | Concept | Where and why | Approximate Angular analogy |
 | --- | --- | --- |
-| Props/callbacks | PersistedMaps passes map and child-navigation action to KnowledgeGraph. | Inputs and outputs; callbacks are functions rather than EventEmitter objects. |
-| useState and derived state | Graph nodes are local; selection is derived from them. Loading is derived from request identity. | Local signals and computed signals. |
+| Props/callbacks | PersistedMaps mounts MapWorkspace; MapWorkspace passes graph state and interaction callbacks to KnowledgeGraph. | Inputs and outputs; callbacks are functions rather than EventEmitter objects. |
+| useState and derived state | MapWorkspace owns graph state; selection is derived from nodes/edges. Loading is derived from request identity. | Local signals and computed signals. |
 | useEffect / cleanup | Fetch per visit; abort and ignore obsolete work on change/unmount/StrictMode. | Lifecycle/reactive effects with teardown; not exactly ngOnInit. |
 | AbortController | Cancel obsolete HTTP work; a current guard also rejects late results. | HTTP subscription teardown is related. |
 | Custom hook | usePersistedMapNavigation composes local state/listeners. | Reusable scoped service logic, without implying singleton state. |
 | URLSearchParams / popstate | Native URL selection and Back/Forward, zero router package. | Browser APIs; Angular Router provides a broader abstraction. |
 | key | Remount the graph per successful visit to reset selection/local positions. | View identity/track is related, not an exact lifecycle equivalent. |
-| useCallback | Keeps graph node-change and session-recheck handlers stable. | No direct equivalent; component methods normally keep identity. |
+| useCallback | Keeps session-recheck handlers stable. Graph interaction callbacks are supplied by MapWorkspace. | No direct equivalent; component methods normally keep identity. |
 
 ## Validation and limits
 
 No frontend test framework was added. Build/lint and dependency-free ad hoc Node checks cover runtime validators, adapter, URL helpers, error statuses and cancellation. Real trusted-HTTPS browser checks are recorded in [Development](../../../docs/DEVELOPMENT.md#phase-43---persistent-graph-frontend-integration), separately from automated results.
 
-Discovery is currently unpaginated. Local drag does not save, and viewport state is not retained between map visits. Full accessibility, real touchscreen gestures, larger graphs and production routing/TLS remain future scoped work. The current authoring scope is described below. Package manager remains open; the pnpm notes above still apply.
+Discovery is currently unpaginated. View-mode drag is visual/local; edit-mode drag persists position on drag stop. Viewport state is not retained between map visits. Full accessibility, real touchscreen gestures, larger graphs and production routing/TLS remain future scoped work. The current authoring scope is described in the Phase 4.4 section above. Package manager remains open; the pnpm notes above still apply.
 
 ## XYFlow assessment
 

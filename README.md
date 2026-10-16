@@ -2,7 +2,9 @@
 
 Talynor is a visual learning and personal knowledge platform where users build interconnected knowledge maps, organize learning content, and track their studies.
 
-**Current status:** Phase 3 — Identity, Session, Workspace and Authenticated Frontend is **COMPLETE**. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 — Validation and Phase Closure is validated and completed.
+**Current status:** Phase 4 — Persistent Knowledge Authoring is **COMPLETE / APPROVED / PUBLISHED**. Its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 deliver private persistent maps, discovery, navigation and authoring. This is scoped phase completion, not production readiness.
+
+**Previous foundation:** Phase 3 — Identity, Session, Workspace and Authenticated Frontend is complete. Foundation, Phases 1 and 2, VS-001, and Phase 3.1 through 3.4 are completed, approved, and published. Phase 3.5 — Validation and Phase Closure is validated and completed.
 
 Phase 3 delivers local account registration, cookie-based sessions with CSRF, login/me/logout, native lockout and process-local rate limiting, Security Stamp compatibility, one persistent personal workspace per user, and the authenticated React frontend. Real-browser HTTPS, cookie, session, graph, responsive-layout, and accessibility smoke validation passed. At Phase 3 closure the frontend consumed anonymous global demo maps; Phase 4.3 replaces that authenticated experience with private persisted maps.
 
@@ -14,7 +16,9 @@ Phase 3 delivers local account registration, cookie-based sessions with CSRF, lo
 
 **Published frontend:** Phase 4.3 — Persistent Graph Frontend Integration is complete, approved and published. Session/workspace bootstrap, explicit discovery/picker, private persisted rendering, ChildMap and native URL/History navigation are preserved.
 
-**Current implementation:** Phase 4.4 — Authoring UX is implemented and in review. Explicit edit mode adds map/node CRUD, ChildMap set/clear, edge creation/deletion and position saving on drag stop through the published API. Writes use existing session CSRF, explicit retries and pessimistic creates/deletes. Phase 4 remains incomplete; advanced authoring, layout and broader validation remain separately scoped.
+**Published authoring UX:** Phase 4.4 — Authoring UX is complete, approved and published in `c427c6e`; Phase 4.3 was published in `f19c3d5`. Explicit edit mode adds map/node CRUD, ChildMap set/clear, edge creation/deletion and position saving on drag stop through the published API. Writes use existing session CSRF, explicit retries and pessimistic creates/deletes. Advanced authoring, layout and broader validation remain separately scoped limitations, not unmet Phase 4 completion requirements.
+
+**Next/planned:** Phase 5 — Knowledge Content has not started. Implementation must not begin until the initial content types and their lifecycle/validation rules are agreed. This closure selects no content types or file upload/storage approach.
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
 

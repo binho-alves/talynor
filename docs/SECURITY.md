@@ -6,7 +6,7 @@ All graph writes use the existing authenticated nested API with native CSRF. The
 
 No mutation is automatically replayed, including POST after ambiguous network/protocol/500 responses. csrf_invalid clears the cached token; the next explicit action renews it. Write 401 uses existing session revalidation without replay. Unknown diagnostics never render. Creates/metadata/deletes wait for valid success; deletion requires an explicit UI confirmation. map_in_use/node_in_use never trigger client-side cascading deletion. Position failures roll back the visual value, without claiming a failed/ambiguous response proves server rollback. Reload reconciles uncertain outcomes. Titles/descriptions remain React-escaped text; no HTML, credentials or map content are stored in browser storage. Sent writes may finish after navigation, but unmounted-editor callbacks cannot change the next view. Server authorization/constraints remain authoritative under races; no optimistic concurrency claim is made.
 
-Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. 4.3 — Persistent Graph Frontend Integration is complete, approved and published. 4.4 — Authoring UX is implemented and in review. Anonymous demos remain separate from private maps; no account/map seed exists. Phase 4 is incomplete; no production-readiness claim is made.
+Phase 3 and Phase 4, including 4.1, 4.2, 4.3A, 4.3 and 4.4, are complete, approved and published. Frontend authoring is available under the protections above; anonymous demos remain separate from private maps and no account/map seed exists. Phase 5 — Knowledge Content is next/planned, not started; initial content types and lifecycle/validation rules require agreement before implementation. Content/file security decisions remain open. No production-readiness claim is made.
 
 ## Secrets and configuration
 
@@ -139,6 +139,8 @@ Success and error responses are no-store. An empty maps array is 200 and describ
 Discovery creates/selects no map, defines no root/default and adds no public listing, frontend, seed, schema or dependency. It is currently unpaginated without search/filter/sort inputs; scale and future pagination/search require separate review. Phase 4.3 frontend integration is described below, without a production-readiness claim.
 
 ## Phase 4.3 persisted frontend security
+
+The following records the historical read-only Phase 4.3 delivery. Current frontend authoring and CSRF-protected writes are documented in Phase 4.4 above.
 
 Discovery and individual persisted reads are authenticated server-side. The frontend never sends a workspace/owner choice; an arbitrary URL map GUID is not a secret or an authorization grant. Missing/foreign maps remain indistinguishable 404 and the original URL remains until user navigation. The authenticated experience has no silent demo fallback.
 

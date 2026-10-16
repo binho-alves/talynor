@@ -66,7 +66,7 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 4 - Persistent Knowledge Authoring
 
-**Status:** current and incomplete. Phase 4.1 — Knowledge Map Persistence Foundation and 4.2 — Map/Node/Edge Authoring Backend are complete, approved and published. Phase 4.3A — Persisted Map Discovery is complete, approved and published; 4.3 — Persistent Graph Frontend Integration is complete, approved and published; 4.4 — Authoring UX is implemented and in review. Later slices need separate authorization.
+**Status:** complete, approved and published. Phase 4.1 — Knowledge Map Persistence Foundation, 4.2 — Map/Node/Edge Authoring Backend, 4.3A — Persisted Map Discovery, 4.3 — Persistent Graph Frontend Integration and 4.4 — Authoring UX are complete, approved and published.
 
 **Goal:** evolve the demonstration Knowledge Maps into persistent knowledge content owned by PersonalWorkspace, supporting connected nodes beyond a folder hierarchy.
 
@@ -76,13 +76,17 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 **4.3A completed/published:** authenticated workspace-scoped `GET /api/maps` returns id/title summaries in a maps envelope, ordered by database title then ID. Empty workspaces return 200 with an empty maps array. No root/default map, automatic selection, frontend, schema or dependency change.
 
-**4.3 completed/published:** authenticated discovery and explicit picker, private map rendering with backend positions, ChildMap drill-down and visit-based Back/Forward, `?map=<guid>` deep links/F5, recoverable map errors and session revalidation on 401. Drag is local only; no authoring endpoints or automatic first-map selection.
+**4.3 completed/published (`f19c3d5`):** authenticated discovery and explicit picker, private map rendering with backend positions, ChildMap drill-down and visit-based Back/Forward, `?map=<guid>` deep links/F5, recoverable map errors and session revalidation on 401. At the time of Phase 4.3, drag was local only and the frontend called no authoring endpoints. No automatic first-map selection was introduced.
 
-**4.4 implemented/in review:** explicit edit mode, map/node CRUD, persisted drag stop with rollback, ChildMap set/clear and edge create/delete through the published API; native CSRF, explicit mutation retries and delete confirmations. No backend/schema/dependency change. Phase 4 remains incomplete pending review/closure and separately scoped refinements; relationship taxonomy, broader cross-map semantics, automatic layout and advanced authoring concurrency remain open.
+**4.4 completed/approved/published (`c427c6e`):** explicit edit mode, map/node CRUD, persisted drag stop with rollback, ChildMap set/clear and edge create/delete through the published API; native CSRF, explicit mutation retries without automatic replay, and delete confirmations. No backend/schema/dependency change.
+
+**Closure:** the approved slices satisfy the phase goal: users can discover, navigate and author private persistent knowledge maps, nodes, edges, positions and ChildMap links under server-derived PersonalWorkspace ownership. Their reviewed implementation and validation complete Phase 4. Relationship taxonomy, broader cross-map semantics, automatic layout and advanced authoring concurrency remain open future work, not original exit requirements. SQLite, discarded navigation drafts, no undo/redo or cross-tab coordination, and limited frontend test tooling remain documented limitations; completion does not imply production readiness.
 
 **Non-goals:** graph database, automatic internet importing, or a relationship taxonomy assumed from the initial examples.
 
 ## Phase 5 - Knowledge Content
+
+**Status:** next/planned; implementation has not started. Implementation must not begin until the initial content types and their lifecycle/validation rules are agreed. Product examples do not select the initial types; no content model, contracts, delete behavior or file upload/storage approach is decided by Phase 4 closure.
 
 **Goal:** associate learning material with knowledge nodes.
 

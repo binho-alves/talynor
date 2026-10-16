@@ -2,7 +2,7 @@
 
 ## Phase 4.4 - Authoring UX
 
-Implemented and in review; 4.3 is complete, approved and published. Reuse the trusted HTTPS certificate, process-only Vite proxy and explicitly migrated disposable SQLite procedure below. No backend/schema/migration/package change or development seed exists. Test accounts and graph content are disposable; create the main graph through the UI, using API fixtures only for auxiliary ownership scenarios.
+Complete, approved and published in `c427c6e`; 4.3 is complete, approved and published in `f19c3d5`. Reuse the trusted HTTPS certificate, process-only Vite proxy and explicitly migrated disposable SQLite procedure below. No backend/schema/migration/package change or development seed was introduced by 4.4. Phase 4 closure records the reviewed approved scope, without claiming production readiness or removing documented limitations. Test accounts and graph content are disposable; create the main graph through the UI, using API fixtures only for auxiliary ownership scenarios.
 
 In an empty workspace choose Criar mapa, enter title/optional description, save, then Editar mapa → Adicionar nó. View mode retains navigation/selection/local movement; edit mode enables metadata, node/edge actions and ChildMap choices. New nodes use (node count × 240, 0); use graph controls to frame the view. Titles allow up to 200 UTF-16 units after trim; descriptions up to 4000. Backend remains authoritative. Empty description/child fields produce clear flags on edit, omitted fields preserve values.
 
@@ -19,7 +19,7 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 3, 4.1, 4.2 and 4.3A are complete, approved and published. Phase 4 is incomplete; 4.3 is complete, approved and published; 4.4 — Authoring UX is implemented and in review.
+- Current stage: Phase 4 and its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 are complete, approved and published; Phase 3 remains complete. Phase 5 — Knowledge Content is next/planned, with implementation not started. Initial content types and lifecycle/validation rules must be agreed before implementation; this closure selects none.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
@@ -269,7 +269,7 @@ Validation used disposable SQLite outside the repository, with InitialIdentity t
 
 Real-browser checks passed for anonymous bootstrap, invalid/valid login, cookie acceptance, me/workspace, refresh, graph navigation/selection/drag/zoom/pan/minimap, preserved positions, temporary map-error isolation/retry, logout, desktop/tablet/mobile layouts, keyboard/labels/focus/disabled feedback, console, and multiple-tab behavior. Chrome Storage and Network metadata were confirmed by assisted manual inspection; cookie, password, and token values were not included in reports. Request tokens remain in memory and auth data is not stored in JavaScript persistence.
 
-Final evidence: backend build PASS (zero warnings/errors), 33 unit and 111 integration tests PASS, frontend build/lint PASS, EF pending-model changes NONE, and Git clean at validation completion. No code correction or dependency was needed. API/Vite were stopped and the disposable database, sidecars, and PEM/key copies removed; the original Windows certificate was preserved. The procedure above remains available for regressions. Real-device touch, full accessibility, Kestrel body-limit enforcement, and deployment security are not established by this smoke validation. At Phase 3 closure, Phase 4 was next and not started; current 4.1 work is recorded below.
+Final evidence: backend build PASS (zero warnings/errors), 33 unit and 111 integration tests PASS, frontend build/lint PASS, EF pending-model changes NONE, and Git clean at validation completion. No code correction or dependency was needed. API/Vite were stopped and the disposable database, sidecars, and PEM/key copies removed; the original Windows certificate was preserved. The procedure above remains available for regressions. Real-device touch, full accessibility, Kestrel body-limit enforcement, and deployment security are not established by this smoke validation. At Phase 3 closure, Phase 4 was next and not started; the subsequent Phase 4.1 delivery is recorded below.
 
 ## Phase 4.1 - Knowledge Map Persistence Foundation
 
@@ -323,7 +323,7 @@ Complete, approved and published; 4.1 and 4.2 are complete, approved and publish
 
 The query returns only current-workspace summaries, ordered by database Title ascending then stored Id ascending. SQLite currently uses default BINARY title collation, including case-sensitive ordering; this is not a locale/user-defined sort. Equal titles use ID as the deterministic tie-breaker. There is no pagination/search/filter/sort input. No result is a default/root map and callers must not assume the first item is selected.
 
-Phase 4.3 implements login → workspace → GET /api/maps → user selects a map → GET /api/maps/{id}, or a direct map URL after session bootstrap. 4.3A itself left frontend unchanged; 4.4 Authoring UX is implemented and in review above.
+Phase 4.3 implements login → workspace → GET /api/maps → user selects a map → GET /api/maps/{id}, or a direct map URL after session bootstrap. 4.3A itself left frontend unchanged; 4.4 Authoring UX is complete, approved and published above.
 
 All responses are no-store. Anonymous/invalid/removed-account sessions get sanitized 401; a missing account triggers existing local sign-out. Account/reader/provider failures and native stamp failures get sanitized 500, never a misleading empty list. WorkspaceId/OwnerUserId query parameters cannot override server ownership and are not returned. An empty list describes only this user's workspace. GET needs no CSRF token; create+discover uses the existing CSRF-protected POST /api/maps followed by this read.
 
