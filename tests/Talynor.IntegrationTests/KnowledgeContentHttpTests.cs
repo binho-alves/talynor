@@ -157,19 +157,16 @@ public class KnowledgeContentHttpTests
     }
 
     [Fact]
-    public async Task Only_two_gets_are_exposed_in_openapi_and_content_mutations_are_absent()
+    public async Task Existing_gets_remain_exposed_in_openapi_alongside_authoring()
     {
         using var factory = new RegistrationTestFactory(); await factory.InitializeAsync(); using var client = factory.NewClient();
         await Login(client, "routes@example.invalid");
         var openapi = await client.GetFromJsonAsync<JsonElement>("/openapi/v1.json");
         var routes = openapi.GetProperty("paths").EnumerateObject().Where(path => path.Name.Contains("/contents", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(2, routes.Length); Assert.All(routes, route => Properties(route.Value, "get"));
-        foreach (var method in new[] { HttpMethod.Post, HttpMethod.Patch, HttpMethod.Delete })
-        foreach (var path in new[] { List(Guid.NewGuid(), Guid.NewGuid()), Detail(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()) })
-        {
-            using var request = new HttpRequestMessage(method, path); using var response = await client.SendAsync(request);
-            Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
-        }
+        Assert.Equal(2, routes.Length);
+        Assert.All(routes, route => Assert.True(route.Value.TryGetProperty("get", out _)));
+        Properties(routes.Single(route => !route.Name.Contains("{contentId}", StringComparison.Ordinal)).Value, "get", "post");
+        Properties(routes.Single(route => route.Name.Contains("{contentId}", StringComparison.Ordinal)).Value, "get", "patch", "delete");
     }
 
     private static async Task<PersonalWorkspaceResponse> Login(HttpClient client, string email)

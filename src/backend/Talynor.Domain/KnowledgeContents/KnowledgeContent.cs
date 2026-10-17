@@ -17,6 +17,27 @@ public sealed class KnowledgeContent
         string? title, string? body, string? url, DateTimeOffset createdAtUtc)
     {
         if (knowledgeNodeId == Guid.Empty) throw new ArgumentException("A node ID is required.", nameof(knowledgeNodeId));
+        (title, body, url) = Validate(type, title, body, url);
+        var now = createdAtUtc.ToUniversalTime();
+        return new() { Id = Guid.NewGuid(), KnowledgeNodeId = knowledgeNodeId, Type = type,
+            Title = title, Body = body, Url = url, CreatedAtUtc = now, UpdatedAtUtc = now };
+    }
+
+    public bool UpdateDetails(string? title, string? body, string? url, DateTimeOffset updatedAtUtc)
+    {
+        (title, body, url) = Validate(Type, title, body, url);
+        if (Title == title && Body == body && Url == url) return false;
+        var now = updatedAtUtc.ToUniversalTime();
+        Title = title;
+        Body = body;
+        Url = url;
+        UpdatedAtUtc = now;
+        return true;
+    }
+
+    private static (string? Title, string? Body, string? Url) Validate(KnowledgeContentType type,
+        string? title, string? body, string? url)
+    {
         if (title is not null)
         {
             title = title.Trim();
@@ -35,9 +56,7 @@ public sealed class KnowledgeContent
             default:
                 throw new ArgumentOutOfRangeException(nameof(type));
         }
-        var now = createdAtUtc.ToUniversalTime();
-        return new() { Id = Guid.NewGuid(), KnowledgeNodeId = knowledgeNodeId, Type = type,
-            Title = title, Body = body, Url = url, CreatedAtUtc = now, UpdatedAtUtc = now };
+        return (title, body, url);
     }
 
     private static string ValidateUrl(string? value)

@@ -96,6 +96,5 @@ public class KnowledgeContentTests
         Assert.ThrowsAny<ArgumentException>(() => KnowledgeContent.Create(Guid.Empty, KnowledgeContentType.Note, null, "note", null, DateTimeOffset.UnixEpoch));
         foreach (var name in new[] { "Id", "KnowledgeNodeId", "Type", "CreatedAtUtc", "UpdatedAtUtc", "Title", "Body", "Url" })
             Assert.True(typeof(KnowledgeContent).GetProperty(name)!.SetMethod!.IsPrivate);
-        Assert.DoesNotContain(typeof(KnowledgeContent).GetMethods(), method => method.Name.StartsWith("Update", StringComparison.Ordinal));
     }
 }

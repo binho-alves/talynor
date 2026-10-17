@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Talynor.Api.Contracts;
 using Talynor.Application.Accounts;
 using Talynor.Application.KnowledgeContents;
-using Talynor.Domain.KnowledgeContents;
 
 namespace Talynor.Api.Controllers;
 
@@ -22,7 +21,7 @@ public sealed class KnowledgeContentsController(ISessionService sessions, ILogge
         {
             var result = await list.ExecuteAsync(mapId, nodeId, ct);
             return (result.Status, result.Contents is null ? null : new KnowledgeContentListResponse(result.Contents.Select(content =>
-                new KnowledgeContentSummaryResponse(content.Id, TypeName(content.Type), content.Title,
+                new KnowledgeContentSummaryResponse(content.Id, KnowledgeContentResponseMapping.TypeName(content.Type), content.Title,
                     content.CreatedAtUtc, content.UpdatedAtUtc, content.Url)).ToArray()));
         }, ct);
 
@@ -33,8 +32,7 @@ public sealed class KnowledgeContentsController(ISessionService sessions, ILogge
         {
             var result = await get.ExecuteAsync(mapId, nodeId, contentId, ct);
             var content = result.Content;
-            return (result.Status, content is null ? null : new KnowledgeContentDetailResponse(content.Id,
-                TypeName(content.Type), content.Title, content.CreatedAtUtc, content.UpdatedAtUtc, content.Body, content.Url));
+            return (result.Status, content is null ? null : KnowledgeContentResponseMapping.ToResponse(content));
         }, ct);
 
     private async Task<IActionResult> Execute(Func<Task<(KnowledgeContentReadStatus Status, object? Body)>> action, CancellationToken ct)
@@ -60,11 +58,6 @@ public sealed class KnowledgeContentsController(ISessionService sessions, ILogge
         }
     }
 
-    private static string TypeName(KnowledgeContentType type) => type switch
-    {
-        KnowledgeContentType.Note => "note", KnowledgeContentType.Link => "link",
-        _ => throw new InvalidOperationException("Unknown knowledge content type.")
-    };
     private static ObjectResult Error(int status, string code, string title) => new(
         new ProblemDetails { Status = status, Title = title, Extensions = { ["code"] = code } }) { StatusCode = status };
 }
