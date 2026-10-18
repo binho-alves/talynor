@@ -98,7 +98,7 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 6 - Study Sessions
 
-**Status:** planned / design approved under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). No implementation increment has started. This phase is not implemented, complete or published; implementation requires a separately approved scoped task.
+**Status:** in progress under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Checkpoint 1 foundation/read and delete protection is implemented / under review. Phase 6 is not complete or published; remaining checkpoints require separately scoped implementation approval.
 
 **Goal:** let users register learning effort against their knowledge and content.
 
@@ -108,7 +108,7 @@ Study Session is the current working product term for a period of study. Its rel
 
 **Approved initial scope (planned):** private node-owned Study Sessions with server-controlled UTC start/end, derived duration/status, at most one active session per PersonalWorkspace, explicit start/complete/discard and completed history with confirmed hard deletion. Node/map deletion will be blocked while sessions exist. The planned frontend includes a global active indicator, presentation-only timer, recovery after login/F5/navigation and paginated history by node. Completion closes only the temporal record; no learning/content/node-completion definition is approved. Forgotten sessions remain open until explicit action and cannot have their timestamps edited retroactively.
 
-**Planned implementation checkpoints, not new numbered phases:** foundation/read plus lifecycle/delete protections; start/complete/delete backend plus atomicity; frontend active session/timer/history; integrated validation/closure. None is started or authorized for implementation by this documentation task.
+**Implementation checkpoints, not new numbered phases:** foundation/read plus lifecycle/delete protections is implemented / under review, with completed-history list and session detail only. Active lookup is deferred to the start/complete/delete backend checkpoint with atomicity; frontend active session/timer/history and integrated validation/closure remain planned. No Study Session write, active lookup, transactional one-active guarantee or frontend capability is implemented yet.
 
 **Outside the initial scope:** direct KnowledgeContent linkage, session notes, manual/retroactive time entry, pause/resume, heartbeat/timeout/automatic completion, Pomodoro, totals by node/day/week or materialized counters, learning completion/mastery/percentages, goals/streaks/XP, notifications/calendar, Flashcards, Assessments, AI/recommendations, social/sharing, realtime/WebSockets, workers, offline sync, advanced analytics, CSV/export, mobile app and PostgreSQL infrastructure. Phases 7, 8 and 9 retain their existing goals; this phase does not predefine their models or metrics.
 

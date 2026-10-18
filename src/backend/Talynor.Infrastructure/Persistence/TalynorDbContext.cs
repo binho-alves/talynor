@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Talynor.Domain.Workspaces;
 using Talynor.Domain.KnowledgeMaps;
 using Talynor.Domain.KnowledgeContents;
+using Talynor.Domain.StudySessions;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Talynor.Infrastructure.Persistence;
 
@@ -15,10 +17,28 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
     public DbSet<KnowledgeNode> KnowledgeNodes => Set<KnowledgeNode>();
     public DbSet<KnowledgeEdge> KnowledgeEdges => Set<KnowledgeEdge>();
     public DbSet<KnowledgeContent> KnowledgeContents => Set<KnowledgeContent>();
+    public DbSet<StudySession> StudySessions => Set<StudySession>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.Entity<StudySession>(session =>
+        {
+            session.ToTable("StudySessions", table => table.HasCheckConstraint("CK_StudySessions_TimeRange",
+                "EndedAtUtc IS NULL OR EndedAtUtc >= StartedAtUtc"));
+            session.HasKey(value => value.Id);
+            session.Property(value => value.Id).ValueGeneratedNever();
+            session.HasOne<KnowledgeNode>().WithMany().HasForeignKey(value => value.KnowledgeNodeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            var utc = new ValueConverter<DateTimeOffset, DateTime>(value => value.UtcDateTime,
+                value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
+            session.Property(value => value.StartedAtUtc).HasConversion(utc);
+            session.Property(value => value.EndedAtUtc).HasConversion(utc);
+            session.Ignore(value => value.Duration);
+            session.Ignore(value => value.Status);
+            session.HasIndex(value => new { value.KnowledgeNodeId, value.StartedAtUtc, value.Id })
+                .IsDescending(false, true, true);
+        });
         builder.Entity<KnowledgeContent>(content =>
         {
             content.ToTable("KnowledgeContents", table =>

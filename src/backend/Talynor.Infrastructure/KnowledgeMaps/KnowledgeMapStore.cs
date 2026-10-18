@@ -17,12 +17,14 @@ public sealed class KnowledgeMapStore(TalynorDbContext db) : IKnowledgeMapStore
         db.KnowledgeEdges.SingleOrDefaultAsync(edge => edge.Id == edgeId && edge.KnowledgeMapId == mapId &&
             db.KnowledgeMaps.Any(map => map.Id == edge.KnowledgeMapId && map.WorkspaceId == workspaceId), ct);
     public Task<bool> MapInUseAsync(Guid mapId, Guid workspaceId, CancellationToken ct) =>
-        db.KnowledgeNodes.AnyAsync(node => node.ChildMapId == mapId &&
+        db.KnowledgeNodes.AnyAsync(node => (node.ChildMapId == mapId ||
+            node.KnowledgeMapId == mapId && db.StudySessions.Any(session => session.KnowledgeNodeId == node.Id)) &&
             db.KnowledgeMaps.Any(map => map.Id == node.KnowledgeMapId && map.WorkspaceId == workspaceId), ct);
     public Task<bool> NodeInUseAsync(Guid nodeId, Guid mapId, Guid workspaceId, CancellationToken ct) =>
-        db.KnowledgeEdges.AnyAsync(edge => edge.KnowledgeMapId == mapId &&
-            (edge.SourceNodeId == nodeId || edge.TargetNodeId == nodeId) &&
-            db.KnowledgeMaps.Any(map => map.Id == edge.KnowledgeMapId && map.WorkspaceId == workspaceId), ct);
+        db.KnowledgeNodes.AnyAsync(node => node.Id == nodeId && node.KnowledgeMapId == mapId &&
+            db.KnowledgeMaps.Any(map => map.Id == mapId && map.WorkspaceId == workspaceId) &&
+            (db.KnowledgeEdges.Any(edge => edge.KnowledgeMapId == mapId && (edge.SourceNodeId == nodeId || edge.TargetNodeId == nodeId)) ||
+             db.StudySessions.Any(session => session.KnowledgeNodeId == nodeId)), ct);
     public void AddMap(KnowledgeMap map) => db.KnowledgeMaps.Add(map);
     public void AddNode(KnowledgeNode node) => db.KnowledgeNodes.Add(node);
     public void AddEdge(KnowledgeEdge edge) => db.KnowledgeEdges.Add(edge);

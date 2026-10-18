@@ -17,7 +17,7 @@ This index records approved decisions from the project foundation and subsequent
 | [ADR-011](#adr-011---persistent-knowledge-graph-foundation) | Relational workspace-owned maps, nodes, edges, positions and private reads | Accepted; completed, approved and published |
 | [ADR-012](#adr-012---knowledge-graph-authoring-api) | Private nested authoring, explicit PATCH semantics and controlled conflicts | Accepted; completed, approved and published |
 | [ADR-013](#adr-013---initial-node-owned-knowledge-content) | Initial private node-owned Note/Link content and foundation reads | Accepted; completed, approved and published |
-| [ADR-014](#adr-014---study-session-ownership-lifecycle-and-active-session-invariant) | Node-owned study history, server time, explicit lifecycle and one active session per workspace | Accepted; design only, implementation not started |
+| [ADR-014](#adr-014---study-session-ownership-lifecycle-and-active-session-invariant) | Node-owned study history, server time, explicit lifecycle and one active session per workspace | Accepted; checkpoint 1 implemented / under review |
 
 ## ADR-001 - React frontend
 
@@ -211,7 +211,9 @@ This index records approved decisions from the project foundation and subsequent
 
 ## ADR-014 - Study Session ownership, lifecycle, and active-session invariant
 
-**Date/status:** 2026-10-17. Accepted by the explicit Phase 6 design formalization request. Phase 6 is planned / design approved; no implementation checkpoint has started. This record specifies future behavior, not existing runtime entities, schema, endpoints or frontend capabilities. Implementation still requires a separately approved scoped task. ADR-001 through ADR-013 remain unchanged.
+**Date/status:** 2026-10-17. Accepted by the explicit Phase 6 design formalization request. Phase 6 is now in progress; checkpoint 1 is implemented / under review as recorded in the follow-through below. The accepted design remains unchanged; lifecycle writes, active lookup, the transactional one-active invariant and frontend remain planned and require separately scoped tasks. ADR-001 through ADR-013 remain unchanged.
+
+**Checkpoint 1 follow-through (implemented / under review, 2026-10-18):** four-field StudySession foundation with internal validated fixture construction, derived Duration/Status, explicit AddStudySessions EF/SQLite migration, required Restrict node FK, temporal CHECK and descending history index. ListStudySessionsForNode/GetStudySessionForNode reuse account/lazy-workspace resolution; a specific no-tracking reader applies ownership in SQL. Nested GET collection returns only completed sessions in sessions/page/pageSize/hasMore; detail may expose an active fixture with null end/duration. page defaults to 1 and must be at least 1; pageSize defaults to 20 and must be in 1..100. Invalid or overflowing pagination is rejected. SQL fetches pageSize + 1, ordered StartedAtUtc DESC/Id DESC, without COUNT. Existing authentication, no-store and generic missing/foreign errors apply. Node/map deletion now blocks on any active/completed session with node_in_use/map_in_use, preserving existing blockers and permitted content cascade. These facts supersede the baseline's not-yet-implemented descriptions for foundation, reads and delete protection only. Active lookup is explicitly deferred to the write checkpoint; no start/complete/discard, runtime writer, one-active transaction, frontend, extra dependency or phase completion is introduced.
 
 **Context:** the published product has private workspace-owned maps/nodes and Note/Link content. Phase 6 requires an agreed study-time workflow and history linked to relevant knowledge. No learning/content/node-completion measure is currently defined, and future Flashcards, Assessments and Progress/Analytics must not be folded into a generic activity container prematurely.
 
@@ -236,7 +238,7 @@ Duration is derived as EndedAtUtc minus StartedAtUtc, null until completion. Sta
 
 **Retention and graph deletion:** StudySession is persistent personal history, not an immutable audit log. Completed sessions remain until confirmed explicit hard deletion; completed timestamps otherwise remain immutable. Discarding an active session hard-deletes it and permits a new start. There is no abandoned status, archive/restore or soft delete. The required node FK uses Restrict/NoAction, never cascade. When implemented, any active/completed session blocks node deletion with 409 node_in_use; a map containing a node with a session is blocked with 409 map_in_use. Users remove sessions consciously before their context; races must preserve this restriction without partial deletion. This is an approved future extension of current delete behavior, not a deployed change. Existing edge/ChildMap blockers and ADR-013 KnowledgeContent cascades remain for otherwise permitted deletions. No orphan session or persisted node/map snapshot is introduced.
 
-**Planned HTTP contracts (not implemented):**
+**HTTP contracts (approved design; only the nested history/detail GETs are implemented in checkpoint 1):**
 
 | Method | Route | Behavior |
 | --- | --- | --- |

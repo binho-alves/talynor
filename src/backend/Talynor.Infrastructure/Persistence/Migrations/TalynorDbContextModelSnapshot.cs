@@ -292,6 +292,31 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Talynor.Domain.StudySessions.StudySession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("EndedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("KnowledgeNodeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("StartedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KnowledgeNodeId", "StartedAtUtc", "Id")
+                        .IsDescending(false, true, true);
+
+                    b.ToTable("StudySessions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_StudySessions_TimeRange", "EndedAtUtc IS NULL OR EndedAtUtc >= StartedAtUtc");
+                        });
+                });
+
             modelBuilder.Entity("Talynor.Domain.Workspaces.PersonalWorkspace", b =>
                 {
                     b.Property<Guid>("Id")
@@ -391,6 +416,15 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("KnowledgeMapId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.StudySessions.StudySession", b =>
+                {
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeNodeId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

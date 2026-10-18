@@ -14,6 +14,8 @@ using Talynor.Application.Workspaces;
 using Talynor.Infrastructure.Workspaces;
 using Talynor.Application.KnowledgeContents;
 using Talynor.Infrastructure.KnowledgeContents;
+using Talynor.Application.StudySessions;
+using Talynor.Infrastructure.StudySessions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,9 @@ builder.Services.AddScoped<IKnowledgeContentStore, KnowledgeContentStore>();
 builder.Services.AddScoped<CreateKnowledgeContent>();
 builder.Services.AddScoped<UpdateKnowledgeContent>();
 builder.Services.AddScoped<DeleteKnowledgeContent>();
+builder.Services.AddScoped<IStudySessionReader, StudySessionReader>();
+builder.Services.AddScoped<ListStudySessionsForNode>();
+builder.Services.AddScoped<GetStudySessionForNode>();
 builder.Services.AddScoped<CreateKnowledgeMap>();
 builder.Services.AddScoped<UpdateKnowledgeMap>();
 builder.Services.AddScoped<DeleteKnowledgeMap>();
