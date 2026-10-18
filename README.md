@@ -4,7 +4,7 @@ Talynor is a visual learning and personal knowledge platform where users build i
 
 **Current status:** Phase 5 — Knowledge Content is **COMPLETE / APPROVED / PUBLISHED** for the agreed Note and Link scope under [ADR-013](docs/DECISIONS.md#adr-013---initial-node-owned-knowledge-content). Foundation/read (c450b91), Content Authoring Backend (5aa7d4e) and Frontend Content Integration (d4e5c76) are published. Private node-owned content supports viewing, creation, editing and confirmed deletion through the API and existing Edit map experience. This scoped completion does not imply production readiness.
 
-**Next official phase:** Phase 6 — Study Sessions is planned and not started. Its implementation requires a separately approved scoped task.
+**Next official phase:** Phase 6 — Study Sessions is **PLANNED / DESIGN APPROVED** under [ADR-014](docs/DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Implementation has not started and requires a separately approved scoped task. The accepted design records private node-owned study periods with server timestamps, derived duration and one active session per personal workspace; it does not mark knowledge or content as learned/completed. No Study Session runtime capability is delivered yet.
 
 **Published Phase 4:** Phase 4 — Persistent Knowledge Authoring is **COMPLETE / APPROVED / PUBLISHED**. Its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 deliver private persistent maps, discovery, navigation and authoring. This is scoped phase completion, not production readiness.
 

@@ -1,5 +1,22 @@
 # Development workflow
 
+## Phase 6 - Approved design and planned checkpoints
+
+Phase 6 — Study Sessions is planned / design approved under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Implementation has not started. This documentation task creates no entity, DbSet/mapping, migration, API/use case/DTO code, React component/timer, code test or dependency. Existing Phase 5 validation below is historical evidence, not validation of Study Sessions. The development workflow remains unchanged; each future implementation checkpoint requires a scoped request.
+
+The planned checkpoints are:
+
+1. Foundation/read plus lifecycle/delete protections: approved four-field node-owned model, explicit persistence/migration, active/detail/paginated history reads and protection of node/map history. Test fixtures may prepare data; no runtime seed or start command is implied.
+2. Start/complete/delete backend plus atomicity: official SQLite write transaction before the availability query, native CSRF, immutable first completion and explicit hard deletion/discard.
+3. Frontend active session/timer/history: Start studying in node details including View mode; global authenticated-shell indicator with current study topic, elapsed time, Complete, return to node and explicit Discard; completed node history with start/end/duration and confirmed delete. These are future UI behaviors, not delivered capabilities.
+4. Integrated validation and closure, preserving existing session, graph and Note/Link regressions.
+
+These are implementation checkpoints, not Phase 6.1/6.2/6.3. No checkpoint is in progress. The future active-session UI must live above the node/map-specific mounted view, preserve the study period across map/node/Back/Forward navigation and recover from the backend after login/F5. Logout clears local UI only. A frontend interval is presentation, never the persisted clock or a per-second write. Revalidate on focus, explicit actions and refresh, without continuous polling, WebSockets or an instant cross-tab guarantee. Recovery offers Continue, Complete now or confirmed Discard; never silently close a forgotten session or invent a historical end time.
+
+Future verification must cover Domain UTC/identity/transition rules and zero/negative durations; Application ownership/account/error behavior; real disposable SQLite FK/CHECK/UTC ordering and page boundaries/ties; migration Up/Down and preservation of existing constraints. Concurrent starts on independent connections, including different nodes of one workspace, must prove the official atomic path admits no second active record. Test complete/complete (first end preserved), start versus node/map delete, complete/delete, rollback without partial deletion, and failure classification. The transactional invariant must not be described as protection against arbitrary SQL insertion. A PostgreSQL transition requires explicit authorization and its own concurrency verification.
+
+Future HTTP checks must verify the planned contracts/Location, repeated-complete 204, IDOR/generic 404, authenticated/no-store reads, native-CSRF writes and operational/stamp sanitization. Frontend checks/browser validation must cover timer reconstruction, navigation, stale responses, double submit, multiple tabs, suspension/forgotten sessions, explicit deletion, clock differences and ambiguous failures without replay, plus keyboard/responsiveness. Node checks alone do not establish full React lifecycle or browser behavior. None of these Study Session application checks has run in this documentation-only task; application builds/tests are not applicable here.
+
 ## Phase 5 - Validation and closure
 
 Closure audit on 2026-10-17 confirms Phase 5 — Knowledge Content is complete, approved and published for the agreed private node-owned Note/Link scope. Foundation/read c450b91, Content Authoring Backend 5aa7d4e and Frontend Content Integration d4e5c76 are ancestors of both main and origin/main. Initial state for this documentation task was main at d4e5c76, synchronized 0/0 with a clean working tree and empty staging.
@@ -71,7 +88,7 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 4 and its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 are complete, approved and published; Phase 3 remains complete. Phase 5 — Knowledge Content and its foundation/read, backend authoring and frontend integration increments are complete, approved and published under ADR-013. Phase 6 — Study Sessions is next/planned, not started, and requires separate scoped implementation approval.
+- Current stage: Phase 4 and its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 are complete, approved and published; Phase 3 remains complete. Phase 5 — Knowledge Content and its foundation/read, backend authoring and frontend integration increments are complete, approved and published under ADR-013. Phase 6 — Study Sessions is planned / design approved under ADR-014; implementation has not started and requires separate scoped implementation approval.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 

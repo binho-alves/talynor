@@ -1,5 +1,15 @@
 # Secure-development principles
 
+## Phase 6 Study Sessions - approved design, not implemented
+
+[ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant) defines planned private study history. No Study Session runtime endpoints, schema or UI are introduced by this documentation task. Future operations must require the existing authenticated session and validated account, derive access through PersonalWorkspace → map → node → session in SQL, and accept no client owner/workspace override. Missing, foreign and mismatched paths must share generic 404 study_session_not_found; private successes/errors must be no-store. Existing cookie/stamp/401 behavior remains authoritative; provider/stamp failures must not become an empty history.
+
+Future writes must use the existing native CSRF mechanism; GETs need no CSRF. Start/end are server-controlled UTC values, with no client time or duration override. CSRF stays encapsulated in the client/session layer; no mutation automatically replays after CSRF, 401, network or operational failures. Ambiguous writes require checking current state before another explicit attempt. Preserve existing HTTPS, cookie and safe logging rules; no new authentication system is selected. These actions need no time payload, and the graph/content 32 KiB metadata must not be copied without a justified need or represented as runtime proof.
+
+One active session per workspace will be protected by the official SQLite transactional start path, not a declarative guarantee against arbitrary SQL INSERTs. Validate the target's ownership before revealing an active-session conflict. Busy/timeouts are operational errors, not active_session_exists. Repeated complete on an owned completed record returns 204 without changing its first end time; an end before start is study_session_clock_conflict. The remaining approved error vocabulary is validation_failed, csrf_invalid, node_in_use, map_in_use and unexpected_error, alongside existing authentication behavior.
+
+History will be retained until explicit confirmed hard deletion; active discard also hard-deletes. Planned node/map deletion restrictions protect history/context and must be enforced under races, without silently cascading Study Sessions. This is a future behavior change; current graph/content deletion remains as documented below. Browser close/logout/offline/suspension do not close study periods, so forgotten records may span hours/days with no retroactive correction. No heartbeat/timeout, automatic completion, instant cross-tab guarantee or broader audit/retention policy is implied. PostgreSQL infrastructure remains unauthorized and its concurrency strategy requires later review.
+
 ## Phase 5 frontend content security
 
 Phase 5 is complete, approved and published for private node-owned Note/Link content through c450b91, 5aa7d4e and d4e5c76. The scoped security boundaries below are delivered; this is not production readiness. File upload/storage and other deferred content types require future scoped design.
