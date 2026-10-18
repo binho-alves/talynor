@@ -2,11 +2,13 @@
 
 ## Phase 5 - Frontend Content Integration
 
-Implemented/in review; Phase 5 remains in progress. Select a persisted node to load content summaries, then open an item for detail. View mode is read-only. Edit map enables Note/Link creation, editing and contextual confirmed hard delete. Notes preserve literal text/newlines; Links show a wrapped HTTP(S) destination and open explicitly in a new tab with noopener/noreferrer. No Markdown/HTML rendering, embeds, previews or remote metadata fetching is added.
+Complete, approved and published in d4e5c76; the agreed Note/Link scope of Phase 5 is complete. Select a persisted node to load content summaries, then open an item for detail. View mode is read-only. Edit map enables Note/Link creation, editing and contextual confirmed hard delete. Notes preserve literal text/newlines; Links show a wrapped HTTP(S) destination and open explicitly in a new tab with noopener/noreferrer. No Markdown/HTML rendering, embeds, previews or remote metadata fetching is added.
 
 Title is optional (200 UTF-16 units); Note body is required (4000); Link URL is required (2048). Clear an existing title to send clearTitle. Type cannot change; unchanged normalized drafts disable Save. After confirmed writes the list/detail is fetched from the server, preserving ordering/timestamps. A shared lock coordinates graph/content writes. Reads abort on node/map changes, old completions are ignored, and local content selection never enters map URL/History. Drafts are discarded by context/mode changes.
 
 Content errors offer explicit retry inside the map shell. Every write renews CSRF privately through sessionClient; components never receive tokens. No mutation replays after CSRF, 401, network or 500. For an ambiguous result, update the contents/check current state before sending again. Package manager remains open.
+
+The final reconciliation fix clears obsolete selection/editor/detail only after a new current list confirms disappearance, preserving content just created. The 103 Node checks cover this and existing content/session/graph behavior; controlled component/hook checks are not exhaustive lifecycle tests. Earlier browser/network validation remains separate evidence. File upload/storage, specialized Article/Video, Flashcards, Quizzes, Exercise and Checklist are future scoped work, not missing requirements of this Note/Link delivery.
 
 Run node scripts/content-checks.mjs with Node 24 alongside pnpm run build and pnpm run lint. Checks use only built-in assert/native TypeScript stripping; no frontend test framework or dependency is added.
 
@@ -39,7 +41,7 @@ Every write renews CSRF through the existing per-hook session client. There is n
 
 Validation: backend build, 79 unit/179 integration tests and EF pending-model NONE; frontend build/lint, 65 existing plus 37 authoring Node checks and 5 real HTTPS API/client isolation/CSRF checks passed. Browser UI CRUD, persisted F5 state, ChildMap, conflicts, rollback, 401/manual retry, 500/network failures, Back/Forward, logout and three responsive sizes passed. Proxy metadata confirmed methods/CSRF/no duplicate creates. No component test framework, full screen-reader audit, real-device touch, scale benchmark or production-readiness claim is included. See Development for scope and evidence.
 
-**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX and Phase 4 are complete, approved and published. Phase 5 — Knowledge Content is in progress: foundation/read is published and Content Authoring Backend is complete/approved/published in 5aa7d4e; Frontend Content Integration is implemented/in review under ADR-013. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
+**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX and Phase 4 are complete, approved and published. Phase 5 — Knowledge Content is complete, approved and published for Note/Link: foundation/read c450b91, Content Authoring Backend 5aa7d4e and Frontend Content Integration d4e5c76 under ADR-013. Phase 6 — Study Sessions is next/planned, not started and requires separate implementation approval. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
 
 React + TypeScript with Vite and XYFlow now consumes private persisted maps. The historical demo-only client, coordinates and mock learning metrics have been removed from the authenticated experience. Backend demo endpoints remain available for regression. No backend, dependency or database change is introduced by this frontend slice.
 
@@ -71,7 +73,7 @@ pnpm was used in SPIKE-001 because it was available in the environment; it has
 not been selected as Talynor's official package manager. npm, pnpm, or another
 option may be selected later. pnpm-lock.yaml remains in the spike to reproduce
 the exact dependency versions used in this execution.
-No automatic test suite is configured yet.
+No dedicated frontend test framework is configured. The reproducible content/session/graph checks above run with Node and the existing TypeScript tooling.
 
 
 ## Explore persisted maps
@@ -116,7 +118,7 @@ Runtime checks cover GUID-like IDs, nullable descriptions/child links, finite co
 
 No frontend test framework was added. Build/lint and dependency-free ad hoc Node checks cover runtime validators, adapter, URL helpers, error statuses and cancellation. Real trusted-HTTPS browser checks are recorded in [Development](../../../docs/DEVELOPMENT.md#phase-43---persistent-graph-frontend-integration), separately from automated results.
 
-Discovery is currently unpaginated. View-mode drag is visual/local; edit-mode drag persists position on drag stop. Viewport state is not retained between map visits. Full accessibility, real touchscreen gestures, larger graphs and production routing/TLS remain future scoped work. The current authoring scope is described in the Phase 4.4 section above. Package manager remains open; the pnpm notes above still apply.
+Discovery is currently unpaginated. View-mode drag is visual/local; edit-mode drag persists position on drag stop. Viewport state is not retained between map visits. Full accessibility, real touchscreen gestures, larger graphs and production routing/TLS remain future scoped work. Current graph authoring is described in Phase 4.4 above; current Note/Link viewing and authoring is described in the Phase 5 section. Package manager remains open; the pnpm notes above still apply.
 
 ## XYFlow assessment
 

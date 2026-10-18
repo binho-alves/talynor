@@ -86,15 +86,19 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 5 - Knowledge Content
 
-**Status:** in progress. First approved slice: **Note and Link Content**. Knowledge Content Foundation (foundation/read) is complete, approved and published in c450b91. Content Authoring Backend is complete, approved and published in 5aa7d4e. Current increment: **Frontend Content Integration**, implemented/in review as follow-through of [ADR-013](DECISIONS.md#adr-013---initial-node-owned-knowledge-content): on-demand list/detail, literal Note viewing, explicit safe Links and Note/Link create/edit/confirmed delete in Edit map, with shared mutation coordination, existing CSRF and no replay. Foundation GETs/schema remain; no new migration/dependency is introduced. The frontend preserves map History/deep links and separates content errors from the shell. Phase 5 is not complete; later increments require scoped authorization. Product examples do not authorize other types; file upload/storage remains undecided and absent.
+**Status:** complete, approved and published for the agreed **Note and Link Content** scope under [ADR-013](DECISIONS.md#adr-013---initial-node-owned-knowledge-content). Foundation/read (c450b91), Content Authoring Backend (5aa7d4e) and Frontend Content Integration (d4e5c76) deliver private node-owned content, authenticated backend reads/writes and frontend viewing/authoring in Edit map, with validation, ownership, CSRF, safe rendering and manual retries. Map DTOs/History and existing graph protections are preserved.
 
 **Goal:** associate learning material with knowledge nodes.
 
 **Expected outputs:** an agreed initial set of content types; creation, viewing, and editing workflows for that content; appropriate validation and access boundaries. Define file handling and its security requirements if files are included.
 
+**Closure:** the agreed initial types and their create/view/edit workflows, validation and access boundaries are delivered and reviewed. File was not included, so upload/storage is future work rather than a missing phase requirement. Specialized Article/Video, Flashcard, Quiz, Exercise and Checklist capabilities remain explicitly deferred. Documented scale, concurrency, testing and real-server body-limit verification limits remain; scoped completion does not imply production readiness.
+
 **Non-goals:** supporting every envisioned content type immediately, automatic content importing, marketplace, or AI content generation.
 
 ## Phase 6 - Study Sessions
+
+**Status:** next/planned; not started. Implementation requires a separately approved scoped task.
 
 **Goal:** let users register learning effort against their knowledge and content.
 

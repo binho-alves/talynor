@@ -2,7 +2,9 @@
 
 Talynor is a visual learning and personal knowledge platform where users build interconnected knowledge maps, organize learning content, and track their studies.
 
-**Current status:** Phase 5 — Knowledge Content is **IN PROGRESS**. First approved slice: Note and Link Content. Knowledge Content Foundation is complete, approved and published in `c450b91`. Content Authoring Backend is complete, approved and published in `5aa7d4e`. Frontend Content Integration now implements on-demand Note/Link viewing and authoring within the existing node panel/Edit map mode and is in review under [ADR-013](docs/DECISIONS.md#adr-013---initial-node-owned-knowledge-content).
+**Current status:** Phase 5 — Knowledge Content is **COMPLETE / APPROVED / PUBLISHED** for the agreed Note and Link scope under [ADR-013](docs/DECISIONS.md#adr-013---initial-node-owned-knowledge-content). Foundation/read (c450b91), Content Authoring Backend (5aa7d4e) and Frontend Content Integration (d4e5c76) are published. Private node-owned content supports viewing, creation, editing and confirmed deletion through the API and existing Edit map experience. This scoped completion does not imply production readiness.
+
+**Next official phase:** Phase 6 — Study Sessions is planned and not started. Its implementation requires a separately approved scoped task.
 
 **Published Phase 4:** Phase 4 — Persistent Knowledge Authoring is **COMPLETE / APPROVED / PUBLISHED**. Its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 deliver private persistent maps, discovery, navigation and authoring. This is scoped phase completion, not production readiness.
 
@@ -20,7 +22,7 @@ Phase 3 delivers local account registration, cookie-based sessions with CSRF, lo
 
 **Published authoring UX:** Phase 4.4 — Authoring UX is complete, approved and published in `c427c6e`; Phase 4.3 was published in `f19c3d5`. Explicit edit mode adds map/node CRUD, ChildMap set/clear, edge creation/deletion and position saving on drag stop through the published API. Writes use existing session CSRF, explicit retries and pessimistic creates/deletes. Advanced authoring, layout and broader validation remain separately scoped limitations, not unmet Phase 4 completion requirements.
 
-**Phase 5 boundary:** Note + Link, node ownership and initial lifecycle/validation rules are explicitly approved in ADR-013. Authenticated list/detail reads remain available; content writes use existing CSRF, server-derived ownership, strict own JSON contracts and a 32 KiB request-size configuration. Note/Link content UI uses literal text, explicit safe links, existing CSRF and manual retries. Files, rich rendering and study features remain absent. Phase 5 is not complete. Graph contracts and map URL/History semantics are preserved.
+**Phase 5 boundary:** Note + Link, node ownership and initial lifecycle/validation rules are explicitly approved in ADR-013. Authenticated list/detail reads remain available; content writes use existing CSRF, server-derived ownership, strict own JSON contracts and a 32 KiB request-size configuration. Note/Link content UI uses literal text, explicit safe links, existing CSRF and manual retries. Files, rich rendering and study features remain absent. File upload/storage remains future work and was not required by the agreed Note/Link delivery. Graph contracts and map URL/History semantics are preserved.
 
 See [Development](docs/DEVELOPMENT.md#phase-31---identity-persistence) for local EF tooling, database configuration, and explicit migration commands. Build and API startup do not create or migrate the database.
 
