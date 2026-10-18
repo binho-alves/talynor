@@ -10,7 +10,8 @@ export function useAuthoring(revalidate: () => Promise<void>) {
   const [pending, setPending] = useState(false)
   const [feedback, setFeedback] = useState('')
   useEffect(() => { alive.current = true; return () => { alive.current = false } }, [])
-  async function run<T>(action: (signal: AbortSignal) => Promise<T>, apply: (result: T) => void): Promise<boolean> {
+  async function run<T>(action: (signal: AbortSignal) => Promise<T>, apply: (result: T) => void,
+    options?: { errorMessage?: (error: unknown) => string; onError?: (error: unknown) => void }): Promise<boolean> {
     if (inFlight.current || !alive.current) return false
     inFlight.current = true
     setPending(true)
@@ -21,7 +22,10 @@ export function useAuthoring(revalidate: () => Promise<void>) {
       return true
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) await revalidate()
-      if (alive.current) setFeedback(authoringErrorMessage(error))
+      if (alive.current) {
+        options?.onError?.(error)
+        setFeedback((options?.errorMessage ?? authoringErrorMessage)(error))
+      }
       return false
     } finally {
       inFlight.current = false

@@ -1,5 +1,23 @@
 # Talynor Web — Persistent Graph and Authoring UX
 
+## Phase 5 - Frontend Content Integration
+
+Implemented/in review; Phase 5 remains in progress. Select a persisted node to load content summaries, then open an item for detail. View mode is read-only. Edit map enables Note/Link creation, editing and contextual confirmed hard delete. Notes preserve literal text/newlines; Links show a wrapped HTTP(S) destination and open explicitly in a new tab with noopener/noreferrer. No Markdown/HTML rendering, embeds, previews or remote metadata fetching is added.
+
+Title is optional (200 UTF-16 units); Note body is required (4000); Link URL is required (2048). Clear an existing title to send clearTitle. Type cannot change; unchanged normalized drafts disable Save. After confirmed writes the list/detail is fetched from the server, preserving ordering/timestamps. A shared lock coordinates graph/content writes. Reads abort on node/map changes, old completions are ignored, and local content selection never enters map URL/History. Drafts are discarded by context/mode changes.
+
+Content errors offer explicit retry inside the map shell. Every write renews CSRF privately through sessionClient; components never receive tokens. No mutation replays after CSRF, 401, network or 500. For an ambiguous result, update the contents/check current state before sending again. Package manager remains open.
+
+Run node scripts/content-checks.mjs with Node 24 alongside pnpm run build and pnpm run lint. Checks use only built-in assert/native TypeScript stripping; no frontend test framework or dependency is added.
+
+| React concept | Where / reason | Approximate Angular analogy |
+| --- | --- | --- |
+| Discriminated unions | Content DTOs separate Note/Link and read states, preventing impossible payloads. | TypeScript unions used with Angular too. |
+| Custom hook / cleanup | useContentRead isolates cancellable per-request loading/error/retry. | Scoped HTTP/service logic with lifecycle teardown. |
+| Component key | ContentSection remounts per node/mode and discards obsolete detail/drafts. | Recreating a scoped view/component; not a perfect lifecycle equivalence. |
+| Shared ref lock | The existing useAuthoring coordinator synchronously admits one graph/content write. | A scoped service guard plus reactive busy state. |
+| Effect after commit | Focus returns to the content heading after confirmed create/delete. | A post-render focus operation. |
+
 ## Phase 4.4 - Authoring UX
 
 Complete, approved and published in `c427c6e`. Use Criar mapa in the picker, then Editar mapa to enable editing. Forms edit title/optional description, add/edit nodes and choose/remove ChildMap from current-workspace discovery. Nodes start at the predictable (node count × 240, 0); no automatic layout is added. Conectar nós uses labeled source/target selects; self links and duplicate edges are allowed by the API. The edge selector provides a keyboard-accessible selection/deletion path in addition to graph selection. Node and edge selections are mutually exclusive. All deletions require explicit inline confirmation.
@@ -21,7 +39,7 @@ Every write renews CSRF through the existing per-hook session client. There is n
 
 Validation: backend build, 79 unit/179 integration tests and EF pending-model NONE; frontend build/lint, 65 existing plus 37 authoring Node checks and 5 real HTTPS API/client isolation/CSRF checks passed. Browser UI CRUD, persisted F5 state, ChildMap, conflicts, rollback, 401/manual retry, 500/network failures, Back/Forward, logout and three responsive sizes passed. Proxy metadata confirmed methods/CSRF/no duplicate creates. No component test framework, full screen-reader audit, real-device touch, scale benchmark or production-readiness claim is included. See Development for scope and evidence.
 
-**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX and Phase 4 are complete, approved and published. Phase 5 — Knowledge Content is in progress: foundation/read is published and Content Authoring Backend is implemented/in review under ADR-013; frontend content integration is pending and this frontend source remains unchanged, without content UI. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
+**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX and Phase 4 are complete, approved and published. Phase 5 — Knowledge Content is in progress: foundation/read is published and Content Authoring Backend is complete/approved/published in 5aa7d4e; Frontend Content Integration is implemented/in review under ADR-013. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
 
 React + TypeScript with Vite and XYFlow now consumes private persisted maps. The historical demo-only client, coordinates and mock learning metrics have been removed from the authenticated experience. Backend demo endpoints remain available for regression. No backend, dependency or database change is introduced by this frontend slice.
 

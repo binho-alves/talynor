@@ -8,6 +8,7 @@ import type { KnowledgeMapSummaryDto } from '../types/persistedKnowledgeMap.ts'
 import { MapWorkspace } from './MapWorkspace.tsx'
 import { CreateMap } from './CreateMap.tsx'
 import type { KnowledgeMapAuthoringClient } from '../api/knowledgeMapAuthoringApi.ts'
+import type { KnowledgeContentAuthoringClient } from '../api/knowledgeContentAuthoringApi.ts'
 
 type LoadState = { identity: string } & (
   | { status: 'loading' | 'not-found' | 'session-check' }
@@ -16,7 +17,8 @@ type LoadState = { identity: string } & (
   | { status: 'map'; map: KnowledgeMap }
 )
 
-export function PersistedMaps({ onAuthenticationRequired, authoring }: { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient }) {
+export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring }:
+  { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient }) {
   const navigation = usePersistedMapNavigation()
   const { route, revision } = navigation
   const mapId = route.kind === 'map' ? route.id : null
@@ -95,7 +97,7 @@ export function PersistedMaps({ onAuthenticationRequired, authoring }: { onAuthe
           navigation.openMap(map.id)
         }} />
       </section>}
-      {state.status === 'map' && mapId && <MapWorkspace key={identity} id={mapId} initial={state.map} authoring={authoring}
+      {state.status === 'map' && mapId && <MapWorkspace key={identity} id={mapId} initial={state.map} authoring={authoring} contentAuthoring={contentAuthoring}
         revalidate={onAuthenticationRequired} onOpenMap={navigation.openMap} onDeleted={navigation.showPicker}
         onRename={(title) => setLoaded((previous) => previous.status === 'map' ? { ...previous, map: { ...previous.map, title } } : previous)} />}
     </>}

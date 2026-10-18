@@ -8,11 +8,15 @@ import type { KnowledgeMapSummaryDto } from '../types/persistedKnowledgeMap.ts'
 import { KnowledgeGraph } from './KnowledgeGraph.tsx'
 import { MetadataForm } from './MetadataForm.tsx'
 import { useAuthoring } from './useAuthoring.ts'
+import { NodeDetails } from './NodeDetails.tsx'
+import { ContentSection } from './ContentSection.tsx'
+import type { KnowledgeContentAuthoringClient } from '../api/knowledgeContentAuthoringApi.ts'
 
 type Editor = 'map' | 'new-node' | 'node' | 'edge' | 'delete-map' | 'delete-node' | 'delete-edge' | null
 
-export function MapWorkspace({ id, initial, authoring, revalidate, onOpenMap, onDeleted, onRename }:
-  { id: string; initial: KnowledgeMap; authoring: KnowledgeMapAuthoringClient; revalidate: () => Promise<void>; onOpenMap: (id: string) => void;
+export function MapWorkspace({ id, initial, authoring, contentAuthoring, revalidate, onOpenMap, onDeleted, onRename }:
+  { id: string; initial: KnowledgeMap; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
+    revalidate: () => Promise<void>; onOpenMap: (id: string) => void;
     onDeleted: () => void; onRename: (title: string) => void }) {
   const [map, setMap] = useState(initial)
   const [editing, setEditing] = useState(false)
@@ -145,6 +149,11 @@ export function MapWorkspace({ id, initial, authoring, revalidate, onOpenMap, on
     <KnowledgeGraph map={map} onOpenMap={onOpenMap} onNodesChange={nodesChanged} onEdgesChange={edgesChanged}
       editing={editing} pending={mutation.pending} onNodeDragStop={(node) => { void savePosition(node) }}
       onSelectionChange={() => setEditor(null)}>
+      <div className="workspace-panels">
+      {!editing && <NodeDetails node={selected} onOpenSubmap={(node) => { if (node.data.childMapId) onOpenMap(node.data.childMapId) }}>
+        {selected && <ContentSection key={`${selected.id}:view`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
+          editing={false} client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
+      </NodeDetails>}
       {editing && <aside className="details-panel" aria-label="Edição do mapa">
         {choiceError && <p className="session-feedback">{choiceError}</p>}
         <button disabled={mutation.pending} onClick={() => setChoiceRetry((value) => value + 1)}>Atualizar lista de submapas</button>
@@ -180,7 +189,10 @@ export function MapWorkspace({ id, initial, authoring, revalidate, onOpenMap, on
         {confirmation && <section aria-label="Confirmar exclusão"><h3>{confirmation}</h3><p>A exclusão é permanente. Referências existentes podem impedir a operação.</p>
           <div className="editor-actions"><button disabled={mutation.pending} onClick={confirmDelete}>Confirmar exclusão</button>
             <button disabled={mutation.pending} onClick={() => setEditor(null)}>Cancelar</button></div></section>}
+        {selected && <ContentSection key={`${selected.id}:edit`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
+          editing client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
       </aside>}
+      </div>
     </KnowledgeGraph>
   </>
 }

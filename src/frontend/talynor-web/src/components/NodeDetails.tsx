@@ -1,11 +1,13 @@
+import type { ReactNode } from 'react'
 import type { KnowledgeNode } from '../types/knowledge'
 
 type NodeDetailsProps = {
   node?: KnowledgeNode
   onOpenSubmap: (node: KnowledgeNode) => void
+  children?: ReactNode
 }
 
-export function NodeDetails({ node, onOpenSubmap }: NodeDetailsProps) {
+export function NodeDetails({ node, onOpenSubmap, children }: NodeDetailsProps) {
   return (
     <aside className="details-panel" aria-labelledby="details-title">
       <p className="section-caption">Detalhes do conceito</p>
@@ -27,6 +29,7 @@ export function NodeDetails({ node, onOpenSubmap }: NodeDetailsProps) {
           </p>
         </>
       )}
+      {children}
     </aside>
   )
 }
