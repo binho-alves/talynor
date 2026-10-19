@@ -98,7 +98,7 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 6 - Study Sessions
 
-**Status:** in progress under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Checkpoint 1 foundation/read and delete protection is approved and published in 881d12a. Checkpoint 2 start/complete/delete backend, active lookup and atomicity is approved and published in 29ba218. Checkpoint 3 frontend is implemented / under review. Phase 6 is not complete; integrated validation and closure require separately scoped approval.
+**Status:** complete, approved and published for the scoped Study Session workflow under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Checkpoints 1 (881d12a), 2 (29ba218) and 3 (493d39a) are approved and published; integrated closure validation passed on 2026-10-19. Closure documentation is prepared for final formal review.
 
 **Goal:** let users register learning effort against their knowledge and content.
 
@@ -106,15 +106,19 @@ Study Session is the current working product term for a period of study. Its rel
 
 **Expected outputs:** study session workflows; agreed study-time recording behavior; study session history linked to relevant knowledge; initial completion tracking where defined.
 
-**Approved initial scope (backend published; frontend implemented / under review):** private node-owned Study Sessions with server-controlled UTC start/end, derived duration/status, at most one active session per PersonalWorkspace, explicit start/complete/discard and completed history with hard deletion. Node/map deletion is blocked while sessions exist. The implemented frontend includes a global active indicator, presentation-only timer, recovery after login/F5/navigation and paginated history by node with delete confirmation. Completion closes only the temporal record; no learning/content/node-completion definition is approved. Forgotten sessions remain open until explicit action and cannot have their timestamps edited retroactively.
+**Delivered approved scope:** private node-owned Study Sessions with server-controlled UTC start/end, derived duration/status, at most one active session per PersonalWorkspace, explicit start/complete/discard and completed history with hard deletion. Node/map deletion is blocked while sessions exist. The implemented frontend includes a global active indicator, presentation-only timer, recovery after login/F5/navigation and paginated history by node with delete confirmation. Completion closes only the temporal record; no learning/content/node-completion definition is approved. Forgotten sessions remain open until explicit action and cannot have their timestamps edited retroactively.
 
-**Implementation checkpoints, not new numbered phases:** checkpoint 1 foundation/read plus delete protections is published. Checkpoint 2 implements server-timed start, first-end-preserving complete, explicit hard delete/discard, workspace-scoped active lookup and the official SQLite atomic-start invariant, with authenticated/CSRF-protected writes and independent-connection concurrency tests; it is approved and published in 29ba218. Checkpoint 3 active bootstrap, shell indicator, server-anchored timer, explicit complete/discard, focus recovery and paginated completed history with confirmed delete are implemented / under review. Integrated validation/closure remains planned. No broader learning-completion behavior is delivered.
+**Implementation checkpoints, not new numbered phases:** checkpoint 1 foundation/read plus delete protections is published. Checkpoint 2 implements server-timed start, first-end-preserving complete, explicit hard delete/discard, workspace-scoped active lookup and the official SQLite atomic-start invariant, with authenticated/CSRF-protected writes and independent-connection concurrency tests; it is approved and published in 29ba218. Checkpoint 3 active bootstrap, shell indicator, server-anchored timer, explicit complete/discard, focus recovery and paginated completed history with confirmed delete are approved and published in 493d39a. Integrated closure is validated. No broader learning-completion behavior is delivered.
+
+**Closure:** the published checkpoints satisfy the approved node-owned history, server-time lifecycle, official-path atomic start, ownership, delete protection and frontend recovery/history requirements. Automated regressions passed; prior Checkpoint 3 browser/manual evidence is preserved separately. Completion closes the scoped phase, with the documented SQLite, ambiguous-write, eventual multi-tab, offset-pagination, visual-timer and verification limits retained. It does not imply production readiness.
 
 **Outside the initial scope:** direct KnowledgeContent linkage, session notes, manual/retroactive time entry, pause/resume, heartbeat/timeout/automatic completion, Pomodoro, totals by node/day/week or materialized counters, learning completion/mastery/percentages, goals/streaks/XP, notifications/calendar, Flashcards, Assessments, AI/recommendations, social/sharing, realtime/WebSockets, workers, offline sync, advanced analytics, CSV/export, mobile app and PostgreSQL infrastructure. Phases 7, 8 and 9 retain their existing goals; this phase does not predefine their models or metrics.
 
 **Non-goals:** advanced analytics or background automation without a reviewed need.
 
 ## Phase 7 - Flashcards
+
+**Status:** planned / next, not started. Design and implementation require separate scoped approval.
 
 **Goal:** support creating and reviewing flashcards within the learning context.
 
