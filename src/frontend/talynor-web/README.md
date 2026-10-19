@@ -1,5 +1,19 @@
 # Talynor Web — Persistent Graph and Authoring UX
 
+## Phase 6 - Study Sessions checkpoint 3
+
+Implemented / under review. Checkpoint 1 is published in 881d12a and checkpoint 2 in 29ba218; Phase 6 remains in progress. Own Study Session contracts/runtime validators consume the published sessions/page/pageSize/hasMore history shape. No backend/schema/dependency or package-manager decision is changed.
+
+Start studying is available in View and Edit mode. The authenticated-shell StudySessionProvider survives map/node navigation; its Context and small workflow coordinator share active state between the global indicator and node details. The visual timer uses serverTimeUtc plus local elapsed since reception, reanchors on focus and never writes ticks/duration. It has aria-live off. Continue via return to concept, explicitly complete now, or confirm/cancel permanent discard. Login/F5 restores active state from the backend; logout clears only frontend state. No browser-storage authority, continuous polling, WebSocket or automatic write replay exists.
+
+Active state is revalidated at bootstrap, real window focus and before/after study mutations, with read deduplication, AbortController and request identity. A synchronous study lock prevents duplicate/incompatible study writes. A 409 active_session_exists or ambiguous network/5xx/protocol failure reads backend state without replay. Failed verification disables new study actions until explicit retry; 401 reuses the app session flow. Sent writes may already have committed even if logout/unmount aborts local I/O. Cross-tab awareness is eventual, not immediate.
+
+Completed node history shows local start/end and a derived duration, page one/Load more in server order and confirmed hard delete. Repeated IDs from moving offset pages are removed, but no cross-page snapshot or omission-free pagination guarantee is claimed. Node changes abort/ignore obsolete history; complete/delete/focus revalidation reloads page one. Return to concept uses existing native History navigation and focuses the selected node; ordinary Back/Forward does not reapply an old return request.
+
+Run node scripts/study-session-checks.mjs and node scripts/content-checks.mjs, pnpm run build and pnpm run lint. No new dependency or test framework is installed. Native Node checks cover API validation/transport, controlled-clock timer, state/read/write races, history paging and focused effect/navigation wiring. They are separate from browser evidence documented in Development.
+
+React notes: Context shares only Study Session state at the authenticated-shell scope (roughly a component-scoped Angular injectable); useSyncExternalStore connects React to the specific workflow coordinator's stable snapshots (roughly a subscribed service state/signal). Custom hooks compose access, and useEffect owns focus listeners, read cleanup and the visual interval (lifecycle/effect with teardown). Local useState keeps confirmation/UI drafts local; keyed node sections reset their history on context changes. The coordinator is specific to this workflow and introduces no general state framework.
+
 ## Phase 5 - Frontend Content Integration
 
 Complete, approved and published in d4e5c76; the agreed Note/Link scope of Phase 5 is complete. Select a persisted node to load content summaries, then open an item for detail. View mode is read-only. Edit map enables Note/Link creation, editing and contextual confirmed hard delete. Notes preserve literal text/newlines; Links show a wrapped HTTP(S) destination and open explicitly in a new tab with noopener/noreferrer. No Markdown/HTML rendering, embeds, previews or remote metadata fetching is added.
@@ -41,7 +55,7 @@ Every write renews CSRF through the existing per-hook session client. There is n
 
 Validation: backend build, 79 unit/179 integration tests and EF pending-model NONE; frontend build/lint, 65 existing plus 37 authoring Node checks and 5 real HTTPS API/client isolation/CSRF checks passed. Browser UI CRUD, persisted F5 state, ChildMap, conflicts, rollback, 401/manual retry, 500/network failures, Back/Forward, logout and three responsive sizes passed. Proxy metadata confirmed methods/CSRF/no duplicate creates. No component test framework, full screen-reader audit, real-device touch, scale benchmark or production-readiness claim is included. See Development for scope and evidence.
 
-**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX and Phase 4 are complete, approved and published. Phase 5 — Knowledge Content is complete, approved and published for Note/Link: foundation/read c450b91, Content Authoring Backend 5aa7d4e and Frontend Content Integration d4e5c76 under ADR-013. Phase 6 — Study Sessions is next/planned, not started and requires separate implementation approval. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
+**Status:** Foundation, SPIKE-001, VS-001, Phase 3 and Phases 4.1/4.2/4.3A are complete, approved and published. Phase 4.3 is complete, approved and published. Phase 4.4 Authoring UX and Phase 4 are complete, approved and published. Phase 5 — Knowledge Content is complete, approved and published for Note/Link: foundation/read c450b91, Content Authoring Backend 5aa7d4e and Frontend Content Integration d4e5c76 under ADR-013. Phase 6 — Study Sessions is in progress: Checkpoints 1 and 2 are published, and Checkpoint 3 is implemented / under review. Phase 6 is not complete, and closure has not started. XYFlow is the adopted initial visualization library under [ADR-007](../../../docs/DECISIONS.md#adr-007---initial-xyflow-graph-visualization).
 
 React + TypeScript with Vite and XYFlow now consumes private persisted maps. The historical demo-only client, coordinates and mock learning metrics have been removed from the authenticated experience. Backend demo endpoints remain available for regression. No backend, dependency or database change is introduced by this frontend slice.
 
@@ -78,7 +92,7 @@ No dedicated frontend test framework is configured. The reproducible content/ses
 
 ## Explore persisted maps
 
-Log in with a disposable account registered through the HTTPS API; there is no frontend registration or default account. Session bootstrap remains me → workspace, with browser-managed HttpOnly cookies and private in-memory CSRF for login/logout. There is no localStorage/sessionStorage or cross-tab synchronization.
+Log in with a disposable account registered through the HTTPS API; there is no frontend registration or default account. Session bootstrap remains me → workspace, with browser-managed HttpOnly cookies and private in-memory CSRF for login/logout. There is no localStorage/sessionStorage. Authentication UI still revalidates through protected requests; Study Session awareness additionally revalidates on window focus as described above.
 
 Without a map query, GET /api/maps shows an explicit button picker, including when there is only one map. An empty workspace shows a stable empty message, without creating/selecting a map or falling back to demos. The list order is presentation only.
 
@@ -86,7 +100,7 @@ Choose a map to request GET /api/maps/{id}. The address becomes `?map=<guid>`. F
 
 Select a node to read its description. A child link enables the details button; double-click is a desktop shortcut. Drill-down pushes another visit, so cycles A → B → A work without inferring a unique parent. Internal Back follows current mounted visits; direct entry/reload offers **Todos os mapas**. Browser Back/Forward is handled through popstate. **Todos os mapas** returns to discovery, not to login.
 
-Coordinates initially come from the backend. In view mode, mouse drag and keyboard movement change only local XYFlow state. Phase 4.4 adds explicit edit mode: drag stop saves a position PATCH; keyboard movement uses Save position. Revisit, retry/refetch or F5 reloads persisted positions and clears selection; no local position cache is used. Zoom/pan/minimap remain; the minimap hides on narrow screens and the details panel moves below the graph. Study/progress metrics are absent because the persisted contract does not supply them.
+Coordinates initially come from the backend. In view mode, mouse drag and keyboard movement change only local XYFlow state. Phase 4.4 adds explicit edit mode: drag stop saves a position PATCH; keyboard movement uses Save position. Revisit, retry/refetch or F5 reloads persisted positions and clears selection; no local position cache is used. Zoom/pan/minimap remain; the minimap hides on narrow screens and the details panel moves below the graph. Graph DTOs still carry no study/progress metrics; the separate Study Session API supplies active periods and history, without aggregates or progress percentages.
 
 Loading is separate for session, discovery and map. Map network/500/protocol errors offer retry inside the shell, preserving email/workspace/logout. A private-read 401 rechecks me/workspace through the existing session client; an ended session returns to login, while a valid session leaves an explicit map retry without an automatic loop.
 

@@ -13,7 +13,7 @@ export function NodeDetails({ node, onOpenSubmap, children }: NodeDetailsProps) 
       <p className="section-caption">Detalhes do conceito</p>
       {node ? (
         <>
-          <h2 id="details-title">{node.data.title}</h2>
+          <h2 id="details-title" tabIndex={-1}>{node.data.title}</h2>
           <p className="details-description">{node.data.description || 'Sem descrição.'}</p>
           {node.data.childMapId && (
             <button className="primary-button" onClick={() => onOpenSubmap(node)}>

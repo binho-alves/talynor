@@ -1,10 +1,10 @@
-import { PersistedMaps } from './components/PersistedMaps'
+import { AuthenticatedStudyWorkspace } from './study/AuthenticatedStudyWorkspace'
 import { LoginView } from './components/LoginView'
 import { useSession } from './session/useSession'
 import './App.css'
 
 function App() {
-  const { session, busy, operationError, login, logout, retryBootstrap, revalidateSession, authoring, contentAuthoring } = useSession()
+  const { session, busy, operationError, login, logout, retryBootstrap, revalidateSession, authoring, contentAuthoring, studySessions } = useSession()
 
   if (session.status === 'bootstrapping') {
     return <main className="session-page" aria-busy="true">
@@ -42,8 +42,8 @@ function App() {
     </header>
     {operationError && <p className="session-feedback" role="alert">{operationError}</p>}
     <span className="sr-only" role="status">{busy === 'logout' ? 'Encerrando sua sessão…' : ''}</span>
-    <PersistedMaps key={`${session.user.id}:${session.workspace.id}`} onAuthenticationRequired={revalidateSession}
-      authoring={authoring} contentAuthoring={contentAuthoring} />
+    <AuthenticatedStudyWorkspace key={`${session.user.id}:${session.workspace.id}`} revalidate={revalidateSession}
+      authoring={authoring} contentAuthoring={contentAuthoring} client={studySessions} />
   </div>
 }
 

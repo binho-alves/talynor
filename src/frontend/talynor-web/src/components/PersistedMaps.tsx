@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError } from '../api/http.ts'
 import { getPersistedKnowledgeMap, listPersistedKnowledgeMaps } from '../api/knowledgeMapsApi.ts'
 import { adaptKnowledgeMap } from '../adapters/knowledgeMapAdapter.ts'
@@ -9,6 +9,8 @@ import { MapWorkspace } from './MapWorkspace.tsx'
 import { CreateMap } from './CreateMap.tsx'
 import type { KnowledgeMapAuthoringClient } from '../api/knowledgeMapAuthoringApi.ts'
 import type { KnowledgeContentAuthoringClient } from '../api/knowledgeContentAuthoringApi.ts'
+import type { StudySessionsClient } from '../api/studySessionsApi.ts'
+import type { StudyNodeVisit } from '../types/studySession.ts'
 
 type LoadState = { identity: string } & (
   | { status: 'loading' | 'not-found' | 'session-check' }
@@ -17,14 +19,22 @@ type LoadState = { identity: string } & (
   | { status: 'map'; map: KnowledgeMap }
 )
 
-export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring }:
-  { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient }) {
+export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring, studySessions, returnTo }:
+  { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
+    studySessions: StudySessionsClient; returnTo: StudyNodeVisit | null }) {
   const navigation = usePersistedMapNavigation()
   const { route, revision } = navigation
   const mapId = route.kind === 'map' ? route.id : null
   const [retry, setRetry] = useState(0)
   const identity = `${route.kind}:${mapId}:${revision}:${retry}`
   const [loaded, setLoaded] = useState<LoadState>({ identity: '', status: 'loading' })
+  const handledReturn = useRef<StudyNodeVisit | null>(null)
+  useEffect(() => {
+    if (returnTo && handledReturn.current !== returnTo) {
+      handledReturn.current = returnTo
+      navigation.openMap(returnTo.mapId, returnTo)
+    }
+  }, [returnTo, navigation])
 
   useEffect(() => {
     if (route.kind === 'invalid') return
@@ -98,6 +108,7 @@ export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuth
         }} />
       </section>}
       {state.status === 'map' && mapId && <MapWorkspace key={identity} id={mapId} initial={state.map} authoring={authoring} contentAuthoring={contentAuthoring}
+        studySessions={studySessions} returnTo={navigation.nodeSelection}
         revalidate={onAuthenticationRequired} onOpenMap={navigation.openMap} onDeleted={navigation.showPicker}
         onRename={(title) => setLoaded((previous) => previous.status === 'map' ? { ...previous, map: { ...previous.map, title } } : previous)} />}
     </>}

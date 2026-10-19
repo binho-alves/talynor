@@ -97,5 +97,5 @@ export function useSession() {
   }
 
   return { session, busy, operationError, login, logout, retryBootstrap, revalidateSession,
-    authoring: client.authoring, contentAuthoring: client.contentAuthoring }
+    authoring: client.authoring, contentAuthoring: client.contentAuthoring, studySessions: client.studySessions }
 }

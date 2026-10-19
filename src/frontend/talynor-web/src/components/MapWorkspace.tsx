@@ -11,11 +11,15 @@ import { useAuthoring } from './useAuthoring.ts'
 import { NodeDetails } from './NodeDetails.tsx'
 import { ContentSection } from './ContentSection.tsx'
 import type { KnowledgeContentAuthoringClient } from '../api/knowledgeContentAuthoringApi.ts'
+import type { StudySessionsClient } from '../api/studySessionsApi.ts'
+import type { StudyNodeVisit } from '../types/studySession.ts'
+import { NodeStudySection } from '../study/NodeStudySection.tsx'
 
 type Editor = 'map' | 'new-node' | 'node' | 'edge' | 'delete-map' | 'delete-node' | 'delete-edge' | null
 
-export function MapWorkspace({ id, initial, authoring, contentAuthoring, revalidate, onOpenMap, onDeleted, onRename }:
+export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySessions, returnTo, revalidate, onOpenMap, onDeleted, onRename }:
   { id: string; initial: KnowledgeMap; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
+    studySessions: StudySessionsClient; returnTo: StudyNodeVisit | null;
     revalidate: () => Promise<void>; onOpenMap: (id: string) => void;
     onDeleted: () => void; onRename: (title: string) => void }) {
   const [map, setMap] = useState(initial)
@@ -29,8 +33,21 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, revalid
   const persistedPositions = useRef(new Map(initial.nodes.map((node) => [node.id, { ...node.position }])))
   const positionVersions = useRef(new Map<string, number>())
   const mutation = useAuthoring(revalidate)
+  const [lastReturn, setLastReturn] = useState<StudyNodeVisit | null>(null)
+  const focusedReturn = useRef<StudyNodeVisit | null>(null)
+  if (returnTo && returnTo !== lastReturn) {
+    setLastReturn(returnTo); setEditing(false); setEditor(null)
+    setMap(previous => ({ ...previous, nodes: previous.nodes.map(node => ({ ...node, selected: node.id === returnTo.nodeId })),
+      edges: previous.edges.map(edge => ({ ...edge, selected: false })) }))
+  }
   const selected = map.nodes.find((node) => node.selected)
   const selectedEdge = map.edges.find((edge) => edge.selected)
+  useEffect(() => {
+    if (returnTo && focusedReturn.current !== returnTo && selected?.id === returnTo.nodeId && !editing) {
+      focusedReturn.current = returnTo
+      document.getElementById('details-title')?.focus()
+    }
+  }, [returnTo, selected?.id, editing])
 
   useEffect(() => {
     if (!editing) return
@@ -151,6 +168,8 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, revalid
       onSelectionChange={() => setEditor(null)}>
       <div className="workspace-panels">
       {!editing && <NodeDetails node={selected} onOpenSubmap={(node) => { if (node.data.childMapId) onOpenMap(node.data.childMapId) }}>
+        {selected && <NodeStudySection key={`${selected.id}:study-view`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
+          client={studySessions} revalidate={revalidate} />}
         {selected && <ContentSection key={`${selected.id}:view`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           editing={false} client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
       </NodeDetails>}
@@ -191,6 +210,8 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, revalid
             <button disabled={mutation.pending} onClick={() => setEditor(null)}>Cancelar</button></div></section>}
         {selected && <ContentSection key={`${selected.id}:edit`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           editing client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
+        {selected && <NodeStudySection key={`${selected.id}:study-edit`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
+          client={studySessions} revalidate={revalidate} />}
       </aside>}
       </div>
     </KnowledgeGraph>

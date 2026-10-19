@@ -1,5 +1,15 @@
 .app-shell { max-width: 1600px; margin: 0 auto; padding: 28px; }
 .app-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 24px; }
+.study-indicator { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px; margin-bottom: 16px; background: #eff6ff; border: 1px solid #93c5fd; border-radius: 12px; overflow-wrap: anywhere; }
+.study-topic { display: grid; gap: 4px; min-width: 0; flex: 1 1 200px; }
+.study-timer { font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.study-indicator button { min-height: 44px; padding: 10px 12px; color: #1e40af; background: white; border: 1px solid #94a3b8; border-radius: 8px; }
+.study-feedback, .study-confirmation { flex-basis: 100%; margin-bottom: 0; }
+.study-section { border-top: 1px solid #dbe3ee; margin-top: 20px; padding-top: 12px; overflow-wrap: anywhere; }
+.study-history { display: grid; gap: 12px; padding: 0; list-style: none; }
+.study-history li { display: grid; gap: 6px; padding: 12px 0; border-bottom: 1px solid #dbe3ee; min-width: 0; }
+.study-section > div > button { margin: 4px; }
+#details-title:focus { outline: 2px solid #2563eb; outline-offset: 3px; }
 .brand { margin-bottom: 8px; color: #2563eb; font-weight: 800; font-size: 20px; }
 h1 { margin-bottom: 8px; font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.03em; }
 .intro { margin-bottom: 0; color: #475569; }
