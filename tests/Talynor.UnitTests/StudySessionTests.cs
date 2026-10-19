@@ -45,12 +45,26 @@ public class StudySessionTests
             emptyId ? Guid.NewGuid() : Guid.Empty, DateTimeOffset.UnixEpoch, null));
 
     [Fact]
-    public void No_public_construction_or_mutation_exposes_premature_writes()
+    public void Persisted_properties_remain_encapsulated_without_public_constructor()
     {
         Assert.Empty(typeof(StudySession).GetConstructors());
         foreach (var name in new[] { "Id", "KnowledgeNodeId", "StartedAtUtc", "EndedAtUtc" })
             Assert.False(typeof(StudySession).GetProperty(name)!.SetMethod!.IsPublic);
         Assert.Null(typeof(StudySession).GetProperty("Duration")!.SetMethod);
         Assert.Null(typeof(StudySession).GetProperty("Status")!.SetMethod);
+    }
+
+    [Fact]
+    public void Start_generates_identity_and_complete_preserves_first_utc_end()
+    {
+        var session = StudySession.Start(Guid.NewGuid(), DateTimeOffset.UnixEpoch.ToOffset(TimeSpan.FromHours(-3)));
+        Assert.NotEqual(Guid.Empty, session.Id); Assert.Null(session.EndedAtUtc);
+        Assert.False(session.TryComplete(DateTimeOffset.UnixEpoch.AddTicks(-1)));
+        Assert.Null(session.EndedAtUtc);
+        Assert.True(session.TryComplete(DateTimeOffset.UnixEpoch.AddTicks(1).ToOffset(TimeSpan.FromHours(5))));
+        Assert.Equal(TimeSpan.FromTicks(1), session.Duration);
+        Assert.True(session.TryComplete(DateTimeOffset.UnixEpoch.AddDays(1)));
+        Assert.True(session.TryComplete(DateTimeOffset.UnixEpoch.AddDays(-1)));
+        Assert.Equal(DateTimeOffset.UnixEpoch.AddTicks(1), session.EndedAtUtc);
     }
 }

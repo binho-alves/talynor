@@ -42,6 +42,11 @@ builder.Services.AddScoped<DeleteKnowledgeContent>();
 builder.Services.AddScoped<IStudySessionReader, StudySessionReader>();
 builder.Services.AddScoped<ListStudySessionsForNode>();
 builder.Services.AddScoped<GetStudySessionForNode>();
+builder.Services.AddScoped<IStudySessionStore, StudySessionStore>();
+builder.Services.AddScoped<StartStudySession>();
+builder.Services.AddScoped<CompleteStudySession>();
+builder.Services.AddScoped<DeleteStudySession>();
+builder.Services.AddScoped<GetActiveStudySession>();
 builder.Services.AddScoped<CreateKnowledgeMap>();
 builder.Services.AddScoped<UpdateKnowledgeMap>();
 builder.Services.AddScoped<DeleteKnowledgeMap>();
@@ -225,7 +230,8 @@ app.UseWhen(context =>
         string.Equals(path, "/api/auth/me", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(path, "/api/auth/logout", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(path, "/api/workspace", StringComparison.OrdinalIgnoreCase) ||
-        context.Request.Path.StartsWithSegments("/api/maps", StringComparison.OrdinalIgnoreCase);
+        context.Request.Path.StartsWithSegments("/api/maps", StringComparison.OrdinalIgnoreCase) ||
+        context.Request.Path.StartsWithSegments("/api/study-sessions", StringComparison.OrdinalIgnoreCase);
 }, branch =>
     branch.UseExceptionHandler(handler => handler.Run(async context =>
     {

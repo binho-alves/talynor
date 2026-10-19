@@ -6,6 +6,14 @@ namespace Talynor.Infrastructure.StudySessions;
 
 public sealed class StudySessionReader(TalynorDbContext db) : IStudySessionReader
 {
+    public Task<ActiveStudySession?> GetActiveAsync(Guid workspaceId, CancellationToken ct) =>
+        (from session in db.StudySessions.AsNoTracking()
+         join node in db.KnowledgeNodes on session.KnowledgeNodeId equals node.Id
+         join map in db.KnowledgeMaps on node.KnowledgeMapId equals map.Id
+         where session.EndedAtUtc == null && map.WorkspaceId == workspaceId
+         select new ActiveStudySession(new(session.Id, node.Id, session.StartedAtUtc, session.EndedAtUtc),
+             map.Id, node.Id, node.Title)).SingleOrDefaultAsync(ct);
+
     public async Task<StudySessionPage?> ListCompletedForNodeAsync(Guid workspaceId, Guid mapId, Guid nodeId,
         int offset, int pageSize, CancellationToken ct)
     {

@@ -127,6 +127,7 @@ public class StudySessionReadTests
     }
     private sealed class Reader : IStudySessionReader
     {
+        public Task<ActiveStudySession?> GetActiveAsync(Guid workspaceId, CancellationToken ct) => throw new NotSupportedException();
         public StudySessionPage? Page; public StudySessionReadModel? Session;
         public Exception? Failure; public int Calls; public Guid SessionId; public int Offset; public int Size;
         public (Guid Workspace, Guid Map, Guid Node, CancellationToken Token) Call;

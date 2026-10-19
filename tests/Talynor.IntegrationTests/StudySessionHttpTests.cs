@@ -205,13 +205,17 @@ public class StudySessionHttpTests
     }
 
     [Fact]
-    public async Task Openapi_exposes_only_two_nested_gets_without_active_or_write_endpoints()
+    public async Task Openapi_preserves_nested_reads_and_exposes_only_approved_lifecycle_routes()
     {
         using var factory = new RegistrationTestFactory(); using var client = factory.NewClient();
         var openapi = await client.GetFromJsonAsync<JsonElement>("/openapi/v1.json");
         var routes = openapi.GetProperty("paths").EnumerateObject().Where(p => p.Name.Contains("study-sessions", StringComparison.Ordinal)).ToArray();
-        Assert.Equal(2, routes.Length); Assert.All(routes, r => Properties(r.Value, "get"));
-        using var active = await client.GetAsync("/api/study-sessions/active"); Assert.Equal(HttpStatusCode.NotFound, active.StatusCode);
+        Assert.Equal(4, routes.Length);
+        Properties(routes.Single(r => r.Name.EndsWith("study-sessions", StringComparison.Ordinal)).Value, "get", "post");
+        Properties(routes.Single(r => r.Name.EndsWith("{sessionId}", StringComparison.Ordinal)).Value, "get", "delete");
+        Properties(routes.Single(r => r.Name.EndsWith("/complete", StringComparison.Ordinal)).Value, "post");
+        Properties(routes.Single(r => r.Name == "/api/study-sessions/active").Value, "get");
+        using var active = await client.GetAsync("/api/study-sessions/active"); Assert.Equal(HttpStatusCode.Unauthorized, active.StatusCode);
         using var malformed = await client.GetAsync($"{List(Guid.NewGuid(), Guid.NewGuid())}/not-a-guid");
         Assert.Equal(HttpStatusCode.NotFound, malformed.StatusCode);
     }
@@ -252,6 +256,7 @@ public class StudySessionHttpTests
         Assert.Equal(names.Order(), value.EnumerateObject().Select(p => p.Name).Order());
     private sealed class FailedReader : IStudySessionReader
     {
+        public Task<ActiveStudySession?> GetActiveAsync(Guid workspaceId, CancellationToken ct) => throw new NotSupportedException();
         public Task<StudySessionPage?> ListCompletedForNodeAsync(Guid workspace, Guid map, Guid node, int offset, int size, CancellationToken ct) =>
             throw new InvalidOperationException("Private synthetic failure.");
         public Task<StudySessionReadModel?> GetForNodeAsync(Guid workspace, Guid map, Guid node, Guid session, CancellationToken ct) =>

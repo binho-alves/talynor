@@ -6,7 +6,7 @@ public sealed class StudySession
 {
     private StudySession() { }
 
-    // Foundation construction for test fixtures only; no runtime start/complete operation yet.
+    // Explicit construction of historical/active records remains internal to test fixtures.
     internal StudySession(Guid id, Guid knowledgeNodeId, DateTimeOffset startedAtUtc, DateTimeOffset? endedAtUtc)
     {
         if (id == Guid.Empty) throw new ArgumentException("A session ID is required.", nameof(id));
@@ -18,6 +18,19 @@ public sealed class StudySession
         KnowledgeNodeId = knowledgeNodeId;
         StartedAtUtc = start;
         EndedAtUtc = end;
+    }
+
+    public static StudySession Start(Guid knowledgeNodeId, DateTimeOffset now) =>
+        new(Guid.NewGuid(), knowledgeNodeId, now, null);
+
+    // Repeated completion preserves the first end, even if the clock subsequently moves back.
+    public bool TryComplete(DateTimeOffset now)
+    {
+        if (EndedAtUtc.HasValue) return true;
+        var end = now.ToUniversalTime();
+        if (end < StartedAtUtc) return false;
+        EndedAtUtc = end;
+        return true;
     }
 
     public Guid Id { get; private set; }

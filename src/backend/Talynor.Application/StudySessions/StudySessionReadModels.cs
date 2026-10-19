@@ -11,3 +11,6 @@ public sealed record StudySessionHistory(IReadOnlyList<StudySessionReadModel> Se
 public enum StudySessionReadStatus { Success, AuthenticationRequired, NotFound, Invalid }
 public sealed record StudySessionListResult(StudySessionReadStatus Status, StudySessionHistory? History = null);
 public sealed record StudySessionDetailResult(StudySessionReadStatus Status, StudySessionReadModel? Session = null);
+public sealed record ActiveStudySession(StudySessionReadModel Session, Guid MapId, Guid NodeId, string NodeTitle);
+public sealed record ActiveStudySessionResult(StudySessionReadStatus Status, ActiveStudySession? Active = null,
+    DateTimeOffset ServerTimeUtc = default);
