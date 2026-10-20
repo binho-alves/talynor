@@ -5,6 +5,7 @@ using Talynor.Domain.Workspaces;
 using Talynor.Domain.KnowledgeMaps;
 using Talynor.Domain.KnowledgeContents;
 using Talynor.Domain.StudySessions;
+using Talynor.Domain.Flashcards;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Talynor.Infrastructure.Persistence;
@@ -18,10 +19,27 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
     public DbSet<KnowledgeEdge> KnowledgeEdges => Set<KnowledgeEdge>();
     public DbSet<KnowledgeContent> KnowledgeContents => Set<KnowledgeContent>();
     public DbSet<StudySession> StudySessions => Set<StudySession>();
+    public DbSet<Flashcard> Flashcards => Set<Flashcard>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        builder.Entity<Flashcard>(card =>
+        {
+            card.ToTable("Flashcards", table => table.HasCheckConstraint("CK_Flashcards_ContentRevision", "ContentRevision > 0"));
+            card.HasKey(value => value.Id);
+            card.Property(value => value.Id).ValueGeneratedNever();
+            card.HasOne<KnowledgeNode>().WithMany().HasForeignKey(value => value.KnowledgeNodeId)
+                .OnDelete(DeleteBehavior.Cascade);
+            card.Property(value => value.Front).IsRequired().HasMaxLength(2000);
+            card.Property(value => value.Back).IsRequired().HasMaxLength(4000);
+            card.Property(value => value.ContentRevision).IsRequired();
+            var utc = new ValueConverter<DateTimeOffset, DateTime>(value => value.UtcDateTime,
+                value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
+            card.Property(value => value.CreatedAtUtc).HasConversion(utc);
+            card.Property(value => value.UpdatedAtUtc).HasConversion(utc);
+            card.HasIndex(value => new { value.KnowledgeNodeId, value.CreatedAtUtc, value.Id });
+        });
         builder.Entity<StudySession>(session =>
         {
             session.ToTable("StudySessions", table => table.HasCheckConstraint("CK_StudySessions_TimeRange",

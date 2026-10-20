@@ -145,6 +145,43 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Talynor.Domain.Flashcards.Flashcard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Back")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ContentRevision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Front")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("KnowledgeNodeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KnowledgeNodeId", "CreatedAtUtc", "Id");
+
+                    b.ToTable("Flashcards", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Flashcards_ContentRevision", "ContentRevision > 0");
+                        });
+                });
+
             modelBuilder.Entity("Talynor.Domain.KnowledgeContents.KnowledgeContent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -360,6 +397,15 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Flashcards.Flashcard", b =>
+                {
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeNodeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

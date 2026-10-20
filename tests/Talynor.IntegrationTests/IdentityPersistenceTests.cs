@@ -36,14 +36,15 @@ public class IdentityPersistenceTests
         }
 
         Assert.Equal(new[] { "AspNetUserClaims", "AspNetUserLogins", "AspNetUserTokens", "AspNetUsers",
-            "KnowledgeContents", "KnowledgeEdges", "KnowledgeMaps", "KnowledgeNodes", "PersonalWorkspaces", "StudySessions" }, tables);
+            "Flashcards", "KnowledgeContents", "KnowledgeEdges", "KnowledgeMaps", "KnowledgeNodes", "PersonalWorkspaces", "StudySessions" }, tables);
         var applied = (await context.Database.GetAppliedMigrationsAsync()).ToArray();
-        Assert.Equal(5, applied.Length);
+        Assert.Equal(6, applied.Length);
         Assert.EndsWith("_InitialIdentity", applied[0]);
         Assert.EndsWith("_AddPersonalWorkspace", applied[1]);
         Assert.EndsWith("_AddPersistentKnowledgeGraph", applied[2]);
         Assert.EndsWith("_AddKnowledgeContent", applied[3]);
         Assert.EndsWith("_AddStudySessions", applied[4]);
+        Assert.EndsWith("_AddFlashcards", applied[5]);
 
         await context.Database.MigrateAsync();
 

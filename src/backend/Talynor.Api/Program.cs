@@ -16,6 +16,8 @@ using Talynor.Application.KnowledgeContents;
 using Talynor.Infrastructure.KnowledgeContents;
 using Talynor.Application.StudySessions;
 using Talynor.Infrastructure.StudySessions;
+using Talynor.Application.Flashcards;
+using Talynor.Infrastructure.Flashcards;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +49,13 @@ builder.Services.AddScoped<StartStudySession>();
 builder.Services.AddScoped<CompleteStudySession>();
 builder.Services.AddScoped<DeleteStudySession>();
 builder.Services.AddScoped<GetActiveStudySession>();
+builder.Services.AddScoped<IFlashcardReader, FlashcardReader>();
+builder.Services.AddScoped<IFlashcardStore, FlashcardStore>();
+builder.Services.AddScoped<ListFlashcards>();
+builder.Services.AddScoped<GetFlashcard>();
+builder.Services.AddScoped<CreateFlashcard>();
+builder.Services.AddScoped<UpdateFlashcard>();
+builder.Services.AddScoped<DeleteFlashcard>();
 builder.Services.AddScoped<CreateKnowledgeMap>();
 builder.Services.AddScoped<UpdateKnowledgeMap>();
 builder.Services.AddScoped<DeleteKnowledgeMap>();
