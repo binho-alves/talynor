@@ -98,7 +98,7 @@ One personal workspace per user is approved and implemented in 3.3 under ADR-009
 
 ## Phase 6 - Study Sessions
 
-**Status:** complete, approved and published for the scoped Study Session workflow under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Checkpoints 1 (881d12a), 2 (29ba218) and 3 (493d39a) are approved and published; integrated closure validation passed on 2026-10-19. Closure documentation is prepared for final formal review.
+**Status:** complete, approved and published for the scoped Study Session workflow under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Checkpoints 1 (881d12a), 2 (29ba218) and 3 (493d39a) and integrated closure documentation (6045391) are approved and published; validation passed on 2026-10-19.
 
 **Goal:** let users register learning effort against their knowledge and content.
 
@@ -118,13 +118,26 @@ Study Session is the current working product term for a period of study. Its rel
 
 ## Phase 7 - Flashcards
 
-**Status:** planned / next, not started. Design and implementation require separate scoped approval.
+**Status:** design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); implementation planned / not started and requires a separate scoped request.
 
-**Goal:** support creating and reviewing flashcards within the learning context.
+**Goal:** let a learner create prompt/answer cards on a knowledge node, review them, and resume from persisted per-card progress.
 
-**Expected outputs:** flashcard management; review workflow; recorded review outcomes; reviewed definitions for retention measurement and review scheduling where needed.
+**Approved initial scope:** Flashcard is a separate node-owned entity, not a KnowledgeContent subtype and not dependent on Note/Link. Users can create/edit/hard-delete cards and list them with page default 1, pageSize default 20/max 100, CreatedAtUtc ASC/Id ASC and hasMore without mandatory COUNT. ContentRevision (positive Int32, initially 1) changes only with text; a material edit atomically resets current review state to unreviewed while preserving revision-tagged events. Empty/no-op PATCH changes nothing and is validation_failed. Bounded plain-text Front/Back use a 64 KiB write cap that accommodates their 2,000/4,000 UTF-16 limits even when escaped.
 
-**Non-goals:** assuming a particular scheduling algorithm, AI-generated flashcards, or advanced gamification.
+**Study contract:** next returns Front/revision and minimal progress, never Back. Explicit authenticated revision-matched reveal supplies Back; flashcard_changed discards the stale item and reloads next. Reviews persist their answered ContentRevision; PUT and scoped lookup expose the immutable event plus current revision/progress for same-ID reconciliation. ReviewId PK and the official SQLite IMMEDIATE transaction preserve idempotency/event-state atomicity and prevent different-ID lost updates. Text edits/reset serialize with reviews; no PostgreSQL or arbitrary-writer guarantee is implied.
+
+**Continuous study:** no spaced-repetition scheduler, deck-complete state, persistent queue or backend run. Cards without state come first by CreatedAtUtc ASC, Id ASC, then reviewed cards by LastReviewedAtUtc ASC, CreatedAtUtc ASC, Id ASC. Never-reviewed cards intentionally have priority while present; all cards remain eligible, including a single card reappearing after review. Next recalculates persisted rotation after each answer; refresh/navigation preserves no exact cursor/run. Users leave whenever desired. Study Sessions remain independent, neither required nor automatically created. See ADR-015 for exact contracts, security and limitations.
+
+**Implementation checkpoints (not new numbered phases):**
+
+1. Flashcard Domain with ContentRevision from the start, AddFlashcards, atomic revision updates, paginated node-scoped CRUD/read, hard delete/cascade and tests; no review tables.
+2. ReviewState/events including answered revision, AddFlashcardReviews, edit/reset integration, next/reveal, PUT review/GET lookup, same-connection BEGIN IMMEDIATE atomicity/idempotency/concurrency and tests.
+3. NodeDetails paginated authoring and accessible continuous study/reveal/result/reconciliation, stale-response guards, runtime validation and responsive browser checks.
+4. Integrated regression, migration Up/Down/reapply verification, security/accessibility smoke checks, documentation follow-through and formal closure review.
+
+Each checkpoint requires its own explicit implementation authorization. The design does not start a checkpoint.
+
+**Out of scope:** Flashcard-to-KnowledgeContent references, card types beyond plain prompt/answer text, hint/tags/media/source/explanation, Markdown/HTML, manual ordering, randomized or snapshot queues, due dates or interval scheduling, Again/Hard/Good/Easy ratings, learning mastery/aggregates, StudySession integration, shared/public decks, marketplace, Anki import, cloze/image occlusion, AI generation, collaboration/realtime, reminders/notifications, advanced analytics, achievements, leaderboards, FSRS optimization/training, offline/native mobile, PostgreSQL infrastructure or new dependencies/frameworks.
 
 ## Phase 8 - Assessments
 
