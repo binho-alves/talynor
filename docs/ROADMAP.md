@@ -118,7 +118,7 @@ Study Session is the current working product term for a period of study. Its rel
 
 ## Phase 7 - Flashcards
 
-**Status:** Complete for the approved scope after Checkpoint 4 integrated validation on 2026-10-21. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); baseline b4da3f8 and Checkpoints 1 (f375141), 2 (8af676d) and 3 (f58d0fe) are approved and published. ADR-015 remains Accepted. Closure documentation awaits final formal review, commit and publication. Existing SQLite, offset-pagination, recovery, accessibility and physical-touch limitations remain; completion does not imply production readiness. Phase 8 has not started.
+**Status:** Complete for the approved scope after Checkpoint 4 integrated validation on 2026-10-21. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); baseline b4da3f8 and Checkpoints 1 (f375141), 2 (8af676d) and 3 (f58d0fe) are approved and published. ADR-015 remains Accepted. Phase 7 closure was formally approved and published in bc7a4b6. Existing SQLite, offset-pagination, recovery, accessibility and physical-touch limitations remain; completion does not imply production readiness. Phase 8 design is approved under ADR-016; implementation has not started.
 
 **Goal:** let a learner create prompt/answer cards on a knowledge node, review them, and resume from persisted per-card progress.
 
@@ -141,11 +141,29 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 ## Phase 8 - Assessments
 
+**Status:** Design approved / implementation not started under [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts). CP0 - Design baseline is Completed / under review, not published. CP1, CP2, CP3 and CP4 are Not started. Phase 7 closure is published in bc7a4b6; later checkpoints require their own scoped authorization.
+
 **Goal:** support simple quizzes to check understanding.
 
 **Expected outputs:** quiz creation and answering workflows; recorded results; agreed scoring and accuracy definitions; links to relevant knowledge.
 
-**Non-goals:** advanced examination systems, paid learning paths, or AI assessment generation.
+**Accepted initial scope:** a Quiz belongs directly to one KnowledgeNode, separate from KnowledgeContent. It has 1..10 single-choice questions, each with 2..4 options/exactly one correct. Required title/question/option limits are 200/1000/500 UTF-16 units; text/order/duplicate rules are in ADR-016. Submit the complete quiz; server grading gives one point per question with CorrectCount/QuestionCount and deterministic two-place derived accuracy. No weights/partial credit/penalties/pass-fail/mastery. A full-definition PUT uses expectedRevision; material changes increment ContentRevision once and retain immutable attempt snapshots of title/questions/all presented alternatives/order/choices/results. Stale/no-op/overflow cannot partially mutate.
+
+**Lifecycle/security:** unsent answers/drafts are local only and may be discarded on leave/context/F5; no persisted active attempt/start/autosave/resume/timer. AttemptId supports matching original-result replay and scoped lookup after unknown outcome, never automatic write replay. Official SQLite writers serialize edit/grading with short same-connection transactions as specified in ADR-016, without arbitrary-writer/PostgreSQL/distributed guarantees. Existing ownership/auth/CSRF/no-store and native wait/cancellation limits remain. Confirmed quiz deletion and otherwise permitted node/map deletion cascade definition and history, preserving all existing blockers without adding a quiz/history blocker or allowing partial cascade. StudySession remains independent; Phase 9 aggregates/completion/mastery are not defined here.
+
+**Implementation checkpoints, not new numbered phases:**
+
+1. CP0 - Design baseline: accepted model/contracts/security/lifecycle, future matrix and risks; documentation only, currently under review.
+2. CP1 - Quiz foundation + authoring/read backend: Domain/EF and planned AddQuizzes, nested CRUD/full replacement and answer-free take reads; no attempts/frontend.
+3. CP2 - Submission, grading and history backend: planned AddQuizAttempts, immutable full snapshots, idempotency/lookup and concurrency; no frontend/active draft.
+4. CP3 - Frontend authoring + answering/history: existing node UX, runtime validation, local draft/locks/reconciliation, accessibility/responsiveness; no new backend/schema/dependency.
+5. CP4 - Integrated validation and closure: regression/migration/security/browser evidence, limitations and formal closure; no new features.
+
+**Exit criteria:** future [acceptance matrix A-R](DEVELOPMENT.md#phase-8-future-acceptance-matrix-a-r), checkpoint scopes/exclusions/validation/exits and [risk register](DEVELOPMENT.md#phase-8-risk-register) are defined in Development. None is marked PASS by CP0. Migrations AddQuizzes/AddQuizAttempts are planned only; implementation/publication need separate requests.
+
+**Risks:** ownership/IDOR, changed-definition grading, duplicate send, snapshot completeness/storage, accidental history deletion, SQLite contention, frontend state, migration preservation and exam-system scope creep. Existing architecture/provider and verification limitations remain; design acceptance is not production readiness.
+
+**Non-goals/out of scope:** advanced examination systems/teacher-student model/paid paths, multiple correct/free-text/discursive/manual grading, question bank/import/media/Markdown/HTML/hints/explanations, persisted draft/start/resume/pause/autosave/timer/timeout, randomization/adaptive testing, weights/partial credit/penalties/pass thresholds/mastery, AI generation/recommendations, scheduler/FSRS/SM-2/gamification, StudySession integration/Phase 9 aggregates, realtime/social/marketplace, native mobile/offline, PostgreSQL infrastructure/graph DB/distributed infrastructure or new frameworks/dependencies. This phase does not authorize later roadmap implementation.
 
 ## Phase 9 - Progress and Analytics
 

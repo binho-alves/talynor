@@ -1,8 +1,74 @@
 # Development workflow
 
+## Phase 8 - Assessments design baseline
+
+2026-10-21: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) is Accepted by the CP0 documentation request. Phase 8 is Design approved / implementation not started. CP0 is Completed / under review, not published; CP1-CP4 are Not started and require separate authorization. Phase 7 and its closure are complete, approved and published in bc7a4b6. Its application/browser/migration results below remain historical Phase 7 evidence, not Phase 8 results.
+
+The baseline defines node-owned single-choice quizzes, full server-graded submission, current definition revisions, immutable full historical question/option snapshots, explicit hard-delete cascade and same-AttemptId recovery. Unsent answers/drafts are frontend memory only and may be lost on context change/F5/logout; no persisted start/active attempt, autosave, resume, timer or StudySession coupling exists. Exact fields/contracts/limits/errors/concurrency/deletion are authoritative in ADR-016. The additional planned QuizAttemptAnswerOptions child preserves every presented alternative without current-child FKs or generic JSON. CP0 creates no source/migration/dependency and runs no new application suite.
+
+### Phase 8 checkpoints and future verification
+
+| Checkpoint / current status | Scope and expected layers | Exclusions | Exit criteria and expected validation |
+| --- | --- | --- | --- |
+| CP0 - Design baseline; Completed / under review | Accepted ADR-016; consistent README, Architecture, Roadmap, Security, Development and frontend plan. | No implementation, migration, dependency or application suite. | Document/link/whitespace/scope checks; formal review before staging/commit/publication, none implied by design approval. |
+| CP1 - Quiz foundation + authoring/read backend; Not started | Quiz/Question/Option Domain; Application reader/store/use cases; Infrastructure mapping; planned AddQuizzes; nested CRUD/full PUT and answer-free take DTO. | No attempt tables, grading/history workflow or frontend. | Unit/HTTP/real SQLite tests for bounds, revision/no-op/stale/overflow, scoped ownership, strict DTOs, pagination, key isolation, caps/Kestrel and migration Up/Down/reapply; build/regressions and pending-model NONE. |
+| CP2 - Submission, grading and history backend; Not started | Attempt/answer/all-option snapshots; planned AddQuizAttempts; grading, lookup/history, same-ID semantics and official-writer transactions. | No active draft/start/timer, frontend or aggregates. | Exact scoring/snapshot invariants; edit/submit ordering, same/different-ID races, delete races, before-commit rollback, original-time replay after edit, auth/CSRF/caps and preserved earlier migrations/constraints. |
+| CP3 - Frontend authoring + answering/history; Not started | Own API/runtime DTOs; Quizzes entry, full form, take/result/history, scoped state/locks, explicit same-ID reconciliation and responsive/native controls. | No backend/schema/package changes or persisted draft/StudySession integration. | Build/lint; dependency-free API/coordinator/markup checks and real trusted-HTTPS browser flow, stale navigation, incomplete answers, key absence, retry, keyboard/focus and measured responsive widths. |
+| CP4 - Integrated validation and closure; Not started | Integrated regressions, migrations/security/body bounds, browser evidence, documentation and formal closure. | No new feature, future-phase implementation or production-readiness expansion. | Future matrix A-R evidenced; current totals and limitations recorded, formal closure review before separately authorized staging/commit/push. |
+
+Order is design -> definition/persistence/API -> immutable submission/results -> frontend -> integrated closure. CP1 isolates definition validation and revision reads/writes; CP2 adds the distinct atomic grading/idempotency risk. No later checkpoint is started by this baseline or by listing future commands.
+
+Future implementation verification uses existing backend build/test and local EF tooling, disposable migrated SQLite (never Development data), migration Up/Down/reapply and the safe Data Source=:memory: pending-model procedure below. Run unchanged-feature regressions plus new directed Domain/Application/persistence/HTTP suites; real Kestrel fixed/chunked cap checks are separate from TestServer. Concurrency uses independent connections and bounded deterministic gates, covers rollback/context cleanup and native busy/cancellation classification, with no lock replay or arbitrary-writer/provider guarantee.
+
+Future frontend checks cover runtime contract copying, answer-key absence in take/model/state/markup/hidden attributes, revision conflict, complete answer sets, synchronous double-submit lock, same-ID semantic matching, delayed lookup/404/failed lookup, received-HTTP versus no-response classification and no automatic PUT replay. Verify stale reads/completions cannot cross node/map/quiz/account visits. Browser validation must exercise CRUD, literal text/order, take/result/history, empty/error, F5/navigation/logout, keyboard/focus, responsive widths and redacted HTTPS/cookie/CSRF/no-store metadata. Controlled React checks complement browser evidence, not exhaustive lifecycle/full accessibility/physical-touch proof. No new test framework is chosen; package manager stays open.
+
+### Phase 8 future acceptance matrix A-R
+
+All criteria below are future requirements, not executed results. No Phase 8 criterion is PASS at CP0.
+
+| Criterion | Observable acceptance condition | Current evidence |
+| --- | --- | --- |
+| A. Ownership | Two-user/mixed map/node/quiz/attempt paths cannot disclose or mutate foreign data; missing/foreign paths share generic quiz_not_found. | Not executed; future CP1-CP4. |
+| B. Definition | Required literal text/UTF-16/cardinality/order/duplicate-option limits and exactly one correct option are enforced before any write. | Not executed; future CP1-CP4. |
+| C. Authoring | Create/detail/list/full PUT/confirmed hard delete follow exact contracts, server IDs/times and immutable node membership. | Not executed; future CP1-CP4. |
+| D. Revision | Material replacement increments once; no-op/invalid/overflow leaves definition/children/time unchanged. | Not executed; future CP1-CP4. |
+| E. Conflict | Stale expectedRevision and new stale submissions return quiz_changed; a previously committed matching AttemptId can replay after edit. | Not executed; future CP1-CP4. |
+| F. Answer sheet | Consistent take revision/question/option projection contains no key; taking client/state/DOM/hidden attributes never preload authoring answers. | Not executed; future CP1-CP4. |
+| G. Complete submission | Exactly one selected option per question; missing/extra/duplicate question or foreign option is rejected without a partial result. | Not executed; future CP2-CP4. |
+| H. Grading | Server counts 0/N, N/N and 2/3 correctly, rejects client score/time, derives 66.67 for 2/3 and formats two places with the specified decimal rounding. | Not executed; future CP2-CP4. |
+| I. History | Title/question/all presented options/order/selected/correct choice/revision/time/counts remain explainable and immutable after current children change. | Not executed; future CP2-CP4. |
+| J. Idempotency | Same ID and semantic answer set, even reordered, returns one original result/time; changed payload conflicts; duplicate answers are invalid. | Not executed; future CP2-CP4. |
+| K. Concurrency | Independent official-writer edit/submit, same/different-ID submit and delete/submit races preserve version meaning, atomic results and rollback without orphan/partial rows. | Not executed; future CP2-CP4. |
+| L. Reconciliation | No-response ambiguity looks up the same ID; matching confirms, mismatch conflicts, 404 permits explicit same-ID/payload retry only, failed lookup stays recoverable; received HTTP/invalid body never auto-replays or auto-lookups. | Not executed; future CP2-CP4. |
+| M. HTTP security | Auth, SQL ownership, native CSRF/no-store, strict DTOs and sanitized errors apply; both metadata and actual Kestrel/body bounds are verified. | Not executed; future CP1-CP4. |
+| N. Deletion | Confirmed quiz/allowed node-map deletion cascades history; existing blockers still reject without partial cascade; quiz alone creates no blocker or resurrection. | Not executed; future CP1-CP4. |
+| O. Pagination | Omitted page/pageSize are 1/20, size accepts 1..100 without clamping, invalid/duplicate/overflow rejects, SQL ties/order/hasMore work without mandatory total COUNT; moving offsets documented. | Not executed; future CP1-CP4. |
+| P. Frontend state | Read/visit identity and synchronous locks stop stale updates/double submit; local draft loss and no automatic mutation replay are explicit. | Not executed; future CP3-CP4. |
+| Q. UX/accessibility/responsive | Native radios/labels/fieldset, keyboard/focus/status/error/empty states work in the tested flow with no overflow at recorded CSS widths; no unperformed full audit/touch claim. | Not executed; future CP3-CP4. |
+| R. Regression/closure | Earlier features/triggers preserved; backend/frontend checks, migrations/pending model, links/whitespace and formal review evidenced, with real limitations retained. | Not executed; future CP4. |
+
+### Phase 8 risk register
+
+Qualitative planning estimates, not measured probabilities. Mitigations are future obligations, not validated controls.
+
+| Risk | Probability | Impact | Mitigation |
+| --- | --- | --- | --- |
+| Ownership/IDOR through mixed nested IDs | Medium | High | SQL chain scoping, generic 404 and adversarial two-user tests. |
+| Grading against a changed definition | High | High | Required revision and same-connection official SQLite transaction before reads. |
+| Duplicate attempt after a lost response | High | High | AttemptId PK, semantic equality, lookup and explicit same-ID retry. |
+| Insufficient historical snapshot | Medium | High | Copy title, questions and every presented option/order plus selected/correct IDs atomically. |
+| Snapshot storage growth | Medium | Medium | Bounded 10 x 4 content, relational necessary values only, paginated history and explicit retention. |
+| Accidental historical deletion | Medium | High | Explicit irreversible confirmation, no new blockers, preserve existing blockers and test atomic cascades. |
+| SQLite writer contention/native wait | Medium | Medium | Short transactions, bounded provider timeout, realistic cancellation limits and no automatic lock retry. |
+| Frontend form/state complexity | Medium | Medium | Scope by visit/revision, separate authoring/taking, known locks and controlled stale-request tests. |
+| Migration regression/data or trigger loss | Low | High | Review additive Up/Down and test reapply with earlier schema/data/graph triggers preserved. |
+| Scope creep into an exam system | High | High | Single-choice/full-send scope and ADR-016 exclusions; later capability needs separate approval. |
+
+**CP0 evidence/status:** approved design is documented; no Phase 8 implementation, migration, package change or new application/browser suite has run. Application builds/tests are not applicable to this documentation-only task. Only document consistency, local links/anchors, whitespace and Git scope are checked. The previously blocking format/retention/interruption choices are decided; no blocking question remains. Frontend test tooling and package manager stay open without blocking CP0. CP0 needs formal review and separately authorized Git publication; do not mark it Published now or carry Phase 7 PASS evidence into the future matrix.
+
 ## Phase 6 - Approved design and planned checkpoints
 
-Phase 6 — Study Sessions is complete, approved and published for the scoped workflow under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Checkpoint 1 foundation/read and delete protections (881d12a), checkpoint 2 lifecycle/active backend (29ba218), checkpoint 3 frontend (493d39a) and integrated closure documentation (6045391) are approved and published. Integrated validation passed on 2026-10-19. Phase 7 is complete for its approved scope under ADR-015; Checkpoint 1 is published in f375141, Checkpoint 2 in 8af676d and Checkpoint 3 in f58d0fe. Checkpoint 4 integrated validation completed on 2026-10-21; Phase 7 is complete for the approved scope. Closure documentation awaits final formal review, commit and publication. The development workflow remains unchanged. Existing Phase 5 validation below remains historical evidence.
+Phase 6 — Study Sessions is complete, approved and published for the scoped workflow under [ADR-014](DECISIONS.md#adr-014---study-session-ownership-lifecycle-and-active-session-invariant). Checkpoint 1 foundation/read and delete protections (881d12a), checkpoint 2 lifecycle/active backend (29ba218), checkpoint 3 frontend (493d39a) and integrated closure documentation (6045391) are approved and published. Integrated validation passed on 2026-10-19. Phase 7 is complete for its approved scope under ADR-015; Checkpoint 1 is published in f375141, Checkpoint 2 in 8af676d and Checkpoint 3 in f58d0fe. Checkpoint 4 integrated validation completed on 2026-10-21; Phase 7 is complete for the approved scope. Phase 7 closure was formally approved and published in bc7a4b6. The development workflow remains unchanged. Existing Phase 5 validation below remains historical evidence.
 
 The checkpoints are:
 
@@ -47,7 +113,7 @@ Known limits remain: one active session is guaranteed only through the official 
 
 ## Phase 7 - Flashcards design checkpoint
 
-Design accepted under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression), baseline published in b4da3f8. Checkpoint 1 is published in f375141, Checkpoint 2 in 8af676d and Checkpoint 3 in f58d0fe. Checkpoint 4 integrated validation completed on 2026-10-21; Phase 7 is complete for the approved scope. Closure documentation awaits final formal review, commit and publication. The following checkpoint implementation/browser results are historical; final integrated evidence is recorded separately below.
+Design accepted under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression), baseline published in b4da3f8. Checkpoint 1 is published in f375141, Checkpoint 2 in 8af676d and Checkpoint 3 in f58d0fe. Checkpoint 4 integrated validation completed on 2026-10-21; Phase 7 is complete for the approved scope. Phase 7 closure was formally approved and published in bc7a4b6. The following checkpoint implementation/browser results are historical; final integrated evidence is recorded separately below.
 
 Checkpoint 1 implements the seven-field Flashcard entity, own Application/API contracts and scoped reader/writer, five GET/POST/PATCH/DELETE routes, ContentRevision, 64 KiB POST/PATCH limits and AddFlashcards. The collection is `{ flashcards: [FlashcardDto], page, pageSize, hasMore }`, without review state. List defaults to 1/20, max 100, rejects invalid/overflowing input and uses CreatedAtUtc ASC/Id ASC, pageSize+1 without COUNT. Create returns 201/Location, PATCH/delete 204; empty/no-op PATCH is validation_failed without saving. Official update acquires SQLite IMMEDIATE before the card read and commits exactly one content/revision/time change, with rollback and no replay on errors. Review reset/integration is not implemented.
 
@@ -69,7 +135,7 @@ POST/PATCH combine RequestSizeLimit(65536) with an endpoint resource filter that
 
 ### Phase 7 integrated validation and closure - 2026-10-21
 
-Closure began at main/HEAD f58d0fe, synchronized 0/0 with origin/main, clean working tree, empty staging and no untracked files. Design b4da3f8 and implementation checkpoints f375141, 8af676d and f58d0fe are published ancestors. Checkpoint 4 is completed/validated and Phase 7 is complete for the approved scope; ADR-015 stays Accepted. Closure documentation awaits final formal review, commit and publication. The results below are fresh CP4 evidence, distinct from historical implementation runs above.
+Closure began at main/HEAD f58d0fe, synchronized 0/0 with origin/main, clean working tree, empty staging and no untracked files. Design b4da3f8 and implementation checkpoints f375141, 8af676d and f58d0fe are published ancestors. Checkpoint 4 is completed/validated and Phase 7 is complete for the approved scope; ADR-015 stays Accepted. Phase 7 closure was formally approved and published in bc7a4b6. The results below are fresh CP4 evidence, distinct from historical implementation runs above.
 
 | Criterion | Evidence | Result |
 | --- | --- | --- |
@@ -187,10 +253,11 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 
 ## Project context
 
+- Current stage: Phase 8 - Assessments, Design approved / implementation not started under ADR-016; CP0 Completed / under review, not published; CP1-CP4 Not started.
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
-- Current stage: Phase 4 and its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 are complete, approved and published; Phase 3 remains complete. Phase 5 — Knowledge Content and its foundation/read, backend authoring and frontend integration increments are complete, approved and published under ADR-013. Phase 6 — Study Sessions is complete, approved and published under ADR-014 through checkpoints 1 (881d12a), 2 (29ba218), 3 (493d39a) and closure (6045391). Phase 7 Flashcards is complete for its approved scope under ADR-015; Checkpoint 1 is published in f375141, Checkpoint 2 in 8af676d and Checkpoint 3 in f58d0fe. Checkpoint 4 integrated validation completed on 2026-10-21; Phase 7 is complete for the approved scope. Closure documentation awaits final formal review, commit and publication.
+- Published stages: Phase 4 and its approved slices 4.1, 4.2, 4.3A, 4.3 and 4.4 are complete, approved and published; Phase 3 remains complete. Phase 5 — Knowledge Content and its foundation/read, backend authoring and frontend integration increments are complete, approved and published under ADR-013. Phase 6 — Study Sessions is complete, approved and published under ADR-014 through checkpoints 1 (881d12a), 2 (29ba218), 3 (493d39a) and closure (6045391). Phase 7 Flashcards is complete for its approved scope under ADR-015; Checkpoint 1 is published in f375141, Checkpoint 2 in 8af676d and Checkpoint 3 in f58d0fe. Checkpoint 4 integrated validation completed on 2026-10-21; Phase 7 is complete for the approved scope. Phase 7 closure was formally approved and published in bc7a4b6.
 
 The owner name and local path do not authorize creating a remote repository, initializing Git, committing, or pushing.
 
