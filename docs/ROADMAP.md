@@ -118,7 +118,7 @@ Study Session is the current working product term for a period of study. Its rel
 
 ## Phase 7 - Flashcards
 
-**Status:** In Progress. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression), baseline published in b4da3f8. Checkpoint 1 foundation + CRUD/read backend is published in f375141. Checkpoint 2 review state/history and study/review backend is published in 8af676d; Checkpoint 3 frontend authoring/study is implemented / under review, not published. Checkpoint 4 and closure are not started; each requires separate scoped authorization. Phase 7 is not complete.
+**Status:** Complete for the approved scope after Checkpoint 4 integrated validation on 2026-10-21. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); baseline b4da3f8 and Checkpoints 1 (f375141), 2 (8af676d) and 3 (f58d0fe) are approved and published. ADR-015 remains Accepted. Closure documentation awaits final formal review, commit and publication. Existing SQLite, offset-pagination, recovery, accessibility and physical-touch limitations remain; completion does not imply production readiness. Phase 8 has not started.
 
 **Goal:** let a learner create prompt/answer cards on a knowledge node, review them, and resume from persisted per-card progress.
 
@@ -135,7 +135,7 @@ Study Session is the current working product term for a period of study. Its rel
 3. NodeDetails paginated authoring and accessible continuous study/reveal/result/reconciliation, stale-response guards, runtime validation and responsive browser checks.
 4. Integrated regression, migration Up/Down/reapply verification, security/accessibility smoke checks, documentation follow-through and formal closure review.
 
-Each checkpoint requires its own explicit implementation authorization. The design does not start a checkpoint.
+Each checkpoint was separately authorized. Checkpoints 1–3 are published and Checkpoint 4 integrated validation is completed. Later phases still require their own scoped authorization.
 
 **Out of scope:** Flashcard-to-KnowledgeContent references, card types beyond plain prompt/answer text, hint/tags/media/source/explanation, Markdown/HTML, manual ordering, randomized or snapshot queues, due dates or interval scheduling, Again/Hard/Good/Easy ratings, learning mastery/aggregates, StudySession integration, shared/public decks, marketplace, Anki import, cloze/image occlusion, AI generation, collaboration/realtime, reminders/notifications, advanced analytics, achievements, leaderboards, FSRS optimization/training, offline/native mobile, PostgreSQL infrastructure or new dependencies/frameworks.
 
