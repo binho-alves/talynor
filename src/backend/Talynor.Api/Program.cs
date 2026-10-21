@@ -18,6 +18,8 @@ using Talynor.Application.StudySessions;
 using Talynor.Infrastructure.StudySessions;
 using Talynor.Application.Flashcards;
 using Talynor.Infrastructure.Flashcards;
+using Talynor.Application.Quizzes;
+using Talynor.Infrastructure.Quizzes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +52,14 @@ builder.Services.AddScoped<CompleteStudySession>();
 builder.Services.AddScoped<DeleteStudySession>();
 builder.Services.AddScoped<GetActiveStudySession>();
 builder.Services.AddScoped<IFlashcardReader, FlashcardReader>();
+builder.Services.AddScoped<IQuizReader, QuizReader>();
+builder.Services.AddScoped<IQuizStore, QuizStore>();
+builder.Services.AddScoped<CreateQuiz>();
+builder.Services.AddScoped<ReplaceQuiz>();
+builder.Services.AddScoped<DeleteQuiz>();
+builder.Services.AddScoped<ListQuizzes>();
+builder.Services.AddScoped<GetQuiz>();
+builder.Services.AddScoped<TakeQuiz>();
 builder.Services.AddScoped<IFlashcardStudyReader, FlashcardReader>();
 builder.Services.AddScoped<IFlashcardStore, FlashcardStore>();
 builder.Services.AddScoped<ListFlashcards>();

@@ -118,7 +118,7 @@ Study Session is the current working product term for a period of study. Its rel
 
 ## Phase 7 - Flashcards
 
-**Status:** Complete for the approved scope after Checkpoint 4 integrated validation on 2026-10-21. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); baseline b4da3f8 and Checkpoints 1 (f375141), 2 (8af676d) and 3 (f58d0fe) are approved and published. ADR-015 remains Accepted. Phase 7 closure was formally approved and published in bc7a4b6. Existing SQLite, offset-pagination, recovery, accessibility and physical-touch limitations remain; completion does not imply production readiness. Phase 8 design is approved under ADR-016; implementation has not started.
+**Status:** Complete for the approved scope after Checkpoint 4 integrated validation on 2026-10-21. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); baseline b4da3f8 and Checkpoints 1 (f375141), 2 (8af676d) and 3 (f58d0fe) are approved and published. ADR-015 remains Accepted. Phase 7 closure was formally approved and published in bc7a4b6. Existing SQLite, offset-pagination, recovery, accessibility and physical-touch limitations remain; completion does not imply production readiness. Phase 8 is In Progress under ADR-016; CP1 is Implemented / under review, and CP2-CP4 are Not started.
 
 **Goal:** let a learner create prompt/answer cards on a knowledge node, review them, and resume from persisted per-card progress.
 
@@ -141,7 +141,7 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 ## Phase 8 - Assessments
 
-**Status:** Design approved / implementation not started under [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts). CP0 - Design baseline is Completed / under review, not published. CP1, CP2, CP3 and CP4 are Not started. Phase 7 closure is published in bc7a4b6; later checkpoints require their own scoped authorization.
+**Status:** In Progress under [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts). CP0 - Design baseline is Published in 39ff3aa. CP1 is Implemented / under review, not published; CP2, CP3 and CP4 are Not started. Phase 7 closure is published in bc7a4b6; later checkpoints require their own scoped authorization.
 
 **Goal:** support simple quizzes to check understanding.
 
@@ -153,13 +153,13 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 **Implementation checkpoints, not new numbered phases:**
 
-1. CP0 - Design baseline: accepted model/contracts/security/lifecycle, future matrix and risks; documentation only, currently under review.
-2. CP1 - Quiz foundation + authoring/read backend: Domain/EF and planned AddQuizzes, nested CRUD/full replacement and answer-free take reads; no attempts/frontend.
+1. CP0 - Design baseline: accepted model/contracts/security/lifecycle, future matrix and risks; documentation only, Published in 39ff3aa.
+2. CP1 - Quiz foundation + authoring/read backend: Implemented / under review; Domain/EF and AddQuizzes, nested CRUD/full replacement and answer-free take reads; no attempts/frontend.
 3. CP2 - Submission, grading and history backend: planned AddQuizAttempts, immutable full snapshots, idempotency/lookup and concurrency; no frontend/active draft.
 4. CP3 - Frontend authoring + answering/history: existing node UX, runtime validation, local draft/locks/reconciliation, accessibility/responsiveness; no new backend/schema/dependency.
 5. CP4 - Integrated validation and closure: regression/migration/security/browser evidence, limitations and formal closure; no new features.
 
-**Exit criteria:** future [acceptance matrix A-R](DEVELOPMENT.md#phase-8-future-acceptance-matrix-a-r), checkpoint scopes/exclusions/validation/exits and [risk register](DEVELOPMENT.md#phase-8-risk-register) are defined in Development. None is marked PASS by CP0. Migrations AddQuizzes/AddQuizAttempts are planned only; implementation/publication need separate requests.
+**Exit criteria:** future [acceptance matrix A-R](DEVELOPMENT.md#phase-8-future-acceptance-matrix-a-r), checkpoint scopes/exclusions/validation/exits and [risk register](DEVELOPMENT.md#phase-8-risk-register) are defined in Development. CP0 marked no application criterion PASS. CP1 evidence is limited to definition/backend behavior; AddQuizzes is implemented, while AddQuizAttempts/CP2-CP4 remain planned and need separate requests. CP1 publication requires separate authorization.
 
 **Risks:** ownership/IDOR, changed-definition grading, duplicate send, snapshot completeness/storage, accidental history deletion, SQLite contention, frontend state, migration preservation and exam-system scope creep. Existing architecture/provider and verification limitations remain; design acceptance is not production readiness.
 

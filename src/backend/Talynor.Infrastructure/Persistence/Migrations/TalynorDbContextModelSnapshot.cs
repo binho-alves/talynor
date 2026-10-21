@@ -387,6 +387,101 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Talynor.Domain.Quizzes.Quiz", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ContentRevision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("KnowledgeNodeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KnowledgeNodeId", "CreatedAtUtc", "Id");
+
+                    b.ToTable("Quizzes", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Quizzes_ContentRevision", "ContentRevision > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("QuestionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId")
+                        .IsUnique()
+                        .HasFilter("IsCorrect = 1");
+
+                    b.HasIndex("QuestionId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("QuizOptions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_QuizOptions_IsCorrect", "IsCorrect IN (0,1)");
+
+                            t.HasCheckConstraint("CK_QuizOptions_Position", "Position BETWEEN 1 AND 4");
+                        });
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizQuestion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuizId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("QuizQuestions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_QuizQuestions_Position", "Position BETWEEN 1 AND 10");
+                        });
+                });
+
             modelBuilder.Entity("Talynor.Domain.StudySessions.StudySession", b =>
                 {
                     b.Property<Guid>("Id")
@@ -541,6 +636,33 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Talynor.Domain.Quizzes.Quiz", b =>
+                {
+                    b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
+                        .WithMany()
+                        .HasForeignKey("KnowledgeNodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizOption", b =>
+                {
+                    b.HasOne("Talynor.Domain.Quizzes.QuizQuestion", null)
+                        .WithMany("Options")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizQuestion", b =>
+                {
+                    b.HasOne("Talynor.Domain.Quizzes.Quiz", null)
+                        .WithMany("Questions")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Talynor.Domain.StudySessions.StudySession", b =>
                 {
                     b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
@@ -548,6 +670,16 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         .HasForeignKey("KnowledgeNodeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.Quiz", b =>
+                {
+                    b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizQuestion", b =>
+                {
+                    b.Navigation("Options");
                 });
 #pragma warning restore 612, 618
         }

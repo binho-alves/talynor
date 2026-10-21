@@ -6,6 +6,7 @@ using Talynor.Domain.KnowledgeMaps;
 using Talynor.Domain.KnowledgeContents;
 using Talynor.Domain.StudySessions;
 using Talynor.Domain.Flashcards;
+using Talynor.Domain.Quizzes;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Talynor.Infrastructure.Persistence;
@@ -22,12 +23,51 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
     public DbSet<Flashcard> Flashcards => Set<Flashcard>();
     public DbSet<FlashcardReviewState> FlashcardReviewStates => Set<FlashcardReviewState>();
     public DbSet<FlashcardReview> FlashcardReviews => Set<FlashcardReview>();
+    public DbSet<Quiz> Quizzes => Set<Quiz>();
+    public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
+    public DbSet<QuizOption> QuizOptions => Set<QuizOption>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         var utc = new ValueConverter<DateTimeOffset, DateTime>(value => value.UtcDateTime,
             value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
+        builder.Entity<Quiz>(quiz =>
+        {
+            quiz.ToTable("Quizzes", table => table.HasCheckConstraint("CK_Quizzes_ContentRevision", "ContentRevision > 0"));
+            quiz.HasKey(q => q.Id);
+            quiz.Property(q => q.Id).ValueGeneratedNever();
+            quiz.HasOne<KnowledgeNode>().WithMany().HasForeignKey(q => q.KnowledgeNodeId).OnDelete(DeleteBehavior.Cascade);
+            quiz.Property(q => q.Title).IsRequired().HasMaxLength(200);
+            quiz.Property(q => q.CreatedAtUtc).HasConversion(utc);
+            quiz.Property(q => q.UpdatedAtUtc).HasConversion(utc);
+            quiz.HasIndex(q => new { q.KnowledgeNodeId, q.CreatedAtUtc, q.Id });
+            quiz.HasMany(q => q.Questions).WithOne().HasForeignKey(q => q.QuizId).OnDelete(DeleteBehavior.Cascade);
+            quiz.Navigation(q => q.Questions).HasField("questions").UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+        builder.Entity<QuizQuestion>(question =>
+        {
+            question.ToTable("QuizQuestions", table => table.HasCheckConstraint("CK_QuizQuestions_Position", "Position BETWEEN 1 AND 10"));
+            question.HasKey(q => q.Id);
+            question.Property(q => q.Id).ValueGeneratedNever();
+            question.Property(q => q.Text).IsRequired().HasMaxLength(1000);
+            question.HasIndex(q => new { q.QuizId, q.Position }).IsUnique();
+            question.HasMany(q => q.Options).WithOne().HasForeignKey(o => o.QuestionId).OnDelete(DeleteBehavior.Cascade);
+            question.Navigation(q => q.Options).HasField("options").UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+        builder.Entity<QuizOption>(option =>
+        {
+            option.ToTable("QuizOptions", table =>
+            {
+                table.HasCheckConstraint("CK_QuizOptions_Position", "Position BETWEEN 1 AND 4");
+                table.HasCheckConstraint("CK_QuizOptions_IsCorrect", "IsCorrect IN (0,1)");
+            });
+            option.HasKey(o => o.Id);
+            option.Property(o => o.Id).ValueGeneratedNever();
+            option.Property(o => o.Text).IsRequired().HasMaxLength(500);
+            option.HasIndex(o => new { o.QuestionId, o.Position }).IsUnique();
+            option.HasIndex(o => o.QuestionId).IsUnique().HasFilter("IsCorrect = 1");
+        });
         builder.Entity<Flashcard>(card =>
         {
             card.ToTable("Flashcards", table => table.HasCheckConstraint("CK_Flashcards_ContentRevision", "ContentRevision > 0"));

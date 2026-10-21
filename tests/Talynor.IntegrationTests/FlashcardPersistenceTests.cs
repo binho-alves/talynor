@@ -159,7 +159,7 @@ public class FlashcardPersistenceTests
         using var factory = new RegistrationTestFactory(); await factory.InitializeAsync(); using var scope = factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TalynorDbContext>(); var f = await KnowledgeGraphFixture.CreateAsync(db);
         var card = Card(f.Second.Id, DateTimeOffset.UnixEpoch); db.Flashcards.Add(card); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
-        Assert.EndsWith("_AddFlashcardReviews", (await db.Database.GetAppliedMigrationsAsync()).Last());
+        Assert.EndsWith("_AddQuizzes", (await db.Database.GetAppliedMigrationsAsync()).Last());
         Assert.False(db.Database.HasPendingModelChanges());
         await db.GetService<IMigrator>().MigrateAsync("20261018074303_AddStudySessions");
         await Assert.ThrowsAsync<SqliteException>(() => db.Database.ExecuteSqlRawAsync("SELECT Id FROM Flashcards"));
