@@ -20,10 +20,14 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
     public DbSet<KnowledgeContent> KnowledgeContents => Set<KnowledgeContent>();
     public DbSet<StudySession> StudySessions => Set<StudySession>();
     public DbSet<Flashcard> Flashcards => Set<Flashcard>();
+    public DbSet<FlashcardReviewState> FlashcardReviewStates => Set<FlashcardReviewState>();
+    public DbSet<FlashcardReview> FlashcardReviews => Set<FlashcardReview>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+        var utc = new ValueConverter<DateTimeOffset, DateTime>(value => value.UtcDateTime,
+            value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
         builder.Entity<Flashcard>(card =>
         {
             card.ToTable("Flashcards", table => table.HasCheckConstraint("CK_Flashcards_ContentRevision", "ContentRevision > 0"));
@@ -40,6 +44,42 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
             card.Property(value => value.UpdatedAtUtc).HasConversion(utc);
             card.HasIndex(value => new { value.KnowledgeNodeId, value.CreatedAtUtc, value.Id });
         });
+        builder.Entity<FlashcardReviewState>(state =>
+        {
+            state.ToTable("FlashcardReviewStates", table =>
+            {
+                table.HasCheckConstraint("CK_FlashcardReviewStates_ReviewCounts",
+                    "ReviewCount >= 1 AND CorrectCount >= 0 AND CorrectCount <= ReviewCount");
+                table.HasCheckConstraint("CK_FlashcardReviewStates_LastReviewedAtUtc", "LastReviewedAtUtc IS NOT NULL");
+            });
+            state.HasKey(value => value.FlashcardId);
+            state.Property(value => value.FlashcardId).ValueGeneratedNever();
+            state.Property(value => value.ReviewCount).IsRequired();
+            state.Property(value => value.CorrectCount).IsRequired();
+            state.Property(value => value.LastReviewedAtUtc).IsRequired().HasConversion(utc);
+            state.HasOne<Flashcard>().WithOne().HasForeignKey<FlashcardReviewState>(value => value.FlashcardId)
+                .OnDelete(DeleteBehavior.Cascade);
+            state.HasIndex(value => new { value.LastReviewedAtUtc, value.FlashcardId });
+        });
+        builder.Entity<FlashcardReview>(review =>
+        {
+            review.ToTable("FlashcardReviews", table =>
+            {
+                table.HasCheckConstraint("CK_FlashcardReviews_ContentRevision", "ContentRevision > 0");
+                table.HasCheckConstraint("CK_FlashcardReviews_Result", "Result IN ('correct', 'incorrect')");
+            });
+            review.HasKey(value => value.ReviewId);
+            review.Property(value => value.ReviewId).ValueGeneratedNever();
+            review.Property(value => value.FlashcardId).IsRequired();
+            review.Property(value => value.ContentRevision).IsRequired();
+            review.Property(value => value.Result).IsRequired().HasMaxLength(9).HasConversion(
+                value => ReviewResultToStorage(value), value => ReviewResultFromStorage(value));
+            review.Property(value => value.ReviewedAtUtc).IsRequired().HasConversion(utc);
+            review.HasOne<Flashcard>().WithMany().HasForeignKey(value => value.FlashcardId)
+                .OnDelete(DeleteBehavior.Cascade);
+            review.HasIndex(value => new { value.FlashcardId, value.ReviewedAtUtc, value.ReviewId })
+                .IsDescending(false, true, true);
+        });
         builder.Entity<StudySession>(session =>
         {
             session.ToTable("StudySessions", table => table.HasCheckConstraint("CK_StudySessions_TimeRange",
@@ -48,8 +88,6 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
             session.Property(value => value.Id).ValueGeneratedNever();
             session.HasOne<KnowledgeNode>().WithMany().HasForeignKey(value => value.KnowledgeNodeId)
                 .OnDelete(DeleteBehavior.Restrict);
-            var utc = new ValueConverter<DateTimeOffset, DateTime>(value => value.UtcDateTime,
-                value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
             session.Property(value => value.StartedAtUtc).HasConversion(utc);
             session.Property(value => value.EndedAtUtc).HasConversion(utc);
             session.Ignore(value => value.Duration);
@@ -75,10 +113,8 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
             content.Property(value => value.Body).HasMaxLength(4000);
             content.Property(value => value.Url).HasMaxLength(2048);
             // New content timestamps only: order by UTC DateTime in SQLite, retain UTC DateTimeOffset in Domain/API.
-            content.Property(value => value.CreatedAtUtc).HasConversion(
-                value => value.UtcDateTime, value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
-            content.Property(value => value.UpdatedAtUtc).HasConversion(
-                value => value.UtcDateTime, value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
+            content.Property(value => value.CreatedAtUtc).HasConversion(utc);
+            content.Property(value => value.UpdatedAtUtc).HasConversion(utc);
             content.HasIndex(value => new { value.KnowledgeNodeId, value.CreatedAtUtc, value.Id });
         });
         builder.Entity<PersonalWorkspace>(workspace =>
@@ -159,5 +195,19 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
     {
         "note" => KnowledgeContentType.Note, "link" => KnowledgeContentType.Link,
         _ => throw new InvalidOperationException("Unknown knowledge content type.")
+    };
+
+    private static string ReviewResultToStorage(FlashcardAnswerResult value) => value switch
+    {
+        FlashcardAnswerResult.Correct => "correct",
+        FlashcardAnswerResult.Incorrect => "incorrect",
+        _ => throw new InvalidOperationException("Unknown flashcard review result.")
+    };
+
+    private static FlashcardAnswerResult ReviewResultFromStorage(string value) => value switch
+    {
+        "correct" => FlashcardAnswerResult.Correct,
+        "incorrect" => FlashcardAnswerResult.Incorrect,
+        _ => throw new InvalidOperationException("Unknown stored flashcard review result.")
     };
 }

@@ -210,11 +210,11 @@ public class FlashcardHttpTests
         using var factory = new RegistrationTestFactory();
         var actions = factory.Services.GetRequiredService<IActionDescriptorCollectionProvider>().ActionDescriptors.Items
             .OfType<ControllerActionDescriptor>().Where(a => a.ControllerTypeInfo.AsType() == typeof(FlashcardsController)).ToArray();
-        Assert.Equal(5, actions.Length);
+        Assert.Equal(9, actions.Length);
         foreach (var action in actions)
         {
             var limits = action.FilterDescriptors.Select(f => f.Filter).OfType<IRequestSizeLimitMetadata>().ToArray();
-            if (action.ActionName is "Create" or "Update") Assert.Equal(65536L, Assert.Single(limits).MaxRequestBodySize);
+            if (action.ActionName is "Create" or "Update" or "Review") Assert.Equal(65536L, Assert.Single(limits).MaxRequestBodySize);
             else Assert.Empty(limits);
         }
         await Task.CompletedTask;

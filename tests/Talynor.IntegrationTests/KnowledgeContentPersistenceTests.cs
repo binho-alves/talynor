@@ -136,7 +136,7 @@ public class KnowledgeContentPersistenceTests
         using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<TalynorDbContext>();
         var f = await KnowledgeContentFixture.CreateAsync(db); db.ChangeTracker.Clear();
         Assert.False(db.Database.HasPendingModelChanges());
-        Assert.Equal(6, (await db.Database.GetAppliedMigrationsAsync()).Count());
+        Assert.Equal(7, (await db.Database.GetAppliedMigrationsAsync()).Count());
         await db.GetService<IMigrator>().MigrateAsync("20261014004536_AddPersistentKnowledgeGraph");
         await Assert.ThrowsAsync<SqliteException>(() => db.Database.ExecuteSqlRawAsync("SELECT Id FROM KnowledgeContents"));
         Assert.Equal(4, await db.KnowledgeNodes.CountAsync());

@@ -36,6 +36,7 @@ public sealed class FlashcardStore(TalynorDbContext db) : IFlashcardStore
         ct.ThrowIfCancellationRequested();
         await db.Database.OpenConnectionAsync(ct);
         Flashcard? card = null;
+        FlashcardReviewState? reviewState = null;
         try
         {
             // Acquire the SQLite writer before reading the revision. No retry/replay.
@@ -54,6 +55,8 @@ public sealed class FlashcardStore(TalynorDbContext db) : IFlashcardStore
                     input.BackSpecified ? input.Back! : card.Back, now)) return FlashcardStatus.InvalidInput;
             }
             catch (ArgumentException) { return FlashcardStatus.InvalidInput; }
+            reviewState = await db.FlashcardReviewStates.SingleOrDefaultAsync(value => value.FlashcardId == card.Id, ct);
+            if (reviewState is not null) db.FlashcardReviewStates.Remove(reviewState);
             // Overflow/operational failures roll back and reach the sanitized 500 boundary.
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
@@ -62,6 +65,7 @@ public sealed class FlashcardStore(TalynorDbContext db) : IFlashcardStore
         finally
         {
             if (card is not null) db.Entry(card).State = EntityState.Detached;
+            if (reviewState is not null) db.Entry(reviewState).State = EntityState.Detached;
             await db.Database.CloseConnectionAsync();
         }
     }

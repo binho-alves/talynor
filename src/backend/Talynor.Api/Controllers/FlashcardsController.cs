@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Globalization;
 using Talynor.Api.Contracts;
 using Talynor.Api.Filters;
 using Talynor.Application.Accounts;
@@ -66,6 +67,58 @@ public sealed class FlashcardsController(ISessionService sessions, ILogger<Flash
         [FromServices] DeleteFlashcard delete, CancellationToken ct) => Execute(async () =>
         (await delete.ExecuteAsync(mapId, nodeId, flashcardId, ct), null), ct);
 
+    [HttpGet("study/next")]
+    [ProducesResponseType<FlashcardStudyNextResponse>(200)]
+    public Task<IActionResult> StudyNext(Guid mapId, Guid nodeId,
+        [FromServices] GetNextFlashcardForStudy getNext, CancellationToken ct) => Execute(async () =>
+    {
+        var result = await getNext.ExecuteAsync(mapId, nodeId, ct);
+        return (result.Status, result.Status == FlashcardStatus.Success
+            ? FlashcardResponseMapping.ToStudyNextResponse(result.Item) : null);
+    }, ct);
+
+    [HttpGet("{flashcardId:guid}/study/reveal")]
+    [ProducesResponseType<FlashcardRevealResponse>(200)]
+    [ProducesResponseType<ProblemDetails>(409)]
+    public Task<IActionResult> Reveal(Guid mapId, Guid nodeId, Guid flashcardId,
+        [FromServices] RevealFlashcard reveal, CancellationToken ct)
+    {
+        if (Request.Query.Count != 1 || !Request.Query.TryGetValue("contentRevision", out var values) ||
+            values.Count != 1 || !int.TryParse(values[0], NumberStyles.None, CultureInfo.InvariantCulture, out var revision) || revision < 1)
+        {
+            Response.Headers.CacheControl = "no-store";
+            return Task.FromResult<IActionResult>(Error(400, "validation_failed", "Confira os campos informados."));
+        }
+        return Execute(async () =>
+        {
+            var result = await reveal.ExecuteAsync(mapId, nodeId, flashcardId, revision, ct);
+            return (result.Status, result.Reveal is null ? null : new FlashcardRevealResponse(
+                result.Reveal.FlashcardId, result.Reveal.Back, result.Reveal.ContentRevision));
+        }, ct);
+    }
+
+    [HttpPut("{flashcardId:guid}/reviews/{reviewId:guid}")]
+    [RequestSizeLimit(FlashcardBodyLimitAttribute.Limit)]
+    [FlashcardBodyLimit]
+    [ProducesResponseType<FlashcardReviewEnvelopeResponse>(200)]
+    [ProducesResponseType<ProblemDetails>(409)]
+    public Task<IActionResult> Review(Guid mapId, Guid nodeId, Guid flashcardId, Guid reviewId,
+        ReviewFlashcardRequest request, [FromServices] ReviewFlashcard review, CancellationToken ct) => Execute(async () =>
+    {
+        var result = await review.ExecuteAsync(mapId, nodeId, flashcardId, reviewId,
+            request.ContentRevision ?? 0, request.Result, ct);
+        return (result.Status, result.View is null ? null : FlashcardResponseMapping.ToReviewResponse(result.View));
+    }, ct);
+
+    [HttpGet("{flashcardId:guid}/reviews/{reviewId:guid}")]
+    [ProducesResponseType<FlashcardReviewEnvelopeResponse>(200)]
+    public Task<IActionResult> GetReview(Guid mapId, Guid nodeId, Guid flashcardId, Guid reviewId,
+        [FromServices] GetFlashcardReview getReview, CancellationToken ct) => Execute(async () =>
+    {
+        var result = await getReview.ExecuteAsync(mapId, nodeId, flashcardId, reviewId, ct);
+        return (result.Status, result.View is null ? null : FlashcardResponseMapping.ToReviewResponse(result.View));
+    }, ct);
+
     private async Task<IActionResult> Execute(Func<Task<(FlashcardStatus Status, object? Body)>> action,
         CancellationToken ct, bool created = false, Guid mapId = default, Guid nodeId = default)
     {
@@ -88,6 +141,8 @@ public sealed class FlashcardsController(ISessionService sessions, ILogger<Flash
                 FlashcardStatus.AuthenticationRequired => Error(401, "authentication_required", "Autenticação necessária."),
                 FlashcardStatus.NotFound => Error(404, "flashcard_not_found", "Recurso não encontrado."),
                 FlashcardStatus.InvalidInput => Error(400, "validation_failed", "Confira os campos informados."),
+                FlashcardStatus.ContentChanged => Error(409, "flashcard_changed", "O flashcard foi alterado. Busque-o novamente."),
+                FlashcardStatus.ReviewIdConflict => Error(409, "review_id_conflict", "O identificador de review já foi usado."),
                 _ => throw new InvalidOperationException("Unexpected flashcard result.")
             };
         }

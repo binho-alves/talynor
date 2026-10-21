@@ -19,3 +19,10 @@ public sealed class UpdateFlashcardRequest
     internal bool FrontSpecified { get; private set; }
     internal bool BackSpecified { get; private set; }
 }
+
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed class ReviewFlashcardRequest
+{
+    [JsonRequired] public int? ContentRevision { get; init; }
+    [JsonRequired] public string? Result { get; init; }
+}

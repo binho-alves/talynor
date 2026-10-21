@@ -182,6 +182,64 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Talynor.Domain.Flashcards.FlashcardReview", b =>
+                {
+                    b.Property<Guid>("ReviewId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ContentRevision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("FlashcardId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(9)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReviewedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("FlashcardId", "ReviewedAtUtc", "ReviewId")
+                        .IsDescending(false, true, true);
+
+                    b.ToTable("FlashcardReviews", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_FlashcardReviews_ContentRevision", "ContentRevision > 0");
+
+                            t.HasCheckConstraint("CK_FlashcardReviews_Result", "Result IN ('correct', 'incorrect')");
+                        });
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Flashcards.FlashcardReviewState", b =>
+                {
+                    b.Property<Guid>("FlashcardId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CorrectCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastReviewedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ReviewCount")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("FlashcardId");
+
+                    b.HasIndex("LastReviewedAtUtc", "FlashcardId");
+
+                    b.ToTable("FlashcardReviewStates", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_FlashcardReviewStates_LastReviewedAtUtc", "LastReviewedAtUtc IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_FlashcardReviewStates_ReviewCounts", "ReviewCount >= 1 AND CorrectCount >= 0 AND CorrectCount <= ReviewCount");
+                        });
+                });
+
             modelBuilder.Entity("Talynor.Domain.KnowledgeContents.KnowledgeContent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -406,6 +464,24 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                     b.HasOne("Talynor.Domain.KnowledgeMaps.KnowledgeNode", null)
                         .WithMany()
                         .HasForeignKey("KnowledgeNodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Flashcards.FlashcardReview", b =>
+                {
+                    b.HasOne("Talynor.Domain.Flashcards.Flashcard", null)
+                        .WithMany()
+                        .HasForeignKey("FlashcardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Flashcards.FlashcardReviewState", b =>
+                {
+                    b.HasOne("Talynor.Domain.Flashcards.Flashcard", null)
+                        .WithOne()
+                        .HasForeignKey("Talynor.Domain.Flashcards.FlashcardReviewState", "FlashcardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
