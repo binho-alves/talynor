@@ -4,7 +4,7 @@ import { useSession } from './session/useSession'
 import './App.css'
 
 function App() {
-  const { session, busy, operationError, login, logout, retryBootstrap, revalidateSession, authoring, contentAuthoring, studySessions } = useSession()
+  const { session, busy, operationError, login, logout, retryBootstrap, revalidateSession, authoring, contentAuthoring, studySessions, flashcards } = useSession()
 
   if (session.status === 'bootstrapping') {
     return <main className="session-page" aria-busy="true">
@@ -43,7 +43,7 @@ function App() {
     {operationError && <p className="session-feedback" role="alert">{operationError}</p>}
     <span className="sr-only" role="status">{busy === 'logout' ? 'Encerrando sua sessão…' : ''}</span>
     <AuthenticatedStudyWorkspace key={`${session.user.id}:${session.workspace.id}`} revalidate={revalidateSession}
-      authoring={authoring} contentAuthoring={contentAuthoring} client={studySessions} />
+      authoring={authoring} contentAuthoring={contentAuthoring} client={studySessions} flashcards={flashcards} />
   </div>
 }
 

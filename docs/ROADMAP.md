@@ -118,7 +118,7 @@ Study Session is the current working product term for a period of study. Its rel
 
 ## Phase 7 - Flashcards
 
-**Status:** In Progress. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression), baseline published in b4da3f8. Checkpoint 1 foundation + CRUD/read backend is published in f375141. Checkpoint 2 review state/history and study/review backend is implemented / under review, not published. Checkpoints 3–4 and closure are not started; each requires separate scoped authorization. Phase 7 is not complete.
+**Status:** In Progress. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression), baseline published in b4da3f8. Checkpoint 1 foundation + CRUD/read backend is published in f375141. Checkpoint 2 review state/history and study/review backend is published in 8af676d; Checkpoint 3 frontend authoring/study is implemented / under review, not published. Checkpoint 4 and closure are not started; each requires separate scoped authorization. Phase 7 is not complete.
 
 **Goal:** let a learner create prompt/answer cards on a knowledge node, review them, and resume from persisted per-card progress.
 

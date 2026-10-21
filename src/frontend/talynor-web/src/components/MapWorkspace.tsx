@@ -14,12 +14,15 @@ import type { KnowledgeContentAuthoringClient } from '../api/knowledgeContentAut
 import type { StudySessionsClient } from '../api/studySessionsApi.ts'
 import type { StudyNodeVisit } from '../types/studySession.ts'
 import { NodeStudySection } from '../study/NodeStudySection.tsx'
+import type { FlashcardsClient } from '../api/flashcardsApi.ts'
+import { FlashcardAuthoring } from '../flashcards/FlashcardAuthoring.tsx'
+import { FlashcardStudy } from '../flashcards/FlashcardStudy.tsx'
 
 type Editor = 'map' | 'new-node' | 'node' | 'edge' | 'delete-map' | 'delete-node' | 'delete-edge' | null
 
-export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySessions, returnTo, revalidate, onOpenMap, onDeleted, onRename }:
+export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySessions, flashcards, returnTo, revalidate, onOpenMap, onDeleted, onRename }:
   { id: string; initial: KnowledgeMap; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
-    studySessions: StudySessionsClient; returnTo: StudyNodeVisit | null;
+    studySessions: StudySessionsClient; flashcards: FlashcardsClient; returnTo: StudyNodeVisit | null;
     revalidate: () => Promise<void>; onOpenMap: (id: string) => void;
     onDeleted: () => void; onRename: (title: string) => void }) {
   const [map, setMap] = useState(initial)
@@ -172,6 +175,7 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySe
           client={studySessions} revalidate={revalidate} />}
         {selected && <ContentSection key={`${selected.id}:view`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           editing={false} client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
+        {selected && <FlashcardStudy key={`${selected.id}:flashcard-study`} mapId={id} nodeId={selected.id} client={flashcards} revalidate={revalidate} />}
       </NodeDetails>}
       {editing && <aside className="details-panel" aria-label="Edição do mapa">
         {choiceError && <p className="session-feedback">{choiceError}</p>}
@@ -210,6 +214,7 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySe
             <button disabled={mutation.pending} onClick={() => setEditor(null)}>Cancelar</button></div></section>}
         {selected && <ContentSection key={`${selected.id}:edit`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           editing client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
+        {selected && <FlashcardAuthoring key={`${selected.id}:flashcard-edit`} mapId={id} nodeId={selected.id} client={flashcards} mutation={mutation} revalidate={revalidate} />}
         {selected && <NodeStudySection key={`${selected.id}:study-edit`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           client={studySessions} revalidate={revalidate} />}
       </aside>}

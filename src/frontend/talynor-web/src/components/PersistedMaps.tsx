@@ -11,6 +11,7 @@ import type { KnowledgeMapAuthoringClient } from '../api/knowledgeMapAuthoringAp
 import type { KnowledgeContentAuthoringClient } from '../api/knowledgeContentAuthoringApi.ts'
 import type { StudySessionsClient } from '../api/studySessionsApi.ts'
 import type { StudyNodeVisit } from '../types/studySession.ts'
+import type { FlashcardsClient } from '../api/flashcardsApi.ts'
 
 type LoadState = { identity: string } & (
   | { status: 'loading' | 'not-found' | 'session-check' }
@@ -19,9 +20,9 @@ type LoadState = { identity: string } & (
   | { status: 'map'; map: KnowledgeMap }
 )
 
-export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring, studySessions, returnTo }:
+export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring, studySessions, flashcards, returnTo }:
   { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
-    studySessions: StudySessionsClient; returnTo: StudyNodeVisit | null }) {
+    studySessions: StudySessionsClient; flashcards: FlashcardsClient; returnTo: StudyNodeVisit | null }) {
   const navigation = usePersistedMapNavigation()
   const { route, revision } = navigation
   const mapId = route.kind === 'map' ? route.id : null
@@ -108,7 +109,7 @@ export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuth
         }} />
       </section>}
       {state.status === 'map' && mapId && <MapWorkspace key={identity} id={mapId} initial={state.map} authoring={authoring} contentAuthoring={contentAuthoring}
-        studySessions={studySessions} returnTo={navigation.nodeSelection}
+        studySessions={studySessions} flashcards={flashcards} returnTo={navigation.nodeSelection}
         revalidate={onAuthenticationRequired} onOpenMap={navigation.openMap} onDeleted={navigation.showPicker}
         onRename={(title) => setLoaded((previous) => previous.status === 'map' ? { ...previous, map: { ...previous.map, title } } : previous)} />}
     </>}
