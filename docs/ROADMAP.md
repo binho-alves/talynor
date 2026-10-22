@@ -118,7 +118,7 @@ Study Session is the current working product term for a period of study. Its rel
 
 ## Phase 7 - Flashcards
 
-**Status:** Complete for the approved scope after Checkpoint 4 integrated validation on 2026-10-21. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); baseline b4da3f8 and Checkpoints 1 (f375141), 2 (8af676d) and 3 (f58d0fe) are approved and published. ADR-015 remains Accepted. Phase 7 closure was formally approved and published in bc7a4b6. Existing SQLite, offset-pagination, recovery, accessibility and physical-touch limitations remain; completion does not imply production readiness. Phase 8 is Complete for the approved scope under ADR-016; CP1 is Published in 4b6dec0, CP2 in e17aa97 and CP3 in 84e01b4. CP4 is Completed / validated; its closure documentation awaits formal review and publication.
+**Status:** Complete for the approved scope after Checkpoint 4 integrated validation on 2026-10-21. Design approved under [ADR-015](DECISIONS.md#adr-015---node-owned-flashcards-and-review-progression); baseline b4da3f8 and Checkpoints 1 (f375141), 2 (8af676d) and 3 (f58d0fe) are approved and published. ADR-015 remains Accepted. Phase 7 closure was formally approved and published in bc7a4b6. Existing SQLite, offset-pagination, recovery, accessibility and physical-touch limitations remain; completion does not imply production readiness. Phase 8 is Complete / Published for the approved scope under ADR-016; CP1 is Published in 4b6dec0, CP2 in e17aa97, CP3 in 84e01b4 and CP4 is Completed / Validated / Published in 80bbae3.
 
 **Goal:** let a learner create prompt/answer cards on a knowledge node, review them, and resume from persisted per-card progress.
 
@@ -141,7 +141,7 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 ## Phase 8 - Assessments
 
-**Status:** Complete for the approved scope under [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts). CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published; CP4 integrated validation is Completed / validated on 2026-10-22. Closure documentation awaits formal review and publication. This is scoped completion, not production readiness; later phases need their own authorization.
+**Status:** Complete / Published for the approved scope under [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts). CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published; CP4 integrated validation is Completed / Validated / Published on 2026-10-22; closure was formally reviewed and approved, with documentation published in 80bbae3. This is scoped completion, not production readiness; later phases need their own authorization.
 
 **Goal:** support simple quizzes to check understanding.
 
@@ -157,9 +157,9 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 2. CP1 - Quiz foundation + authoring/read backend: Published in 4b6dec0; Domain/EF and AddQuizzes, nested CRUD/full replacement and answer-free take reads; no attempts/frontend.
 3. CP2 - Submission, grading and history backend: Published in e17aa97; AddQuizAttempts, complete server grading, immutable full snapshots, idempotency/lookup and concurrency; no frontend/active draft.
 4. CP3 - Frontend authoring + answering/history: Published in 84e01b4; existing node UX, runtime validation, local draft/locks/reconciliation, accessibility/responsiveness; no new backend/schema/dependency.
-5. CP4 - Integrated validation and closure: Completed / validated; regression/migration/security/browser evidence and limitations recorded; closure documentation pending formal review/publication, no new features.
+5. CP4 - Integrated validation and closure: Completed / validated; regression/migration/security/browser evidence and limitations recorded; closure documentation formally reviewed, approved and published in 80bbae3, no new features.
 
-**Closure:** approved quiz authoring, single-choice answering, complete server grading, immutable results/history, idempotent attempts, explicit reconciliation and security/validation boundaries are delivered. The [acceptance matrix A-R](DEVELOPMENT.md#phase-8-acceptance-matrix-a-r) and final CP4 evidence pass for this scoped delivery. Earlier formal reviews are complete; independent closure review and publication remain pending. The [risk register](DEVELOPMENT.md#phase-8-risk-register), SQLite native-wait/official-writer limits, moving offsets, hard-delete history loss, uncertain-write and accessibility/physical-touch/scale limitations remain. No mastery, StudySession coupling or Phase 9 implementation is included.
+**Closure:** approved quiz authoring, single-choice answering, complete server grading, immutable results/history, idempotent attempts, explicit reconciliation and security/validation boundaries are delivered. The [acceptance matrix A-R](DEVELOPMENT.md#phase-8-acceptance-matrix-a-r) and final CP4 evidence pass for this scoped delivery. The independent closure review was APPROVED and the closure was published in 80bbae3. The [risk register](DEVELOPMENT.md#phase-8-risk-register), SQLite native-wait/official-writer limits, moving offsets, hard-delete history loss, uncertain-write and accessibility/physical-touch/scale limitations remain. No mastery, StudySession coupling or Phase 9 implementation is included.
 
 **Risks:** ownership/IDOR, changed-definition grading, duplicate send, snapshot completeness/storage, accidental history deletion, SQLite contention, frontend state, migration preservation and exam-system scope creep. Existing architecture/provider and verification limitations remain; design acceptance is not production readiness.
 

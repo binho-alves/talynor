@@ -2,7 +2,7 @@
 
 ## Phase 8 - Assessments design baseline
 
-2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / validated; closure documentation awaits formal review, staging, commit and publication. Phase 9 is Planned / Next, not started. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
+2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete / Published for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / Validated / Published; closure review was APPROVED and documentation was published in 80bbae3. Phase 9 is Planned / Next, not started. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
 
 The baseline defines node-owned single-choice quizzes, full server-graded submission, current definition revisions, immutable full historical question/option snapshots, explicit hard-delete cascade and same-AttemptId recovery. Unsent answers/drafts are frontend memory only and may be lost on context change/F5/logout; no persisted start/active attempt, autosave, resume, timer or StudySession coupling exists. Exact fields/contracts/limits/errors/concurrency/deletion are authoritative in ADR-016. The QuizAttemptAnswerOptions child implemented in CP2 preserves every presented alternative without current-child FKs or generic JSON. CP0 creates no source/migration/dependency and runs no new application suite.
 
@@ -14,7 +14,7 @@ The baseline defines node-owned single-choice quizzes, full server-graded submis
 | CP1 - Quiz foundation + authoring/read backend; Published in 4b6dec0 | Quiz/Question/Option Domain; Application reader/store/use cases; Infrastructure mapping; AddQuizzes; nested CRUD/full PUT and answer-free take DTO. | No attempt tables, grading/history workflow or frontend. | Unit/HTTP/real SQLite tests for bounds, revision/no-op/stale/overflow, scoped ownership, strict DTOs, pagination, key isolation, caps/Kestrel and migration Up/Down/reapply; build/regressions and pending-model NONE. |
 | CP2 - Submission, grading and history backend; Published in e17aa97 | Attempt/answer/all-option snapshots; AddQuizAttempts; grading, lookup/history, same-ID semantics and official-writer transactions. | No active draft/start/timer, frontend or aggregates. | Exact scoring/snapshot invariants; edit/submit ordering, same/different-ID races, delete races, before-commit rollback, original-time replay after edit, auth/CSRF/caps and preserved earlier migrations/constraints. |
 | CP3 - Frontend authoring + answering/history; Published in 84e01b4 | Own API/runtime DTOs; Quizzes entry, full form, take/result/history, scoped state/locks, explicit same-ID reconciliation and responsive/native controls. | No backend/schema/package changes or persisted draft/StudySession integration. | Build/lint; dependency-free API/coordinator/markup checks and real trusted-HTTPS browser flow, stale navigation, incomplete answers, key absence, retry, keyboard/focus and measured responsive widths. |
-| CP4 - Integrated validation and closure; Completed / validated; closure pending formal review/publication | Integrated regressions, migrations/security/body bounds, browser evidence, documentation and formal closure. | No new feature, future-phase implementation or production-readiness expansion. | Matrix A-R evidenced below; totals and limitations recorded; independent formal closure review precedes separately authorized staging/commit/push. |
+| CP4 - Integrated validation and closure; Completed / validated; closure formally approved and published in 80bbae3 | Integrated regressions, migrations/security/body bounds, browser evidence, documentation and formal closure. | No new feature, future-phase implementation or production-readiness expansion. | Matrix A-R evidenced below; totals and limitations recorded; independent formal closure review precedes separately authorized staging/commit/push. |
 
 Order is design -> definition/persistence/API -> immutable submission/results -> frontend -> integrated closure. CP1 isolates definition validation and revision reads/writes; CP2 adds the distinct atomic grading/idempotency risk. No later checkpoint is started by this baseline or by listing future commands.
 
@@ -24,7 +24,7 @@ Future frontend checks cover runtime contract copying, answer-key absence in tak
 
 ### Phase 8 acceptance matrix A-R
 
-CP0 executed none of these application criteria. The matrix below is now PASS for the scoped implementation and CP4 integrated validation, using the named tests/checks and fresh browser evidence. These results do not claim production readiness, exhaustive React lifecycle coverage, a full accessibility audit or physical-touch validation. Independent formal review/publication of this closure remains a separate approval gate.
+CP0 executed none of these application criteria. The matrix below is now PASS for the scoped implementation and CP4 integrated validation, using the named tests/checks and fresh browser evidence. These results do not claim production readiness, exhaustive React lifecycle coverage, a full accessibility audit or physical-touch validation. At the time this matrix was prepared, independent formal closure review/publication remained a separate approval gate; the review was later APPROVED and closure published in 80bbae3.
 
 | Criterion | Observable acceptance condition | Current evidence |
 | --- | --- | --- |
@@ -68,7 +68,7 @@ Qualitative planning estimates, not measured probabilities. CP1-CP3 implementati
 
 ### Phase 8 CP4 - Integrated validation and closure
 
-2026-10-22, main/HEAD and origin/main 84e01b4, clean synchronized preflight (0/0, no staged/untracked). CP0-CP3 are Published; the CP3 formal review was APPROVED WITH MINOR ISSUES, its sole documentary MINOR was corrected before staging, and its accepted controlled-React-harness NOTE remains. CP4 is Completed / validated, Phase 8 is Complete for the approved scope, and closure documentation awaits independent formal review/staging/commit/publication. Phase 9 is Planned / Next, not started.
+2026-10-22, main/HEAD and origin/main 84e01b4, clean synchronized preflight (0/0, no staged/untracked). CP0-CP3 are Published; the CP3 formal review was APPROVED WITH MINOR ISSUES, its sole documentary MINOR was corrected before staging, and its accepted controlled-React-harness NOTE remains. CP4 is Completed / validated, Phase 8 is Complete for the approved scope, and at that pre-closure point, documentation was awaiting review and publication; it was subsequently APPROVED and published in 80bbae3. Phase 9 is Planned / Next, not started.
 
 **Fresh commands/results:** dotnet build Talynor.slnx --no-restore PASS, zero warnings/errors; dotnet test Talynor.slnx --no-build PASS, 343 unit and 573 integration, zero failures/skips. A separate FullyQualifiedName~Quiz run PASS: QuizTests 36, QuizUseCaseTests 19, QuizAttemptTests 21, QuizAttemptUseCaseTests 16 (92 unit); QuizPersistenceTests 15, QuizHttpTests 69, QuizAttemptPersistenceTests 22 and QuizAttemptHttpTests 62 (168 integration). An extra directed filter of Independent_updates_with_same_revision, Independent_submissions_serialize, Edit_and_submit_both_lock_orders and Delete_and_submit_both_orders passed all eight gate-driven cases without sleep-based proof.
 
@@ -329,7 +329,7 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 
 ## Project context
 
-- Current stage: Phase 8 - Assessments Complete for the approved scope under ADR-016; CP0-CP3 Published (CP3 84e01b4), CP4 Completed / validated; closure documentation pending formal review/publication. Phase 9 Planned / Next, not started.
+- Current stage: Phase 8 - Assessments Complete / Published for the approved scope under ADR-016; CP0-CP3 Published (CP3 84e01b4), CP4 Completed / Validated / Published in 80bbae3. Phase 9 Planned / Next, not started.
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
