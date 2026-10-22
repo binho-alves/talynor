@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { applyNodeChanges, type EdgeChange, type NodeChange } from '@xyflow/react'
 import { metadataPatch, type MapFields, type NodePatch, type KnowledgeMapAuthoringClient } from '../api/knowledgeMapAuthoringApi.ts'
 import { ApiError } from '../api/http.ts'
@@ -17,12 +17,15 @@ import { NodeStudySection } from '../study/NodeStudySection.tsx'
 import type { FlashcardsClient } from '../api/flashcardsApi.ts'
 import { FlashcardAuthoring } from '../flashcards/FlashcardAuthoring.tsx'
 import { FlashcardStudy } from '../flashcards/FlashcardStudy.tsx'
+import type { QuizzesClient } from '../api/quizzesApi.ts'
+const QuizAuthoring = lazy(() => import('../quizzes/QuizAuthoring.tsx').then(module => ({ default: module.QuizAuthoring })))
+const QuizView = lazy(() => import('../quizzes/QuizView.tsx').then(module => ({ default: module.QuizView })))
 
 type Editor = 'map' | 'new-node' | 'node' | 'edge' | 'delete-map' | 'delete-node' | 'delete-edge' | null
 
-export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySessions, flashcards, returnTo, revalidate, onOpenMap, onDeleted, onRename }:
+export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySessions, flashcards, quizzes, returnTo, revalidate, onOpenMap, onDeleted, onRename }:
   { id: string; initial: KnowledgeMap; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
-    studySessions: StudySessionsClient; flashcards: FlashcardsClient; returnTo: StudyNodeVisit | null;
+    studySessions: StudySessionsClient; flashcards: FlashcardsClient; quizzes: QuizzesClient; returnTo: StudyNodeVisit | null;
     revalidate: () => Promise<void>; onOpenMap: (id: string) => void;
     onDeleted: () => void; onRename: (title: string) => void }) {
   const [map, setMap] = useState(initial)
@@ -176,6 +179,7 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySe
         {selected && <ContentSection key={`${selected.id}:view`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           editing={false} client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
         {selected && <FlashcardStudy key={`${selected.id}:flashcard-study`} mapId={id} nodeId={selected.id} client={flashcards} revalidate={revalidate} />}
+        {selected && <Suspense fallback={<p role="status">Carregando painel de quizzes…</p>}><QuizView key={`${selected.id}:quiz-view`} mapId={id} nodeId={selected.id} client={quizzes} revalidate={revalidate} /></Suspense>}
       </NodeDetails>}
       {editing && <aside className="details-panel" aria-label="Edição do mapa">
         {choiceError && <p className="session-feedback">{choiceError}</p>}
@@ -215,6 +219,7 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySe
         {selected && <ContentSection key={`${selected.id}:edit`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           editing client={contentAuthoring} mutation={mutation} revalidate={revalidate} />}
         {selected && <FlashcardAuthoring key={`${selected.id}:flashcard-edit`} mapId={id} nodeId={selected.id} client={flashcards} mutation={mutation} revalidate={revalidate} />}
+        {selected && <Suspense fallback={<p role="status">Carregando edição de quizzes…</p>}><QuizAuthoring key={`${selected.id}:quiz-edit`} mapId={id} nodeId={selected.id} client={quizzes} mutation={mutation} revalidate={revalidate} /></Suspense>}
         {selected && <NodeStudySection key={`${selected.id}:study-edit`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           client={studySessions} revalidate={revalidate} />}
       </aside>}

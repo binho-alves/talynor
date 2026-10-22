@@ -117,3 +117,17 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
   .details-panel { padding: 20px; }
   .back-button { width: 100%; margin-right: 0; }
 }
+/* Quizzes use the existing node panel and native forms, including narrow screens. */
+.quiz-section { border-top: 1px solid #cbd5e1; margin-top: 1rem; padding-top: 1rem; min-width: 0; }
+.quiz-list { padding-left: 1.25rem; }
+.quiz-list > li { margin-bottom: 1rem; overflow-wrap: anywhere; }
+.quiz-question { min-width: 0; margin: 1rem 0; padding: .75rem; border: 1px solid #94a3b8; border-radius: .5rem; }
+.quiz-question legend { max-width: 100%; padding: 0 .25rem; }
+.quiz-radio { display: flex; align-items: flex-start; gap: .5rem; padding: .5rem 0; cursor: pointer; }
+.quiz-radio input { flex: 0 0 auto; width: 1.1rem; min-height: 1.1rem; margin-top: .2rem; }
+.quiz-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.quiz-form textarea, .quiz-form input:not([type=radio]) { box-sizing: border-box; width: 100%; min-width: 0; }
+.quiz-option-editor { margin: .75rem 0; }
+.quiz-section button { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
+.quiz-result { min-width: 0; overflow-wrap: anywhere; }
+.quiz-result ol, .quiz-result ul { padding-left: 1.25rem; }

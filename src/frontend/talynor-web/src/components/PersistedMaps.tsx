@@ -12,6 +12,7 @@ import type { KnowledgeContentAuthoringClient } from '../api/knowledgeContentAut
 import type { StudySessionsClient } from '../api/studySessionsApi.ts'
 import type { StudyNodeVisit } from '../types/studySession.ts'
 import type { FlashcardsClient } from '../api/flashcardsApi.ts'
+import type { QuizzesClient } from '../api/quizzesApi.ts'
 
 type LoadState = { identity: string } & (
   | { status: 'loading' | 'not-found' | 'session-check' }
@@ -20,9 +21,9 @@ type LoadState = { identity: string } & (
   | { status: 'map'; map: KnowledgeMap }
 )
 
-export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring, studySessions, flashcards, returnTo }:
+export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring, studySessions, flashcards, quizzes, returnTo }:
   { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
-    studySessions: StudySessionsClient; flashcards: FlashcardsClient; returnTo: StudyNodeVisit | null }) {
+    studySessions: StudySessionsClient; flashcards: FlashcardsClient; quizzes: QuizzesClient; returnTo: StudyNodeVisit | null }) {
   const navigation = usePersistedMapNavigation()
   const { route, revision } = navigation
   const mapId = route.kind === 'map' ? route.id : null
@@ -109,7 +110,7 @@ export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuth
         }} />
       </section>}
       {state.status === 'map' && mapId && <MapWorkspace key={identity} id={mapId} initial={state.map} authoring={authoring} contentAuthoring={contentAuthoring}
-        studySessions={studySessions} flashcards={flashcards} returnTo={navigation.nodeSelection}
+        studySessions={studySessions} flashcards={flashcards} quizzes={quizzes} returnTo={navigation.nodeSelection}
         revalidate={onAuthenticationRequired} onOpenMap={navigation.openMap} onDeleted={navigation.showPicker}
         onRename={(title) => setLoaded((previous) => previous.status === 'map' ? { ...previous, map: { ...previous.map, title } } : previous)} />}
     </>}

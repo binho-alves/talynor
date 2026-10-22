@@ -5,6 +5,7 @@ import { createKnowledgeMapAuthoringClient } from '../api/knowledgeMapAuthoringA
 import { createKnowledgeContentAuthoringClient } from '../api/knowledgeContentAuthoringApi.ts'
 import { createStudySessionsClient } from '../api/studySessionsApi.ts'
 import { createFlashcardsClient } from '../api/flashcardsApi.ts'
+import { createQuizzesClient } from '../api/quizzesApi.ts'
 import type { CurrentUser, ResolvedSession } from '../types/session'
 
 export class SessionBootstrapError extends Error {
@@ -124,7 +125,8 @@ export function createSessionClient() {
   const contentAuthoring = createKnowledgeContentAuthoringClient(withCsrf)
   const studySessions = createStudySessionsClient(withCsrf)
   const flashcards = createFlashcardsClient(withCsrf)
-  return { bootstrap, login, logout, clearCsrf, authoring, contentAuthoring, studySessions, flashcards }
+  const quizzes = createQuizzesClient(withCsrf)
+  return { bootstrap, login, logout, clearCsrf, authoring, contentAuthoring, studySessions, flashcards, quizzes }
 }
 
 export function loginErrorMessage(error: unknown): string {

@@ -3,6 +3,7 @@ export type ProblemCode = 'csrf_invalid' | 'validation_failed' | 'invalid_creden
   | 'invalid_child_map' | 'invalid_edge_nodes' | 'map_in_use' | 'node_in_use' | 'content_not_found'
   | 'study_session_not_found' | 'active_session_exists' | 'study_session_clock_conflict'
   | 'flashcard_not_found' | 'flashcard_changed' | 'review_id_conflict'
+  | 'quiz_not_found' | 'quiz_changed' | 'attempt_id_conflict'
 
 // Only known status/code pairs are retained. Server titles, details and field values are never rendered.
 type ProblemDetails = { status?: number; code: ProblemCode }
@@ -12,6 +13,7 @@ const codeStatuses: Record<ProblemCode, number> = {
   invalid_child_map: 400, invalid_edge_nodes: 400, map_in_use: 409, node_in_use: 409, content_not_found: 404,
   study_session_not_found: 404, active_session_exists: 409, study_session_clock_conflict: 409,
   flashcard_not_found: 404, flashcard_changed: 409, review_id_conflict: 409,
+  quiz_not_found: 404, quiz_changed: 409, attempt_id_conflict: 409,
 }
 
 export class ApiError extends Error {
