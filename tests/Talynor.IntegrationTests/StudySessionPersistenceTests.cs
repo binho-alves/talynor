@@ -138,7 +138,7 @@ public class StudySessionPersistenceTests
         using var factory = new RegistrationTestFactory(); await factory.InitializeAsync();
         using var scope = factory.Services.CreateScope(); var db = scope.ServiceProvider.GetRequiredService<TalynorDbContext>();
         var f = await StudySessionFixture.CreateAsync(db); db.ChangeTracker.Clear();
-        Assert.Equal(8, (await db.Database.GetAppliedMigrationsAsync()).Count()); Assert.False(db.Database.HasPendingModelChanges());
+        Assert.Equal(9, (await db.Database.GetAppliedMigrationsAsync()).Count()); Assert.False(db.Database.HasPendingModelChanges());
         await db.GetService<IMigrator>().MigrateAsync("20261016054447_AddKnowledgeContent");
         await Assert.ThrowsAsync<SqliteException>(() => db.Database.ExecuteSqlRawAsync("SELECT Id FROM StudySessions"));
         Assert.Equal(5, await db.KnowledgeContents.CountAsync()); Assert.Equal(4, await db.KnowledgeNodes.CountAsync());

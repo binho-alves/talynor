@@ -26,12 +26,50 @@ public sealed class TalynorDbContext(DbContextOptions<TalynorDbContext> options)
     public DbSet<Quiz> Quizzes => Set<Quiz>();
     public DbSet<QuizQuestion> QuizQuestions => Set<QuizQuestion>();
     public DbSet<QuizOption> QuizOptions => Set<QuizOption>();
+    public DbSet<QuizAttempt> QuizAttempts => Set<QuizAttempt>();
+    public DbSet<QuizAttemptAnswer> QuizAttemptAnswers => Set<QuizAttemptAnswer>();
+    public DbSet<QuizAttemptAnswerOption> QuizAttemptAnswerOptions => Set<QuizAttemptAnswerOption>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
         var utc = new ValueConverter<DateTimeOffset, DateTime>(value => value.UtcDateTime,
             value => new DateTimeOffset(DateTime.SpecifyKind(value, DateTimeKind.Utc)));
+        builder.Entity<QuizAttempt>(attempt =>
+        {
+            attempt.ToTable("QuizAttempts", table =>
+            {
+                table.HasCheckConstraint("CK_QuizAttempts_ContentRevision", "ContentRevision > 0");
+                table.HasCheckConstraint("CK_QuizAttempts_QuestionCount", "QuestionCount BETWEEN 1 AND 10");
+                table.HasCheckConstraint("CK_QuizAttempts_CorrectCount", "CorrectCount >= 0 AND CorrectCount <= QuestionCount");
+            });
+            attempt.HasKey(a => a.AttemptId);
+            attempt.Property(a => a.AttemptId).ValueGeneratedNever();
+            attempt.HasOne<Quiz>().WithMany().HasForeignKey(a => a.QuizId).OnDelete(DeleteBehavior.Cascade);
+            attempt.Property(a => a.QuizTitle).IsRequired().HasMaxLength(200);
+            attempt.Property(a => a.SubmittedAtUtc).HasConversion(utc);
+            attempt.Ignore(a => a.AccuracyPercentage);
+            attempt.HasIndex(a => new { a.QuizId, a.SubmittedAtUtc, a.AttemptId }).IsDescending(false, true, true);
+            attempt.HasMany(a => a.Answers).WithOne().HasForeignKey(a => a.AttemptId).OnDelete(DeleteBehavior.Cascade);
+            attempt.Navigation(a => a.Answers).HasField("answers").UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+        builder.Entity<QuizAttemptAnswer>(answer =>
+        {
+            answer.ToTable("QuizAttemptAnswers", table => table.HasCheckConstraint("CK_QuizAttemptAnswers_Position", "Position BETWEEN 1 AND 10"));
+            answer.HasKey(a => new { a.AttemptId, a.QuestionId });
+            answer.Property(a => a.Text).IsRequired().HasMaxLength(1000);
+            answer.Ignore(a => a.IsCorrect);
+            answer.HasIndex(a => new { a.AttemptId, a.Position }).IsUnique();
+            answer.HasMany(a => a.Options).WithOne().HasForeignKey(o => new { o.AttemptId, o.QuestionId }).OnDelete(DeleteBehavior.Cascade);
+            answer.Navigation(a => a.Options).HasField("options").UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+        builder.Entity<QuizAttemptAnswerOption>(option =>
+        {
+            option.ToTable("QuizAttemptAnswerOptions", table => table.HasCheckConstraint("CK_QuizAttemptAnswerOptions_Position", "Position BETWEEN 1 AND 4"));
+            option.HasKey(o => new { o.AttemptId, o.QuestionId, o.OptionId });
+            option.Property(o => o.Text).IsRequired().HasMaxLength(500);
+            option.HasIndex(o => new { o.AttemptId, o.QuestionId, o.Position }).IsUnique();
+        });
         builder.Entity<Quiz>(quiz =>
         {
             quiz.ToTable("Quizzes", table => table.HasCheckConstraint("CK_Quizzes_ContentRevision", "ContentRevision > 0"));

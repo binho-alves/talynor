@@ -419,6 +419,109 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttempt", b =>
+                {
+                    b.Property<Guid>("AttemptId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ContentRevision")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CorrectCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("QuestionCount")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("QuizId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("QuizTitle")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SubmittedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AttemptId");
+
+                    b.HasIndex("QuizId", "SubmittedAtUtc", "AttemptId")
+                        .IsDescending(false, true, true);
+
+                    b.ToTable("QuizAttempts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_QuizAttempts_ContentRevision", "ContentRevision > 0");
+
+                            t.HasCheckConstraint("CK_QuizAttempts_CorrectCount", "CorrectCount >= 0 AND CorrectCount <= QuestionCount");
+
+                            t.HasCheckConstraint("CK_QuizAttempts_QuestionCount", "QuestionCount BETWEEN 1 AND 10");
+                        });
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttemptAnswer", b =>
+                {
+                    b.Property<Guid>("AttemptId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("QuestionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CorrectOptionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("SelectedOptionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AttemptId", "QuestionId");
+
+                    b.HasIndex("AttemptId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("QuizAttemptAnswers", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_QuizAttemptAnswers_Position", "Position BETWEEN 1 AND 10");
+                        });
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttemptAnswerOption", b =>
+                {
+                    b.Property<Guid>("AttemptId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("QuestionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OptionId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("AttemptId", "QuestionId", "OptionId");
+
+                    b.HasIndex("AttemptId", "QuestionId", "Position")
+                        .IsUnique();
+
+                    b.ToTable("QuizAttemptAnswerOptions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_QuizAttemptAnswerOptions_Position", "Position BETWEEN 1 AND 4");
+                        });
+                });
+
             modelBuilder.Entity("Talynor.Domain.Quizzes.QuizOption", b =>
                 {
                     b.Property<Guid>("Id")
@@ -645,6 +748,33 @@ namespace Talynor.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttempt", b =>
+                {
+                    b.HasOne("Talynor.Domain.Quizzes.Quiz", null)
+                        .WithMany()
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttemptAnswer", b =>
+                {
+                    b.HasOne("Talynor.Domain.Quizzes.QuizAttempt", null)
+                        .WithMany("Answers")
+                        .HasForeignKey("AttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttemptAnswerOption", b =>
+                {
+                    b.HasOne("Talynor.Domain.Quizzes.QuizAttemptAnswer", null)
+                        .WithMany("Options")
+                        .HasForeignKey("AttemptId", "QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Talynor.Domain.Quizzes.QuizOption", b =>
                 {
                     b.HasOne("Talynor.Domain.Quizzes.QuizQuestion", null)
@@ -675,6 +805,16 @@ namespace Talynor.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Talynor.Domain.Quizzes.Quiz", b =>
                 {
                     b.Navigation("Questions");
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttempt", b =>
+                {
+                    b.Navigation("Answers");
+                });
+
+            modelBuilder.Entity("Talynor.Domain.Quizzes.QuizAttemptAnswer", b =>
+                {
+                    b.Navigation("Options");
                 });
 
             modelBuilder.Entity("Talynor.Domain.Quizzes.QuizQuestion", b =>

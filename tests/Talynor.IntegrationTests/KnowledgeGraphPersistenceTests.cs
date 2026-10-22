@@ -168,13 +168,14 @@ public class KnowledgeGraphPersistenceTests
         Assert.Equal(2, await db.PersonalWorkspaces.CountAsync());
         Assert.Equal(0, await db.Users.CountAsync());
         var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
-        Assert.Equal(6, pending.Length);
+        Assert.Equal(7, pending.Length);
         Assert.EndsWith("_AddPersistentKnowledgeGraph", pending[0]);
         Assert.EndsWith("_AddKnowledgeContent", pending[1]);
         Assert.EndsWith("_AddStudySessions", pending[2]);
         Assert.EndsWith("_AddFlashcards", pending[3]);
         Assert.EndsWith("_AddFlashcardReviews", pending[4]);
         Assert.EndsWith("_AddQuizzes", pending[5]);
+        Assert.EndsWith("_AddQuizAttempts", pending[6]);
         await db.Database.MigrateAsync();
         Assert.Empty(await db.KnowledgeMaps.ToListAsync());
         Assert.Empty(await db.Database.GetPendingMigrationsAsync());

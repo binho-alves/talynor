@@ -220,8 +220,8 @@ public class QuizPersistenceTests
         var session = StudySession.Start(g.Second.Id, Now);
         db.Flashcards.Add(card); db.KnowledgeContents.Add(content); db.StudySessions.Add(session);
         db.Quizzes.Add(New(g.Second.Id)); await db.SaveChangesAsync(); db.ChangeTracker.Clear();
-        Assert.EndsWith("_AddQuizzes", (await db.Database.GetAppliedMigrationsAsync()).Last()); Assert.False(db.Database.HasPendingModelChanges());
-        async Task<string[]> Schema() => await db.Database.SqlQueryRaw<string>("SELECT sql AS Value FROM sqlite_master WHERE type IN ('index','trigger') AND tbl_name NOT IN ('Quizzes','QuizQuestions','QuizOptions') AND sql IS NOT NULL ORDER BY name").ToArrayAsync();
+        Assert.EndsWith("_AddQuizAttempts", (await db.Database.GetAppliedMigrationsAsync()).Last()); Assert.False(db.Database.HasPendingModelChanges());
+        async Task<string[]> Schema() => await db.Database.SqlQueryRaw<string>("SELECT sql AS Value FROM sqlite_master WHERE type IN ('index','trigger') AND tbl_name NOT IN ('Quizzes','QuizQuestions','QuizOptions','QuizAttempts','QuizAttemptAnswers','QuizAttemptAnswerOptions') AND sql IS NOT NULL ORDER BY name").ToArrayAsync();
         var priorSchema = await Schema();
         await db.GetService<IMigrator>().MigrateAsync("20261020115944_AddFlashcardReviews");
         await Assert.ThrowsAsync<SqliteException>(() => db.Database.ExecuteSqlRawAsync("SELECT Id FROM Quizzes"));

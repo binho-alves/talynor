@@ -2,7 +2,7 @@ using Talynor.Domain.Quizzes;
 
 namespace Talynor.Application.Quizzes;
 
-public enum QuizStatus { Success, AuthenticationRequired, NotFound, InvalidInput, ContentChanged }
+public enum QuizStatus { Success, AuthenticationRequired, NotFound, InvalidInput, ContentChanged, AttemptIdConflict }
 public sealed record QuizInput(string Title, IReadOnlyList<QuizQuestionInput> Questions);
 public sealed record QuizSummary(Guid Id, string Title, int ContentRevision, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
 public sealed record QuizOptionDefinition(Guid Id, string Text, int Position);

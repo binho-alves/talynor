@@ -55,7 +55,7 @@ public class FlashcardReviewPersistenceTests
         Assert.Equal(DeleteBehavior.Cascade, Assert.Single(model.FindEntityType(typeof(FlashcardReviewState))!.GetForeignKeys()).DeleteBehavior);
         Assert.Equal(DeleteBehavior.Cascade, Assert.Single(model.FindEntityType(typeof(FlashcardReview))!.GetForeignKeys()).DeleteBehavior);
         Assert.Equal(new[] { "LastReviewedAtUtc", "FlashcardId" }, Assert.Single(model.FindEntityType(typeof(FlashcardReviewState))!.GetIndexes()).Properties.Select(p => p.Name));
-        Assert.EndsWith("_AddQuizzes", (await db.Database.GetAppliedMigrationsAsync()).Last());
+        Assert.EndsWith("_AddQuizAttempts", (await db.Database.GetAppliedMigrationsAsync()).Last());
         var cardStore = scope.ServiceProvider.GetRequiredService<IFlashcardStore>();
         Assert.Equal(FlashcardStatus.Success, await cardStore.DeleteAsync(graph.Workspace.Id, graph.Map.Id, graph.Second.Id, card.Id, default));
         Assert.Empty(await db.FlashcardReviews.ToArrayAsync()); Assert.Empty(await db.FlashcardReviewStates.ToArrayAsync());
