@@ -1,8 +1,102 @@
 # Development workflow
 
+## Phase 9 - Progress and Analytics design baseline
+
+2026-10-22: Phase 9 is In Progress — Design baseline; CP0 is Implemented / under review. [ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) is Proposed, not Accepted. CP1–CP4 and all Phase 9 application implementation are Not started. Phase 8 remains Complete / Published, CP0–CP3 Published and CP4 Completed / Validated / Published in 80bbae3; its reviewed publication-status fix is published in b7b88a5. This CP0 began on main/HEAD and origin/main b7b88a5, synchronized 0/0, with clean working tree, empty staging and no untracked files. It changes documentation only, without replacing the published evidence/matrices below.
+
+### Phase 9 scope identification
+
+Identify the scope before choosing implementation:
+
+| Question | Authoritative evidence and boundary |
+| --- | --- |
+| Name | [Roadmap Phase 9](ROADMAP.md#phase-9---progress-and-analytics): Progress and Analytics. |
+| Declared goal | Make basic learning progress visible using activity/results already collected; Product's main journey step 7/MVP item 11 says review basic progress. |
+| Product problem | Separate study/practice history does not yet supply a combined basic view at the concept being explored. Product Problem/Value proposition connects study activity and progress to knowledge. |
+| Expected outputs | Basic views and reviewed definitions/limitations for study time, content completion, quiz accuracy, flashcard retention and learning progress; Product Progress explicitly leaves exact measures open. |
+| Explicit exclusions | Roadmap excludes recommendations, advanced analytics and unsupported mastery; the CP0 request also excludes generic QuestionType/strategy/plugin/registry/dynamic-handler architecture and future-type scaffolding. |
+| Existing dependencies | ADR-011 SQL ownership/graph model; ADR-013 Note/Link without completion; ADR-014 study records/lifecycle; ADR-015 revision-tagged review events and current state; ADR-016 immutable QuizAttempt counts/snapshots. Existing session/private client and MapWorkspace are reused. |
+| Future work | Phase 10 UX/polish and Phase 11 controlled production/PostgreSQL stay unchanged. Files/rich content, completion workflow, longitudinal retention/schedulers and advanced analytics are not silently added here. |
+
+No contradictory approved Phase 9 requirement was found. The key gap is unavailable evidence, not a conflicting design: KnowledgeContent has no completion flag/event; binary Flashcard reviews do not establish retention over a delay; no single learning-progress denominator exists. ADR-017 proposes stating those limits and showing three descriptive measures only. Formal review must approve that bounded interpretation; it is not a claim that the unavailable measures are implemented or zero. PRODUCT.md requires no change because it already leaves definitions open.
+
+### Phase 9 planned behavior and source boundaries
+
+The initial view is one node's direct activity/results, not a map/workspace dashboard or traversal of ChildMap/edges. Existing persisted sources stay authoritative; no new Domain aggregate, source write, timestamp, behavior tracking, derived table or materialized counter. Existing immutable Review/Attempt events feed the summaries across answered revisions, independent of current card state/quiz text. Presentation state remains transient. Exact metric, numeric, period, delete, API and security definitions live in ADR-017 rather than being duplicated here.
+
+One planned GET `/api/maps/{mapId}/nodes/{nodeId}/progress` with optional days=7/30/90 (default 30) returns a fixed summary, effective half-open UTC range and calculation time. It has no pagination/list, owner/workspace/timezone selectors, arbitrary range or business body. Separate source queries share a scoped SQLite read snapshot; summaries are neither a permanent historical snapshot nor a mutation-confirmation lookup. Read failures do not become zeros. No new writer concurrency/idempotency rule; existing lazy empty-workspace creation is preserved explicitly. No migration, model/snapshot/index change, dependency or startup database operation is planned.
+
+### Phase 9 implementation checkpoints
+
+| Checkpoint / current status | Cohesive scope | Exclusions and exit |
+| --- | --- | --- |
+| CP0 — Design baseline; Implemented / under review | Scope evidence, proposed ADR-017, measures/time/history/read/security/API/UI decisions, acceptance and risks. | Documentation only; no application criterion is PASS. Formal review precedes separately authorized staging/commit/push. |
+| CP1 — Backend read foundation; Not started | Own Application summary/period/results, GetNodeProgress/INodeProgressReader, Infrastructure node-scoped query and directed backend tests. | No HTTP/DI/frontend, writes/Domain change/schema/migration/dependency. Exit: exact three-source derivation, authorization via existing resolver, coherent snapshot, safe numerics/UTC/cancellation and measured query shape proven on real disposable migrated SQLite. |
+| CP2 — Read API integration; Not started | Own response mapping, the single authenticated GET, days parsing, DI and route-scoped pre-auth sanitization integration, HTTP/security tests. | No source writes, existing API changes, frontend or migration. Exit: exact fixed DTO/default/validation/empty/IDOR/no-store/error contracts; failures never expose private data or become empty results. |
+| CP3 — Frontend node summary; Not started | On-demand View/Edit selected-node section, own API/runtime validation, presets and manual Refresh, safe request identity, accessible/responsive feedback. | No router/chart/global store/polling/storage or history-page aggregation. Exit: labels/denominators/unavailable measures/timezone/period correctness, stale-result and 401 handling, existing map/learning flow regressions and browser evidence. |
+| CP4 — Integrated validation and closure; Not started | Full approved-scope regressions, query/snapshot/delete/time/security checks, browser/metadata smoke and documentation/formal closure. | No new feature; fresh results distinguished from earlier evidence; review, commit and publication remain separately authorized. |
+
+CP1/CP2 deliberately split the same small read slice: CP1 proves cross-source arithmetic/snapshot semantics without exposing a partial public API; CP2 adds only the final HTTP boundary. Each checkpoint requires its own explicit authorization even if ADR-017 is later Accepted.
+
+### Phase 9 CP1 exact scope and exit
+
+Likely new areas/files are `src/backend/Talynor.Application/Progress/` (NodeProgressSummary, period validation/metric arithmetic, INodeProgressReader, GetNodeProgress and specific result categories) and `src/backend/Talynor.Infrastructure/Progress/NodeProgressReader.cs`. Planned tests belong in existing `tests/Talynor.UnitTests/` and `tests/Talynor.IntegrationTests/` projects. Names are proposed, not generated. No Domain entity, existing reader contract, controller/Program registration, frontend, package/project file, EF model/snapshot/index or migration is needed. Documentation follow-through is limited to actual delivered boundaries/evidence.
+
+GetNodeProgress captures one server UTC instant, validates the days preset and uses the existing current-account/lazy-workspace resolver; this preserves its approved initialization side effect, not a new progress write. A specific reader validates the owned map/node and reads the three direct sources in one deferred read snapshot; pass cancellation throughout, stream only needed StudySession timestamp scalars if exact duration translation is unsuitable, and aggregate other counts without loading answer text/collections. Avoid fan-out duplication, client-side all-history buffering, per-card/per-quiz N+1 and silently partial totals. Returned metrics use ADR-017's empty/null, rounding, full-duration end-attribution, historical revision and overflow rules.
+
+Required CP1 unit tests: preset defaults/rejection, one captured TimeProvider reference, range underflow, non-UTC clock normalization, zero/null ratios, weighted 1/1 plus 0/3 = 25% (not 50%), 2/3 rounding, sub-second accumulation before floor, count/seconds safe-range rejection, account failure and cancellation. Required real SQLite tests: full SQL workspace/map/node isolation, missing/mixed/empty nodes, exact inclusive-from/exclusive-to boundaries on all sources, zero/active/cross-boundary sessions, old-revision events after edit/reset, retained quiz scores after replacement, same-ID replay counted once/distinct IDs counted separately, each approved hard-delete/cascade/blocker outcome, rollback exclusion and one request snapshot across interleaved official commits. Use independent connections and bounded gates rather than sleeps; preserve native busy/cancellation failure classification without automatic retry. Dates spanning a DST change still cover exactly preset * 24 UTC hours; no calendar bucket assertion is invented.
+
+Inspect generated SQL/projections and query count on representative synthetic nodes with multiple cards/quizzes/events: avoid three-way fact joins and fetching private text; show source count does not create per-object commands or unbounded retained arrays. Existing indexes are sufficient only as a hypothesis to verify, not a measured performance promise; any concrete need for schema/index changes must return to review instead of expanding CP1. Completion requires applicable existing backend regressions/build, directed tests, unchanged EF model and documented scope/limits, without claiming HTTP/frontend behavior. No CP1 checks are executed in this design task.
+
+### Phase 9 acceptance matrix A-R
+
+All entries are **Planned / not executed**, including domain/read invariants; CP0 documentation does not mark application behavior PASS. Formal review approves the criteria, not an unimplemented endpoint.
+
+| Criterion | Observable acceptance condition | Planned evidence |
+| --- | --- | --- |
+| A. Product semantics | Three independent descriptive groups; no completion/mastery score or unsupported retention claim; unavailable roadmap measures explained. | Metric/UX assertions and formal review. |
+| B. Domain boundaries | Existing aggregates/lifecycles/revisions unchanged; node direct sources only; edges/ChildMap cycles neither recurse nor double count. | Domain/source regressions and multi-node/cycle fixture. |
+| C. Source/read model | StudySession, FlashcardReview and QuizAttempt are authoritative sources; current ReviewState/text and demo metrics are not analytical inputs. No derived persistence. | Query/projection and model/source audit. |
+| D. Study attribution | Active excluded; ended zero-duration counted; full duration assigned by EndedAtUtc; sum exact fractions before flooring once. | Unit + SQLite boundary/cross-range cases. |
+| E. Review semantics | All retained answered revisions count; edit/reset retains old-event contributions; binary self-report/denominators labeled. | Revision/reset/replay/delete fixtures and UI checks. |
+| F. Quiz weighting | Aggregate stored historical numerator/denominator; 1/1 + 0/3 gives 25%; edits never regrade or use current child text. | Weighted/rounding/replacement tests. |
+| G. Numeric empties | Zero counts/sums, null denominator-zero ratios; safe integer/nonnegative bounds and 0..100 ratios; overflow/invalid sources fail sanitized. | Unit/contract/runtime tests, empty UI. |
+| H. Time/filter | days default 30, accepts 7/30/90 only; one UTC clock/range; [from,to); unsupported/duplicate/unknown input rejected; DST does not change elapsed-day length. | Controlled clock, boundary and HTTP/runtime tests. |
+| I. Ownership | Current account/workspace resolves server-side; all source queries scoped; mixed/foreign/missing nodes share progress_not_found, with no owner override. | Real SQLite and two-user HTTP tests; lazy resolver preserved. |
+| J. Security/privacy | Existing cookie/stamp/HTTPS, no-store also on pre-controller failures; GET no CSRF; strict/minimal DTO and safe logs; no answer-key/text or tracking data. | Exact HTTP DTO/auth/error/stamp/metadata tests and source audit. |
+| K. Snapshot/concurrency | Parent and sources share one committed read snapshot; concurrent official writes yield coherent before/after data, rollback contributes nothing; no writer/retry added. | Independent SQLite connection/gate tests and SQL inspection. |
+| L. History/deletion | Edits retain contributions; StudySession delete/card/quiz cascades remove them; node/map blockers and 404 after permitted delete remain unchanged. | Persistence/HTTP regressions and explicit refresh checks. |
+| M. Cost/query shape | Fixed response/constant source-query count, no fact fan-out/N+1/private-text or all-history buffering; no hidden cap/cache/migration. | Representative fixtures, command/projection inspection and documented limits. |
+| N. Frontend identity | On-demand selected-node scope/presets/manual Refresh; obsolete account/node/period responses ignored, logout clears; 401 revalidation has no loop/replay. | Existing-style client/coordinator checks and real browser navigation. |
+| O. UI/time/accessibility | Period/timezone/calculation reference, denominators and limitations visible; distinct loading/empty/error/null states; keyboard/focus/status and narrow layouts usable. | DOM/keyboard/responsive smoke; full audit/touch limits stated. |
+| P. Compatibility | Existing map DTO/History/URL, content/StudySession/Flashcard/Quiz APIs, keys/revisions/idempotency/security/delete rules unaffected. | Published-feature regressions and schema/source audit. |
+| Q. Scope | No QuestionType/strategy/plugin/registry/future-type scaffolding, new writes/dependency/migration/analytics infra or Phase 10+ implementation. | Git diff/name/scope audit. |
+| R. Closure | Actual checks/evidence/limits recorded separately from plans/history; ADR status reflects approval; formal closure precedes separately authorized publication. | Documentation/links/whitespace, review and final Git verification. |
+
+### Phase 9 risks and deferred decisions
+
+| Risk | Planned control / retained limitation |
+| --- | --- |
+| Misleading progress/completion/retention | Literal activity/results labels; no universal percentage or retention prediction; definitions require formal approval. |
+| Forgotten sessions and end attribution | Full-duration-by-end rule visible; numbers may exceed the selected interval's length and do not measure attention; preserve source lifecycle. |
+| Revision mixing/selective deletion | Historical answered revisions counted explicitly; edits retain while deletion removes; neither current mastery nor a permanent audit is inferred. |
+| SQLite range cost and reader locks | One node, <=90 elapsed days and scalar/streamed queries; event volume/scans remain unbounded by the date cap; inspect actual query plan/shape before optimization. |
+| Inconsistent/stale UI | Per-request snapshot and identity guards; time reference is not a commit watermark; manual Refresh/reopen, no realtime or mutation-confirmation claim. |
+| Privacy/account lifecycle | SQL ownership/no-store/minimal data/logging, existing account check and lazy workspace behavior; orphan cleanup/non-atomic account deletion remain future decisions. |
+| Native locking/cancellation | Existing provider limits, short snapshot and cancellation; operational failures are errors, not no-activity or automatic lock retry. |
+| Verification overclaim | CP0 checks documentation only; controlled harness, TestServer, browser smoke, full accessibility/physical touch/scale are distinct evidence classes. |
+
+No missing fact blocks this documentary proposal. Formal approval is still required for the node-only first scope, unmeasured completion/retention treatment, end-attributed time and preset periods; they are proposed decisions, not silently Accepted. A future completion workflow, retention model, calendar grouping, all-time/map/workspace summary, index/materialization or provider transition needs separately approved requirements. The package manager remains open. Generic QuestionType, assessment plugins/strategies/registries/dynamic handlers and preparatory future-type abstractions are expressly excluded, not open implementation choices.
+
+### Phase 9 CP0 documentation verification
+
+CP0 runs document consistency/local-link checks and Git diff/status/whitespace only. Application build/test, EF/migrations and browser validation are not applicable to this documentation-only change and are not rerun. Prior Phase 8 matrices/test totals below remain historical approved evidence, not Phase 9 results. No staging, commit, push or CP1 implementation is authorized here.
+
+CP0 self-verification on 2026-10-22: dependency-free local documentation check passed 94/94 links/anchors; five unchanged external URLs were not fetched. Scope checks confirm exactly seven modified documents, no untracked files, empty staging, unchanged AGENTS.md/PRODUCT.md and no functional source/test/schema/migration/package/project change. The published Phase 8 acceptance matrix A–R (including R) compares unchanged against HEAD; the Phase 10+ roadmap compares unchanged. All 18 Phase 9 criteria remain Planned / not executed. git diff --check passes; main/HEAD and origin/main remain b7b88a5, 0/0. These are document checks, not formal review or application validation. An initial patch context mismatch and a no-op status-edit attempt applied no changes; corrected document edits succeeded. File discovery also found no root scripts directory; the existing feature checks live under the frontend and were not run. Git retains its LF-to-CRLF conversion notices.
+
 ## Phase 8 - Assessments design baseline
 
-2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete / Published for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / Validated / Published; closure review was APPROVED and documentation was published in 80bbae3. Phase 9 is Planned / Next, not started. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
+2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete / Published for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / Validated / Published; closure review was APPROVED and documentation was published in 80bbae3. Phase 9 CP0 is Implemented / under review; application implementation is Not started. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
 
 The baseline defines node-owned single-choice quizzes, full server-graded submission, current definition revisions, immutable full historical question/option snapshots, explicit hard-delete cascade and same-AttemptId recovery. Unsent answers/drafts are frontend memory only and may be lost on context change/F5/logout; no persisted start/active attempt, autosave, resume, timer or StudySession coupling exists. Exact fields/contracts/limits/errors/concurrency/deletion are authoritative in ADR-016. The QuizAttemptAnswerOptions child implemented in CP2 preserves every presented alternative without current-child FKs or generic JSON. CP0 creates no source/migration/dependency and runs no new application suite.
 
@@ -329,7 +423,7 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 
 ## Project context
 
-- Current stage: Phase 8 - Assessments Complete / Published for the approved scope under ADR-016; CP0-CP3 Published (CP3 84e01b4), CP4 Completed / Validated / Published in 80bbae3. Phase 9 Planned / Next, not started.
+- Current stage: Phase 9 - Progress and Analytics In Progress — Design baseline; CP0 Implemented / under review under proposed ADR-017; CP1–CP4/application implementation Not started. Phase 8 remains Complete / Published in 80bbae3 (status fix b7b88a5).
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.

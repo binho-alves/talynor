@@ -167,13 +167,17 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 ## Phase 9 - Progress and Analytics
 
-**Status:** Planned / Next; not started. Metrics/design and implementation require separate explicit authorization.
+**Status:** In Progress — Design baseline. CP0 is Implemented / under review; CP1–CP4 and application implementation are Not started. [Proposed ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) requires formal review; this task authorizes documentation only.
 
 **Goal:** make basic learning progress visible using the activity and results already collected.
 
 **Expected outputs:** basic progress views; reviewed definitions for study time, content completion, quiz accuracy, flashcard retention, and learning progress; documented limitations of the measures.
 
-**Non-goals:** recommendation engine, advanced analytics platform, or unsupported claims of mastery.
+**Initial baseline proposed for review:** a node-level activity/results panel and one derived-summary read API over the existing StudySession, FlashcardReview and QuizAttempt data. Definitions distinguish ended-period duration, self-reported recall and question-weighted historical quiz accuracy. Note/Link completion is not recorded; retention over time is not measured; overall learning progress has no justified scalar/denominator. Show those limits rather than inventing completion state, an estimated retention value or a mastery score. This reviews all five named measures without silently claiming all are measurable. No source behavior or Phase 8 contract changes.
+
+**Checkpoints:** CP0 design; CP1 Application/Infrastructure read foundation and directed tests; CP2 authenticated read API; CP3 node-panel frontend; CP4 integrated validation/formal closure. Each implementation checkpoint requires separate explicit authorization. Scope, exits, acceptance and risks are in [Development](DEVELOPMENT.md#phase-9---progress-and-analytics-design-baseline).
+
+**Non-goals:** recommendation engine, advanced analytics platform, or unsupported claims of mastery. Also excluded from this first scope: persistent completion/progress, materialized analytics, map/workspace dashboards, temporal grouping/trends, new behavioral tracking, and generic QuestionType/strategy/plugin/registry/dynamic-handler architecture or abstractions for future question types. Phase 10 and Phase 11 remain unchanged.
 
 ## Phase 10 - UX, responsiveness and polishing
 
