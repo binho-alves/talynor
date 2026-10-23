@@ -131,3 +131,11 @@ button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-
 .quiz-section button { white-space: normal; overflow-wrap: anywhere; max-width: 100%; }
 .quiz-result { min-width: 0; overflow-wrap: anywhere; }
 .quiz-result ol, .quiz-result ul { padding-left: 1.25rem; }
+.activity-section { border-top: 1px solid #cbd5e1; margin-top: 1rem; padding-top: 1rem; min-width: 0; overflow-wrap: anywhere; }
+.activity-section button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.activity-presets { border: 0; padding: 0; margin: 1rem 0; min-width: 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.activity-presets label { display: flex; align-items: center; gap: .4rem; min-height: 44px; padding: .5rem; }
+.activity-presets input { margin: 0; }
+.activity-metrics { display: grid; grid-template-columns: minmax(0, 1fr); gap: .35rem; }
+.activity-metrics dt { color: #475569; }
+.activity-metrics dd { margin: 0 0 .75rem; font-weight: 700; font-variant-numeric: tabular-nums; }

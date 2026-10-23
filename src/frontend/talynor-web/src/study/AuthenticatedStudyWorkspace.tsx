@@ -9,12 +9,12 @@ import { PersistedMaps } from '../components/PersistedMaps.tsx'
 import { StudySessionProvider } from './StudySessionProvider.tsx'
 import { ActiveStudySessionIndicator } from './ActiveStudySessionIndicator.tsx'
 
-export function AuthenticatedStudyWorkspace({ client, revalidate, authoring, contentAuthoring, flashcards, quizzes }:
-  { client: StudySessionsClient; revalidate: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient; flashcards: FlashcardsClient; quizzes: QuizzesClient }) {
+export function AuthenticatedStudyWorkspace({ accountId, client, revalidate, authoring, contentAuthoring, flashcards, quizzes }:
+  { accountId: string; client: StudySessionsClient; revalidate: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient; flashcards: FlashcardsClient; quizzes: QuizzesClient }) {
   const [returnTo, setReturnTo] = useState<StudyNodeVisit | null>(null)
   return <StudySessionProvider client={client} revalidate={revalidate}>
     <ActiveStudySessionIndicator onOpenNode={node => setReturnTo(previous => ({ ...node, requestId: (previous?.requestId ?? 0) + 1 }))} />
-    <PersistedMaps onAuthenticationRequired={revalidate} authoring={authoring} contentAuthoring={contentAuthoring}
+    <PersistedMaps accountId={accountId} onAuthenticationRequired={revalidate} authoring={authoring} contentAuthoring={contentAuthoring}
       studySessions={client} flashcards={flashcards} quizzes={quizzes} returnTo={returnTo} />
   </StudySessionProvider>
 }

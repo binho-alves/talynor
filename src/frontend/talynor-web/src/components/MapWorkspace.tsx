@@ -18,13 +18,14 @@ import type { FlashcardsClient } from '../api/flashcardsApi.ts'
 import { FlashcardAuthoring } from '../flashcards/FlashcardAuthoring.tsx'
 import { FlashcardStudy } from '../flashcards/FlashcardStudy.tsx'
 import type { QuizzesClient } from '../api/quizzesApi.ts'
+import { NodeProgressSection } from '../progress/NodeProgressSection.tsx'
 const QuizAuthoring = lazy(() => import('../quizzes/QuizAuthoring.tsx').then(module => ({ default: module.QuizAuthoring })))
 const QuizView = lazy(() => import('../quizzes/QuizView.tsx').then(module => ({ default: module.QuizView })))
 
 type Editor = 'map' | 'new-node' | 'node' | 'edge' | 'delete-map' | 'delete-node' | 'delete-edge' | null
 
-export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySessions, flashcards, quizzes, returnTo, revalidate, onOpenMap, onDeleted, onRename }:
-  { id: string; initial: KnowledgeMap; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
+export function MapWorkspace({ accountId, id, initial, authoring, contentAuthoring, studySessions, flashcards, quizzes, returnTo, revalidate, onOpenMap, onDeleted, onRename }:
+  { accountId: string; id: string; initial: KnowledgeMap; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
     studySessions: StudySessionsClient; flashcards: FlashcardsClient; quizzes: QuizzesClient; returnTo: StudyNodeVisit | null;
     revalidate: () => Promise<void>; onOpenMap: (id: string) => void;
     onDeleted: () => void; onRename: (title: string) => void }) {
@@ -174,6 +175,7 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySe
       onSelectionChange={() => setEditor(null)}>
       <div className="workspace-panels">
       {!editing && <NodeDetails node={selected} onOpenSubmap={(node) => { if (node.data.childMapId) onOpenMap(node.data.childMapId) }}>
+        {selected && <NodeProgressSection accountId={accountId} mapId={id} nodeId={selected.id} revalidate={revalidate} />}
         {selected && <NodeStudySection key={`${selected.id}:study-view`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
           client={studySessions} revalidate={revalidate} />}
         {selected && <ContentSection key={`${selected.id}:view`} mapId={id} nodeId={selected.id} nodeTitle={selected.data.title}
@@ -182,6 +184,7 @@ export function MapWorkspace({ id, initial, authoring, contentAuthoring, studySe
         {selected && <Suspense fallback={<p role="status">Carregando painel de quizzes…</p>}><QuizView key={`${selected.id}:quiz-view`} mapId={id} nodeId={selected.id} client={quizzes} revalidate={revalidate} /></Suspense>}
       </NodeDetails>}
       {editing && <aside className="details-panel" aria-label="Edição do mapa">
+        {selected && <NodeProgressSection accountId={accountId} mapId={id} nodeId={selected.id} revalidate={revalidate} />}
         {choiceError && <p className="session-feedback">{choiceError}</p>}
         <button disabled={mutation.pending} onClick={() => setChoiceRetry((value) => value + 1)}>Atualizar lista de submapas</button>
         {selected && <div className="editor-actions"><button disabled={mutation.pending} onClick={() => setEditor('node')}>Editar nó selecionado</button>

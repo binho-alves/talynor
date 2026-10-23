@@ -167,7 +167,7 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 ## Phase 9 - Progress and Analytics
 
-**Status:** In Progress. CP0 baseline is published; CP1 read foundation is Published in 7c4069d; CP2 API integration is Implemented / under review; CP3–CP4 are Not started. [Accepted ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) records the approved design; implementation checkpoints still require separate explicit authorization.
+**Status:** In Progress. CP0 baseline is published; CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Implemented / under review; CP4 is Not started. [Accepted ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) records the approved design; implementation checkpoints still require separate explicit authorization.
 
 **Goal:** make basic learning progress visible using the activity and results already collected.
 

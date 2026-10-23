@@ -42,7 +42,7 @@ function App() {
     </header>
     {operationError && <p className="session-feedback" role="alert">{operationError}</p>}
     <span className="sr-only" role="status">{busy === 'logout' ? 'Encerrando sua sessão…' : ''}</span>
-    <AuthenticatedStudyWorkspace key={`${session.user.id}:${session.workspace.id}`} revalidate={revalidateSession}
+    <AuthenticatedStudyWorkspace key={`${session.user.id}:${session.workspace.id}`} accountId={session.user.id} revalidate={revalidateSession}
       authoring={authoring} contentAuthoring={contentAuthoring} client={studySessions} flashcards={flashcards} quizzes={quizzes} />
   </div>
 }

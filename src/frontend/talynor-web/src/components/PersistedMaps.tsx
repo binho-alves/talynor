@@ -21,8 +21,8 @@ type LoadState = { identity: string } & (
   | { status: 'map'; map: KnowledgeMap }
 )
 
-export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuthoring, studySessions, flashcards, quizzes, returnTo }:
-  { onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
+export function PersistedMaps({ accountId, onAuthenticationRequired, authoring, contentAuthoring, studySessions, flashcards, quizzes, returnTo }:
+  { accountId: string; onAuthenticationRequired: () => Promise<void>; authoring: KnowledgeMapAuthoringClient; contentAuthoring: KnowledgeContentAuthoringClient;
     studySessions: StudySessionsClient; flashcards: FlashcardsClient; quizzes: QuizzesClient; returnTo: StudyNodeVisit | null }) {
   const navigation = usePersistedMapNavigation()
   const { route, revision } = navigation
@@ -109,7 +109,7 @@ export function PersistedMaps({ onAuthenticationRequired, authoring, contentAuth
           navigation.openMap(map.id)
         }} />
       </section>}
-      {state.status === 'map' && mapId && <MapWorkspace key={identity} id={mapId} initial={state.map} authoring={authoring} contentAuthoring={contentAuthoring}
+      {state.status === 'map' && mapId && <MapWorkspace key={identity} accountId={accountId} id={mapId} initial={state.map} authoring={authoring} contentAuthoring={contentAuthoring}
         studySessions={studySessions} flashcards={flashcards} quizzes={quizzes} returnTo={navigation.nodeSelection}
         revalidate={onAuthenticationRequired} onOpenMap={navigation.openMap} onDeleted={navigation.showPicker}
         onRename={(title) => setLoaded((previous) => previous.status === 'map' ? { ...previous, map: { ...previous.map, title } } : previous)} />}
