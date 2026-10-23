@@ -20,6 +20,8 @@ using Talynor.Application.Flashcards;
 using Talynor.Infrastructure.Flashcards;
 using Talynor.Application.Quizzes;
 using Talynor.Infrastructure.Quizzes;
+using Talynor.Application.Progress;
+using Talynor.Infrastructure.Progress;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +48,8 @@ builder.Services.AddScoped<DeleteKnowledgeContent>();
 builder.Services.AddScoped<IStudySessionReader, StudySessionReader>();
 builder.Services.AddScoped<ListStudySessionsForNode>();
 builder.Services.AddScoped<GetStudySessionForNode>();
+builder.Services.AddScoped<INodeProgressReader, NodeProgressReader>();
+builder.Services.AddScoped<GetNodeProgress>();
 builder.Services.AddScoped<IStudySessionStore, StudySessionStore>();
 builder.Services.AddScoped<StartStudySession>();
 builder.Services.AddScoped<CompleteStudySession>();
