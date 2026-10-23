@@ -1,8 +1,8 @@
 # Secure-development principles
 
-## Phase 9 proposed summary-read boundary
+## Phase 9 accepted summary-read boundary
 
-Phase 9 CP0 is Implemented / under review; application implementation and CP1–CP4 are Not started. The [proposed ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) introduces no new security implementation or production-readiness claim. Phase 8 remains Complete / Published and all current controls/limitations below remain in force.
+Phase 9 CP0 baseline is published; application implementation and CP1–CP4 are Not started. The [accepted ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) introduces no new security implementation or production-readiness claim. Phase 8 remains Complete / Published and all current controls/limitations below remain in force.
 
 The planned node-summary GET requires the existing cookie session, valid current account and server-resolved workspace; parent and every source query must enforce workspace/map/node ownership in SQL. Reject owner/workspace override filters. Missing/foreign/mixed nodes share generic progress_not_found. Account checks and the previously approved lazy workspace resolver remain unchanged, including the non-atomic account-deletion limitation. Private successes and all matched-route failures, including pre-controller native stamp failures, must be no-store with sanitized 401/403/400/404/500 behavior. GET needs no CSRF and adds no write, request-body cap, token, CORS or permission policy; unsafe existing operations retain native CSRF and strict JSON.
 
@@ -12,7 +12,7 @@ The future frontend must validate/copy the own DTO, render local pt-BR metric la
 
 ## Phase 8 Assessments security baseline - CP1/CP2 backend and CP3 frontend controls
 
-[ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. CP0-CP3 are Published (CP3 84e01b4); Phase 8 is Complete / Published for the approved scope. CP4 integrated validation was completed and published on 2026-10-22; closure review was APPROVED and documentation was published in 80bbae3. Fresh backend/HTTP/Kestrel, client and HTTPS-browser evidence validates the scoped controls below. This is not production readiness or a full browser/accessibility security audit; Phase 9 application implementation is not started; CP0 is documented separately under proposed ADR-017.
+[ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. CP0-CP3 are Published (CP3 84e01b4); Phase 8 is Complete / Published for the approved scope. CP4 integrated validation was completed and published on 2026-10-22; closure review was APPROVED and documentation was published in 80bbae3. Fresh backend/HTTP/Kestrel, client and HTTPS-browser evidence validates the scoped controls below. This is not production readiness or a full browser/accessibility security audit; Phase 9 application implementation is not started; CP0 is documented separately under accepted ADR-017.
 
 Every quiz/take/attempt operation must require the existing authenticated account and derive workspace ownership server-side, filtering workspace/map/node/quiz/attempt in SQL. Reuse approved lazy workspace resolution without seeding a quiz or attempt. No client owner/workspace/StudySession selector exists. Missing, foreign or incompatible nested paths and absent scoped attempts share no-store 404 quiz_not_found; never expose another attempt's payload through lookup or a global AttemptId collision. Native cookie/stamp/HTTPS and sanitized pre-controller failures remain in force; no JWT, CORS, secret or provider is introduced.
 

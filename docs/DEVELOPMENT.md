@@ -2,7 +2,7 @@
 
 ## Phase 9 - Progress and Analytics design baseline
 
-2026-10-22: Phase 9 is In Progress — Design baseline; CP0 is Implemented / under review. [ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) is Proposed, not Accepted. CP1–CP4 and all Phase 9 application implementation are Not started. Phase 8 remains Complete / Published, CP0–CP3 Published and CP4 Completed / Validated / Published in 80bbae3; its reviewed publication-status fix is published in b7b88a5. This CP0 began on main/HEAD and origin/main b7b88a5, synchronized 0/0, with clean working tree, empty staging and no untracked files. It changes documentation only, without replacing the published evidence/matrices below.
+2026-10-22: Phase 9 is In Progress — Design baseline; CP0 baseline is published. [ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) is Accepted; acceptance does not authorize implementation. CP1–CP4 and all Phase 9 application implementation are Not started. Phase 8 remains Complete / Published, CP0–CP3 Published and CP4 Completed / Validated / Published in 80bbae3; its reviewed publication-status fix is published in b7b88a5. This CP0 began on main/HEAD and origin/main b7b88a5, synchronized 0/0, with clean working tree, empty staging and no untracked files. It changes documentation only, without replacing the published evidence/matrices below.
 
 ### Phase 9 scope identification
 
@@ -18,7 +18,7 @@ Identify the scope before choosing implementation:
 | Existing dependencies | ADR-011 SQL ownership/graph model; ADR-013 Note/Link without completion; ADR-014 study records/lifecycle; ADR-015 revision-tagged review events and current state; ADR-016 immutable QuizAttempt counts/snapshots. Existing session/private client and MapWorkspace are reused. |
 | Future work | Phase 10 UX/polish and Phase 11 controlled production/PostgreSQL stay unchanged. Files/rich content, completion workflow, longitudinal retention/schedulers and advanced analytics are not silently added here. |
 
-No contradictory approved Phase 9 requirement was found. The key gap is unavailable evidence, not a conflicting design: KnowledgeContent has no completion flag/event; binary Flashcard reviews do not establish retention over a delay; no single learning-progress denominator exists. ADR-017 proposes stating those limits and showing three descriptive measures only. Formal review must approve that bounded interpretation; it is not a claim that the unavailable measures are implemented or zero. PRODUCT.md requires no change because it already leaves definitions open.
+No contradictory approved Phase 9 requirement was found. The key gap is unavailable evidence, not a conflicting design: KnowledgeContent has no completion flag/event; binary Flashcard reviews do not establish retention over a delay; no single learning-progress denominator exists. ADR-017 records those limits and the three descriptive measures only. Formal review approved that bounded interpretation; it is not a claim that the unavailable measures are implemented or zero. PRODUCT.md requires no change because it already leaves definitions open.
 
 ### Phase 9 planned behavior and source boundaries
 
@@ -30,13 +30,13 @@ One planned GET `/api/maps/{mapId}/nodes/{nodeId}/progress` with optional days=7
 
 | Checkpoint / current status | Cohesive scope | Exclusions and exit |
 | --- | --- | --- |
-| CP0 — Design baseline; Implemented / under review | Scope evidence, proposed ADR-017, measures/time/history/read/security/API/UI decisions, acceptance and risks. | Documentation only; no application criterion is PASS. Formal review precedes separately authorized staging/commit/push. |
+| CP0 — Design baseline; published | Scope evidence, accepted ADR-017, measures/time/history/read/security/API/UI decisions, acceptance and risks. | Documentation only; no application criterion is PASS. Formal review precedes separately authorized staging/commit/push. |
 | CP1 — Backend read foundation; Not started | Own Application summary/period/results, GetNodeProgress/INodeProgressReader, Infrastructure node-scoped query and directed backend tests. | No HTTP/DI/frontend, writes/Domain change/schema/migration/dependency. Exit: exact three-source derivation, authorization via existing resolver, coherent snapshot, safe numerics/UTC/cancellation and measured query shape proven on real disposable migrated SQLite. |
 | CP2 — Read API integration; Not started | Own response mapping, the single authenticated GET, days parsing, DI and route-scoped pre-auth sanitization integration, HTTP/security tests. | No source writes, existing API changes, frontend or migration. Exit: exact fixed DTO/default/validation/empty/IDOR/no-store/error contracts; failures never expose private data or become empty results. |
 | CP3 — Frontend node summary; Not started | On-demand View/Edit selected-node section, own API/runtime validation, presets and manual Refresh, safe request identity, accessible/responsive feedback. | No router/chart/global store/polling/storage or history-page aggregation. Exit: labels/denominators/unavailable measures/timezone/period correctness, stale-result and 401 handling, existing map/learning flow regressions and browser evidence. |
 | CP4 — Integrated validation and closure; Not started | Full approved-scope regressions, query/snapshot/delete/time/security checks, browser/metadata smoke and documentation/formal closure. | No new feature; fresh results distinguished from earlier evidence; review, commit and publication remain separately authorized. |
 
-CP1/CP2 deliberately split the same small read slice: CP1 proves cross-source arithmetic/snapshot semantics without exposing a partial public API; CP2 adds only the final HTTP boundary. Each checkpoint requires its own explicit authorization even if ADR-017 is later Accepted.
+CP1/CP2 deliberately split the same small read slice: CP1 proves cross-source arithmetic/snapshot semantics without exposing a partial public API; CP2 adds only the final HTTP boundary. Each checkpoint requires its own explicit authorization even though ADR-017 is Accepted.
 
 ### Phase 9 CP1 exact scope and exit
 
@@ -86,7 +86,7 @@ All entries are **Planned / not executed**, including domain/read invariants; CP
 | Native locking/cancellation | Existing provider limits, short snapshot and cancellation; operational failures are errors, not no-activity or automatic lock retry. |
 | Verification overclaim | CP0 checks documentation only; controlled harness, TestServer, browser smoke, full accessibility/physical touch/scale are distinct evidence classes. |
 
-No missing fact blocks this documentary proposal. Formal approval is still required for the node-only first scope, unmeasured completion/retention treatment, end-attributed time and preset periods; they are proposed decisions, not silently Accepted. A future completion workflow, retention model, calendar grouping, all-time/map/workspace summary, index/materialization or provider transition needs separately approved requirements. The package manager remains open. Generic QuestionType, assessment plugins/strategies/registries/dynamic handlers and preparatory future-type abstractions are expressly excluded, not open implementation choices.
+No missing fact blocks this accepted design. Formal review approved the node-only first scope, unmeasured completion/retention treatment, end-attributed time and preset periods. A future completion workflow, retention model, calendar grouping, all-time/map/workspace summary, index/materialization or provider transition needs separately approved requirements. The package manager remains open. Generic QuestionType, assessment plugins/strategies/registries/dynamic handlers and preparatory future-type abstractions are expressly excluded, not open implementation choices.
 
 ### Phase 9 CP0 documentation verification
 
@@ -96,7 +96,7 @@ CP0 self-verification on 2026-10-22: dependency-free local documentation check p
 
 ## Phase 8 - Assessments design baseline
 
-2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete / Published for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / Validated / Published; closure review was APPROVED and documentation was published in 80bbae3. Phase 9 CP0 is Implemented / under review; application implementation is Not started. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
+2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete / Published for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / Validated / Published; closure review was APPROVED and documentation was published in 80bbae3. Phase 9 CP0 baseline is published under Accepted ADR-017; application implementation is Not started. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
 
 The baseline defines node-owned single-choice quizzes, full server-graded submission, current definition revisions, immutable full historical question/option snapshots, explicit hard-delete cascade and same-AttemptId recovery. Unsent answers/drafts are frontend memory only and may be lost on context change/F5/logout; no persisted start/active attempt, autosave, resume, timer or StudySession coupling exists. Exact fields/contracts/limits/errors/concurrency/deletion are authoritative in ADR-016. The QuizAttemptAnswerOptions child implemented in CP2 preserves every presented alternative without current-child FKs or generic JSON. CP0 creates no source/migration/dependency and runs no new application suite.
 
@@ -423,7 +423,7 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 
 ## Project context
 
-- Current stage: Phase 9 - Progress and Analytics In Progress — Design baseline; CP0 Implemented / under review under proposed ADR-017; CP1–CP4/application implementation Not started. Phase 8 remains Complete / Published in 80bbae3 (status fix b7b88a5).
+- Current stage: Phase 9 - Progress and Analytics In Progress — Design baseline; CP0 baseline published under Accepted ADR-017; CP1–CP4/application implementation Not started. Phase 8 remains Complete / Published in 80bbae3 (status fix b7b88a5).
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
