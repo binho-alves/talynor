@@ -167,7 +167,7 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 ## Phase 9 - Progress and Analytics
 
-**Status:** Complete for the approved scope; acceptance A–R is PASS. Closure review/publication remain pending. CP0 baseline is published; CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / under review. [Accepted ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) records the approved design; implementation checkpoints still require separate explicit authorization.
+**Status:** Complete for the approved scope; acceptance A–R is PASS. Closure was formally APPROVED and Published in 19ee471. CP0 baseline is published; CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / Approved / Published in 19ee471. [Accepted ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) records the approved design; implementation checkpoints still require separate explicit authorization.
 
 **Goal:** make basic learning progress visible using the activity and results already collected.
 
@@ -181,11 +181,15 @@ Each checkpoint was separately authorized. Checkpoints 1–3 are published and C
 
 ## Phase 10 - UX, responsiveness and polishing
 
-**Status:** Not started; requires separate explicit authorization.
+**Status:** CP0 Documented / under review; implementation has not started. CP1–CP4 are Not started and each requires separate explicit authorization. The design review was APPROVED WITH MINOR ISSUES; the sole MINOR, conditional performance comparison in criterion P, is incorporated in this baseline.
 
 **Goal:** refine the complete learning journey and graph experience.
 
 **Expected outputs:** responsive layout refinements; usable graph navigation; reviewed interaction, accessibility, loading, empty, and error states; resolution of observed usability and performance issues.
+
+**Checkpoints:** CP0 — Design baseline; CP1 — Layout and basic accessibility; CP2 — Navigation and interaction consistency; CP3 — Workflow polishing and measured performance when applicable; CP4 — Integrated validation / closure. Scope, finding candidates and [acceptance A–R](DEVELOPMENT.md#phase-10-acceptance-matrix-a-r) are documented in Development; all criteria are Planned / not executed. No new ADR is required; accepted architectural decisions remain authoritative.
+
+**Boundaries:** polish the existing product, without new Domain/Application, API, persistence/schema/migration, dependency, AI, realtime, auto-layout, undo/redo, new persistent navigation state, native mobile or PostgreSQL infrastructure. Viewport retention between visits is not automatically required. Review accessibility proportionately without WCAG certification, exhaustive assistive-technology coverage or mandatory physical-touch hardware validation. Require before/after performance comparisons only where changes may affect performance; require optimization only for reproduced bottlenecks/regressions, not a production benchmark. Phase 11 retains production readiness.
 
 **Non-goals:** native mobile applications, major unapproved architecture changes, or new product scope disguised as polishing.
 

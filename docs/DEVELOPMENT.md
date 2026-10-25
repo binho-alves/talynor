@@ -1,8 +1,82 @@
 # Development workflow
 
+## Phase 10 - UX, responsiveness and polishing design baseline
+
+2026-10-24: CP0 is **Documented / under review**; Phase 10 implementation has not started and CP1–CP4 are **Not started**. The preceding design review was APPROVED WITH MINOR ISSUES (0 BLOCKER, 0 IMPORTANT, 1 MINOR): criterion P needed to make before/after performance comparisons conditional. That precision is incorporated below; this documentary baseline still requires formal review. No Phase 10 application acceptance criterion is PASS or claimed executed. CP0 began on main/HEAD and origin/main 19ee471, synchronized 0/0 with clean working tree and empty staging. Phase 9 is Complete / Published in 19ee471 under Accepted ADR-017, with A–R PASS; correcting publication references does not reopen that phase.
+
+### Phase 10 scope and dependencies
+
+The exact [roadmap phase](ROADMAP.md#phase-10---ux-responsiveness-and-polishing) is **Phase 10 — UX, responsiveness and polishing**. Its goal is to refine the complete learning journey and graph experience through navigation, responsiveness, accessibility and clear states, without new product features. It addresses friction across the existing account/workspace, maps/authoring, Note/Link, Study Session, Flashcard, Quiz and activity/results flows delivered by the earlier phases. Their accepted product rules, contracts and historical evidence remain authoritative.
+
+Discovery candidates are narrow-screen graph/panel layout, canvas height, View/Edit action order, location of selected-node details and orientation between maps. These are hypotheses/finding candidates, not confirmed bugs or mandatory redesigns. During an authorized checkpoint, record reproduction steps, expected/current behavior and affected contexts before choosing a small fix. Persistent viewport retention between visits is not an automatic requirement. Existing visit, selection and draft-reset behavior must not change silently.
+
+The default technical baseline reuses existing React/TypeScript components, CSS, native controls, scoped hooks/coordinators and isolated XYFlow visualization. Small component extraction is justified only by concrete reuse, not a generic UI/state framework. No new Domain/Application model/use case, API, persistence/schema/migration or dependency is planned. Backend work requires a concrete blocker and separate scoped authorization; polishing is not permission to redesign an existing contract. API totals, time, grading and source lifecycles remain authoritative.
+
+Excluded: new product/authentication/content/assessment features; AI/recommendations; realtime/WebSocket; auto-layout; undo/redo; new persistent navigation state; native mobile; PostgreSQL infrastructure; generic plugin/strategy/registry/state architecture and premature distributed infrastructure. Production readiness, deployment/CI/provider transition and operational guarantees remain Phase 11. No new ADR is required because Phase 10 applies accepted decisions, including ADR-001, ADR-007 and ADR-010. Any genuinely new architectural decision must be proposed separately before the affected work proceeds.
+
+### Phase 10 interaction, safety and verification boundaries
+
+Preserve request identity, stale-response protection, cancellation and context teardown; drafts and their existing discard/lifecycle rules; reconciliation IDs, idempotency and no automatic mutation replay; History/navigation semantics, deep links and F5; security/ownership/error contracts and safe rendering. Cancellation or leaving a panel must never be presented as proof that a sent mutation rolled back. No automatic data persistence, cache or polling is introduced. Improve interaction with existing behavior rather than silently changing business rules, deletion/cascade/history semantics, source data or pedagogical claims.
+
+The bounded accessibility review covers keyboard, focus, accessible names, states/announcements, contrast, page zoom, interaction targets and responsive behavior on the defined journeys. It does not claim WCAG certification, an exhaustive audit across all assistive technologies or mandatory validation on physical touchscreen hardware. Record actual browser/assistive-technology/device coverage and remaining limits. Controlled hook/static-markup checks do not establish real DOM focus; use directed browser evidence for focus retention, including when the user moves focus during a request.
+
+Performance work is proportional: before/after comparison is mandatory only for changes with potential to affect performance. When applicable, use comparable environment, fixtures and interactions and record the conditions/results. Optimization is required only for a reproduced bottleneck or regression. Do not mandate production benchmarking, fabricate a universal graph-capacity guarantee, impose an arbitrary node-count limit or add schema/cache/infrastructure to satisfy an unmeasured concern. A change without performance impact may record the rationale for not measuring; representative/dense fixtures are validation inputs, not new product limits.
+
+### Phase 10 checkpoints
+
+| Checkpoint / status | Responsibility and exit | Boundary |
+| --- | --- | --- |
+| CP0 — Design baseline; Documented / under review | Record scope, candidates, checkpoints, safety constraints, planned A–R and risks; formal documentary review. | No application implementation or executed acceptance claim; staging/commit/publication require their own authorization. |
+| CP1 — Layout and basic accessibility; Not started | Validate/refine shell, graph/panel layout, forms and basic keyboard/control semantics across planned widths/zoom. | Presentation foundation; no new feature or business/backend contract. |
+| CP2 — Navigation and interaction consistency; Not started | Validate/refine selection, drill-down/return, focus transitions and loading/empty/error/retry behavior using existing navigation. | Transition behavior builds on CP1; preserve History, drafts and safety rules. |
+| CP3 — Workflow polishing and measured performance when applicable; Not started | Resolve observed cross-flow issues in content/study/Flashcard/Quiz/activity panels; perform conditional measurements/corrections under criterion P. | No mandatory optimization without reproduced need; no new product scope. |
+| CP4 — Integrated validation / closure; Not started | Consolidate regressions, real-browser journey/accessibility/responsive evidence, applicable performance evidence, limitations and final matrix for formal review. | No new feature or production-readiness claim; no premature PASS/publication. |
+
+Each implementation checkpoint requires separate explicit authorization. CP1 owns basic presentation/control semantics, CP2 owns navigation/state transitions, CP3 owns residual cross-flow polish and justified performance work, and CP4 integrates the evidence rather than duplicating implementation responsibility. No blocking product question remains for documenting CP0; new concrete blockers must be reported within their affected checkpoint.
+
+### Phase 10 acceptance matrix A-R
+
+All 18 criteria below are **Planned / not executed**. Prior phases' PASS results remain historical regressions, not proof that Phase 10 acceptance has run. Criterion P incorporates the sole design-review MINOR; the remaining criteria retain the reviewed scope.
+
+| Criterion | Observable acceptance condition | Status |
+| --- | --- | --- |
+| A. Existing journey | Execute login → map → concept → content/study/practice → results → return, retaining the expected context. | Planned / not executed |
+| B. Responsive layout | Check 320/390/768/1440 CSS-pixel widths without horizontal page overflow; graph-canvas panning remains available. | Planned / not executed |
+| C. Page zoom | Check 200% page zoom with controls and messages usable. | Planned / not executed |
+| D. Keyboard | Operate the scoped journeys by keyboard without depending exclusively on drag or double-click. | Planned / not executed |
+| E. Focus | Visible, predictable focus across navigation, Retry, cancel and delete; asynchronous completion does not steal focus moved by the user. | Planned / not executed |
+| F. Graph interaction | Selection, zoom, pan, fit-to-view and access to selected details work in the defined scenarios. | Planned / not executed |
+| G. Navigation | ChildMap, cycles, Back/Forward, F5 and deep links retain existing semantics. | Planned / not executed |
+| H. View/Edit | Actions and consequences are coherent, preserving local drag versus explicitly persisted position. | Planned / not executed |
+| I. Presentation states | Loading, empty, error and success are distinguishable in the reviewed panels. | Planned / not executed |
+| J. Recovery | Error/Retry/recovery keeps actions usable and never presents a failure as absent data. | Planned / not executed |
+| K. Forms/deletion | Forms have labels, understandable validation and clear destructive confirmations. | Planned / not executed |
+| L. Stale responses | Rapid account/map/node/panel changes continue rejecting obsolete responses. | Planned / not executed |
+| M. Repeated actions | Rapid/repeated actions preserve submission locks, reconciliation IDs and no automatic replay. | Planned / not executed |
+| N. Content | Long and literal text remains readable; study answers do not leak before their approved reveal/result boundary. | Planned / not executed |
+| O. Bounded accessibility | Directed review records names, states/announcements, contrast and interaction targets, with actual coverage and limitations. | Planned / not executed |
+| P. Proportional performance | Before/after comparison is mandatory only for changes with potential performance impact. Use comparable environment/fixtures when applicable; require optimization only for a reproduced bottleneck or regression. No production benchmark is mandatory. | Planned / not executed |
+| Q. Compatibility | Affected-flow regressions pass, preserving contracts, security, history and formulas. | Planned / not executed |
+| R. Closure | Combine automated and real-browser evidence, resolved/deferred findings and limitations, without general accessibility or production claims. | Planned / not executed |
+
+### Phase 10 validation plan and risks
+
+In an authorized implementation checkpoint, run frontend build/lint/typecheck and the existing feature checks relevant to actual changes; add directed checks for changed behavior without mirroring implementation or installing a new framework by default. Use real trusted-HTTPS login/API/browser scenarios for journey, focus, layout and navigation evidence. Test delayed/obsolete completions and rapid actions through the existing controlled checks; distinguish them from real-browser observation. Backend validation is proportional to any separately authorized backend change, not automatically required in full for CSS/presentation work. CP4 consolidates the required integrated regressions and reports checks not run honestly. This CP0 executes no build, application tests, EF or browser validation.
+
+| Risk | Planned control / retained limitation |
+| --- | --- |
+| Focus/History regression | Directed keyboard/navigation checks; no invasive completion-driven focus or new persistent navigation semantics. |
+| Narrow-panel control overload | Reproduce with long text/forms at defined widths and zoom; refine only evidenced problems. |
+| Draft loss or stale data after remount | Preserve current component identities/lifecycle and test context switches against existing discard rules. |
+| Repeated/ambiguous writes | Preserve synchronous locks, original reconciliation IDs and explicit retries without automatic replay. |
+| Speculative performance work | Apply conditional criterion P and record comparable measurements only where justified. |
+| Overstated accessibility/performance evidence | Separate controlled harness, real browser, actual device/assistive-technology coverage and production claims; preserve known limitations. |
+
+CP0 verification consists of documentary consistency, local references and Git diff/status/whitespace review. Source/tests/configuration/AGENTS.md/PRODUCT.md remain unchanged; no migration/dependency, staging, commit, push or CP1 implementation is authorized by this task. Phase 9's history-cost, DELETE-journal/native-wait, controlled-harness, local-latency stale-switch and limited browser/accessibility/deployment evidence remain recorded below.
+
 ## Phase 9 - Progress and Analytics design baseline
 
-2026-10-24: Phase 9 is Complete for the approved scope; CP0 baseline is Published in decb4fe. [ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) is Accepted; acceptance does not authorize implementation. CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / under review. Acceptance A–R is PASS; CP4 closure documentation is under review, not yet committed or published. Phase 10 is Not started. Phase 8 remains Complete / Published, CP0–CP3 Published and CP4 Completed / Validated / Published in 80bbae3; its reviewed publication-status fix is published in b7b88a5. CP0 began on main/HEAD and origin/main b7b88a5, synchronized 0/0, with clean working tree, empty staging and no untracked files. It changed documentation only, without replacing the published evidence/matrices below.
+2026-10-24: Phase 9 is Complete for the approved scope; CP0 baseline is Published in decb4fe. [ADR-017](DECISIONS.md#adr-017---derived-node-activity-and-results-summary) is Accepted; acceptance does not authorize implementation. CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / Approved / Published in 19ee471. Acceptance A–R is PASS; CP4 closure review was APPROVED and its documentation was Published in 19ee471. Phase 10 implementation is Not started; its CP0 is Documented / under review. Phase 8 remains Complete / Published, CP0–CP3 Published and CP4 Completed / Validated / Published in 80bbae3; its reviewed publication-status fix is published in b7b88a5. CP0 began on main/HEAD and origin/main b7b88a5, synchronized 0/0, with clean working tree, empty staging and no untracked files. It changed documentation only, without replacing the published evidence/matrices below.
 
 ### Phase 9 scope identification
 
@@ -34,7 +108,7 @@ One planned GET `/api/maps/{mapId}/nodes/{nodeId}/progress` with optional days=7
 | CP1 — Backend read foundation; Published in 7c4069d | Own Application summary/period/results, GetNodeProgress/INodeProgressReader, Infrastructure node-scoped query and directed backend tests. | No HTTP/DI/frontend, writes/Domain change/schema/migration/dependency. Exit: exact three-source derivation, authorization via existing resolver, coherent snapshot, safe numerics/UTC/cancellation and measured query shape proven on real disposable migrated SQLite. |
 | CP2 — Read API integration; Published in 7fb3390 | Own response mapping, the single authenticated GET, days parsing, DI and route-scoped pre-auth sanitization integration, HTTP/security tests. | No source writes, existing API changes, frontend or migration. Exit: exact fixed DTO/default/validation/empty/IDOR/no-store/error contracts; failures never expose private data or become empty results. |
 | CP3 — Frontend node summary; Published in 75290e3 | On-demand View/Edit selected-node section, own API/runtime validation, presets and manual Refresh, safe request identity, accessible/responsive feedback. | No router/chart/global store/polling/storage or history-page aggregation. Exit: labels/denominators/unavailable measures/timezone/period correctness, stale-result and 401 handling, existing map/learning flow regressions and browser evidence. |
-| CP4 — Integrated validation and closure; Complete / under review | Full approved-scope regressions, query/snapshot/delete/time/security checks, browser/metadata smoke and documentation/formal closure. | No new feature; fresh results distinguished from earlier evidence; review, commit and publication remain separately authorized. |
+| CP4 — Integrated validation and closure; Complete / Approved / Published in 19ee471 | Full approved-scope regressions, query/snapshot/delete/time/security checks, browser/metadata smoke and documentation/formal closure. | No new feature; fresh results distinguished from earlier evidence; review, commit and publication remain separately authorized. |
 
 CP1/CP2 deliberately split the same small read slice: CP1 proves cross-source arithmetic/snapshot semantics without exposing a partial public API; CP2 adds only the final HTTP boundary. Each checkpoint requires its own explicit authorization even though ADR-017 is Accepted.
 
@@ -50,7 +124,7 @@ Inspect generated SQL/projections and query count on representative synthetic no
 
 ### Phase 9 acceptance matrix A-R
 
-Final CP4 assessment on 2026-10-24: **A–R PASS** for the approved scope, combining published CP1/CP2/CP3 evidence and completed CP4 regressions/real-browser smoke. CP0 originally planned these criteria; historical checkpoint records below retain that distinction. Closure documentation is ready for formal review; commit/publication remain separately authorized.
+Final CP4 assessment on 2026-10-24: **A–R PASS** for the approved scope, combining published CP1/CP2/CP3 evidence and completed CP4 regressions/real-browser smoke. CP0 originally planned these criteria; historical checkpoint records below retain that distinction. Closure review was APPROVED and documentation was Published in 19ee471; this follow-through preserves all 18 PASS results.
 
 | Criterion | Observable acceptance condition | Final result / evidence |
 | --- | --- | --- |
@@ -71,7 +145,7 @@ Final CP4 assessment on 2026-10-24: **A–R PASS** for the approved scope, combi
 | O. UI/time/accessibility | Period/timezone/calculation reference, denominators and limitations visible; distinct loading/empty/error/null states; keyboard/focus/status and narrow layouts usable. | PASS — CP4 real loading/empty/null/error, visible interval/timezone, keyboard Retry/recovery/stable focus and 390x844 CSS without overflow; audit limits retained. |
 | P. Compatibility | Existing map DTO/History/URL, content/StudySession/Flashcard/Quiz APIs, keys/revisions/idempotency/security/delete rules unaffected. | PASS — CP4 380 unit/650 integration plus content/study/flashcard/quiz checks; no source/model/schema change during closure. |
 | Q. Scope | No QuestionType/strategy/plugin/registry/future-type scaffolding, new writes/dependency/migration/analytics infra or Phase 10+ implementation. | PASS — Published CP1–CP3 scope and clean 75290e3 baseline; CP4 adds documentation only, with no Phase 10 work. |
-| R. Closure | Actual checks/evidence/limits recorded separately from plans/history; ADR status reflects approval; formal closure precedes separately authorized publication. | PASS — CP4 evidence/limits and final matrix recorded separately from historical runs; ADR-017 Accepted, Git/whitespace reviewed; formal closure/publication remain gated. |
+| R. Closure | Actual checks/evidence/limits recorded separately from plans/history; ADR status reflects approval; formal closure precedes separately authorized publication. | PASS — CP4 evidence/limits and final matrix recorded separately from historical runs; ADR-017 Accepted, Git/whitespace reviewed; formal closure was subsequently APPROVED and Published in 19ee471. |
 
 ### Phase 9 risks and deferred decisions
 
@@ -152,7 +226,7 @@ Verification limitations/errors: one sandbox lint attempt failed when Corepack t
 
 ### Phase 9 CP4 - Integrated validation and closure evidence
 
-2026-10-24: CP4 validation is Complete / under review; Phase 9 is Complete for the approved node-level activity/results scope. CP0 baseline (decb4fe), ADR-017 acceptance (1640914), CP1 (7c4069d), CP2 (7fb3390) and CP3 (75290e3) are Published. ADR-017 remains Accepted. Validation began on main/HEAD and origin/main 75290e3, synchronized 0/0 with a clean working tree and empty staging. A–R above now PASS. Closure documentation still requires formal review and separate staging/commit/publication; it is not yet published. Phase 10 is Not started.
+2026-10-24: CP4 validation and closure are Complete / Approved / Published in 19ee471; Phase 9 is Complete / Published for the approved node-level activity/results scope. CP0 baseline (decb4fe), ADR-017 acceptance (1640914), CP1 (7c4069d), CP2 (7fb3390) and CP3 (75290e3) are Published. ADR-017 remains Accepted. Validation began on main/HEAD and origin/main 75290e3, synchronized 0/0 with a clean working tree and empty staging. A–R above now PASS. Closure documentation subsequently received formal review APPROVED and was committed and Published in 19ee471. Phase 10 implementation is Not started; its CP0 is Documented / under review.
 
 Backend CP4 evidence: dotnet build Talynor.slnx --no-restore -m:1 --disable-build-servers PASS, zero warnings/errors. Full project suites, run separately with dotnet test tests/Talynor.UnitTests/Talynor.UnitTests.csproj --no-build -m:1 and dotnet test tests/Talynor.IntegrationTests/Talynor.IntegrationTests.csproj --no-build -m:1, PASS: 380 unit and 650 integration tests, zero failures/skips, including the published CP1 calculations/source/snapshot/delete regressions and CP2's 49 NodeProgressHttpTests. Local EF tools are 10.0.12; migrations has-pending-model-changes --project src/backend/Talynor.Infrastructure --no-build with Data Source=:memory: reported NONE. Initial restricted VSTest/testhost connection failures were resolved by completed runs outside that restriction. No new model, schema, migration, dependency or source change was required.
 
@@ -170,7 +244,7 @@ This documentation-only follow-through reuses the completed evidence above witho
 
 ## Phase 8 - Assessments design baseline
 
-2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete / Published for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / Validated / Published; closure review was APPROVED and documentation was published in 80bbae3. Phase 9 CP0 baseline is published under Accepted ADR-017; CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / under review. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
+2026-10-22: [ADR-016](DECISIONS.md#adr-016---node-owned-quizzes-revision-scoped-grading-and-immutable-attempts) remains Accepted. Phase 8 is Complete / Published for the approved scope. CP0 (39ff3aa), CP1 (4b6dec0), CP2 (e17aa97) and CP3 (84e01b4) are Published. CP4 integrated validation is Completed / Validated / Published; closure review was APPROVED and documentation was published in 80bbae3. Phase 9 CP0 baseline is published under Accepted ADR-017; CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / Approved / Published in 19ee471. Phase 7 closure is published in bc7a4b6. Earlier implementation evidence below remains historical; final CP4 evidence is recorded separately.
 
 The baseline defines node-owned single-choice quizzes, full server-graded submission, current definition revisions, immutable full historical question/option snapshots, explicit hard-delete cascade and same-AttemptId recovery. Unsent answers/drafts are frontend memory only and may be lost on context change/F5/logout; no persisted start/active attempt, autosave, resume, timer or StudySession coupling exists. Exact fields/contracts/limits/errors/concurrency/deletion are authoritative in ADR-016. The QuizAttemptAnswerOptions child implemented in CP2 preserves every presented alternative without current-child FKs or generic JSON. CP0 creates no source/migration/dependency and runs no new application suite.
 
@@ -497,7 +571,7 @@ The temporary HTTPS proxy forwarded to the unchanged API with certificate valida
 
 ## Project context
 
-- Current stage: Phase 9 - Progress and Analytics Complete for the approved scope; acceptance A–R PASS; closure review/publication pending; Phase 10 Not started; CP0 baseline published under Accepted ADR-017; CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / under review. Phase 8 remains Complete / Published in 80bbae3 (status fix b7b88a5).
+- Current stage: Phase 10 - UX, responsiveness and polishing CP0 Documented / under review; CP1–CP4 Not started. Phase 9 - Progress and Analytics Complete / Published in 19ee471; acceptance A–R PASS; CP0 baseline published under Accepted ADR-017; CP1 read foundation is Published in 7c4069d; CP2 API integration is Published in 7fb3390; CP3 frontend integration is Published in 75290e3; CP4 is Complete / Approved / Published in 19ee471. Phase 8 remains Complete / Published in 80bbae3 (status fix b7b88a5).
 - Project: Talynor.
 - Local development convention: `C:\dev\Talynor`.
 - Intended GitHub owner: `binho-alves`.
