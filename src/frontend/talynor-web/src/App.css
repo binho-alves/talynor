@@ -47,7 +47,7 @@ h1 { margin-bottom: 8px; font-size: clamp(24px, 3vw, 34px); letter-spacing: -0.0
 .interaction-help { padding: 14px 20px; margin: 0; color: #64748b; font-size: 12px; line-height: 1.6; }
 .knowledge-node { width: 200px; border: 2px solid #cbd5e1; border-radius: 12px; background: white; padding: 16px; box-shadow: 0 3px 10px #1725540a; color: #172554; }
 .knowledge-node.is-selected { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 4px #2563eb20; }
-.node-caption { display: block; color: #64748b; font-size: 11px; margin-bottom: 8px; }
+.node-caption { display: block; color: #475569; font-size: 11px; margin-bottom: 8px; }
 .knowledge-node strong { display: block; font-size: 16px; }
 .node-progress { display: flex; justify-content: space-between; gap: 12px; color: #475569; font-size: 12px; margin-top: 14px; }
 .submap-label { display: block; margin-top: 12px; font-size: 11px; color: #1d4ed8; }
@@ -76,7 +76,7 @@ progress::-moz-progress-bar { background: #2563eb; }
 .session-card { width: 100%; max-width: 460px; background: white; border: 1px solid #dbe3ee; border-radius: 16px; padding: 28px; }
 .session-card form { margin-top: 24px; }
 .session-card label { display: block; font-weight: 600; margin: 18px 0 8px; }
-.session-card input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #94a3b8; border-radius: 8px; font: inherit; }
+.session-card input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #64748b; border-radius: 8px; font: inherit; }
 .session-card input:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
 .session-feedback { color: #991b1b; background: #fef2f2; border-radius: 8px; padding: 12px; line-height: 1.5; }
 .session-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; min-width: 0; }
@@ -90,7 +90,7 @@ button:disabled { cursor: wait; opacity: 0.65; }
 .authoring-form, .authoring-form fieldset { min-width: 0; }
 .authoring-form fieldset { border: 0; padding: 0; margin: 0; }
 .authoring-form label, .details-panel > label { display: block; margin-block: 12px 6px; font-weight: 600; }
-.authoring-form input, .authoring-form textarea, .authoring-form select, .details-panel > select { display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 44px; padding: 10px; border: 1px solid #94a3b8; border-radius: 6px; font: inherit; }
+.authoring-form input, .authoring-form textarea, .authoring-form select, .details-panel > select { display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 44px; padding: 10px; border: 1px solid #64748b; border-radius: 6px; font: inherit; }
 .authoring-form textarea { resize: vertical; }
 .mutation-feedback { padding: 12px; background: #eff6ff; border-radius: 8px; overflow-wrap: anywhere; }
 button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
